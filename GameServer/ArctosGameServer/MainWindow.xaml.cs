@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO.Ports;
 using System.Net;
 using System.Net.Sockets;
 using System.Windows;
@@ -13,7 +15,7 @@ namespace ArctosGameServer
         public MainWindow()
         {
             InitializeComponent();
-            
+
             TheAlligator bobTheAlligator = new TheAlligator("COM23");
             bobTheAlligator.Send("testData123");
         }

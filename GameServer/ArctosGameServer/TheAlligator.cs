@@ -17,13 +17,15 @@ namespace ArctosGameServer
 
         public TheAlligator(String portName)
         {
-            serialPort = new SerialPort(portName);
+            serialPort = new SerialPort(portName, 9600, Parity.None);
+            //serialPort.
             serialPort.Open();
         }
 
         public void Send(string data)
         {
             serialPort.Write(data);
+            //serialPort.
         }
     }
 }
