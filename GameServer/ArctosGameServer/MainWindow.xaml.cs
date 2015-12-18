@@ -12,12 +12,19 @@ namespace ArctosGameServer
     /// </summary>
     public partial class MainWindow : Window
     {
+        private TheAlligator alligator = new TheAlligator("COM35");
+
         public MainWindow()
         {
             InitializeComponent();
+        }
 
-            TheAlligator bobTheAlligator = new TheAlligator("COM23");
-            bobTheAlligator.Send("testData123");
+        private void button_Click(object sender, RoutedEventArgs e)
+        {
+            if (msgData.Text.Length > 0)
+            {
+                alligator.Send(msgData.Text);
+            }
         }
     }
 }
