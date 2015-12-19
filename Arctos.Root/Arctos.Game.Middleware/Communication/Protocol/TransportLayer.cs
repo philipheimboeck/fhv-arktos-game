@@ -43,6 +43,7 @@ namespace ArctosGameServer.Communication.Protocol
         private void SerialPortOnDataReceived(object sender, SerialDataReceivedEventArgs serialDataReceivedEventArgs)
         {
             int dataLength = this.serialPort.BytesToRead;
+            //this.serialPort.readl
             throw new NotImplementedException();
         }
 
