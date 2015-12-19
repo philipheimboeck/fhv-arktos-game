@@ -25,7 +25,7 @@ namespace ArctosGameServer.Controller
         public void Drive(double left, double right)
         {
             // TODO generate proper values and check if they are correct!
-            Tuple<string, string> keyValue = new Tuple<string, string>("drive", "-50, 50");
+            Tuple<string, string> keyValue = new Tuple<string, string>("drive", left + "," + right);
             PDU<object> pduObj = new PDU<object> { data = keyValue };
 
             if (!this.protocol.send(pduObj))
