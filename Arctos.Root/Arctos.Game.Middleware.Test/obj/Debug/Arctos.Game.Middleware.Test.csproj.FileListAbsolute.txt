@@ -1,7 +1,0 @@
-C:\privat\ITM3\arctos\ArctosGameRep\Arctos.Root\Arctos.Game.Middleware.Test\bin\Debug\Arctos.Game.Middleware.Test.dll
-C:\privat\ITM3\arctos\ArctosGameRep\Arctos.Root\Arctos.Game.Middleware.Test\bin\Debug\Arctos.Game.Middleware.Test.pdb
-C:\privat\ITM3\arctos\ArctosGameRep\Arctos.Root\Arctos.Game.Middleware.Test\bin\Debug\ArctosGameServer.exe
-C:\privat\ITM3\arctos\ArctosGameRep\Arctos.Root\Arctos.Game.Middleware.Test\bin\Debug\ArctosGameServer.pdb
-C:\privat\ITM3\arctos\ArctosGameRep\Arctos.Root\Arctos.Game.Middleware.Test\obj\Debug\Arctos.Game.Middleware.Test.csprojResolveAssemblyReference.cache
-C:\privat\ITM3\arctos\ArctosGameRep\Arctos.Root\Arctos.Game.Middleware.Test\obj\Debug\Arctos.Game.Middleware.Test.dll
-C:\privat\ITM3\arctos\ArctosGameRep\Arctos.Root\Arctos.Game.Middleware.Test\obj\Debug\Arctos.Game.Middleware.Test.pdb
