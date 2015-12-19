@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arctos.Game.Middleware", "A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arctos.Game.Middleware.Test", "Arctos.Game.Middleware.Test\Arctos.Game.Middleware.Test.csproj", "{D1D42791-ECA1-4E5F-A719-3699D8F7D61E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arctos.Game.Middleware.Model", "Arctos.Game.Middleware.Model\Arctos.Game.Middleware.Model.csproj", "{5B8AFFE5-0348-437B-AC95-4175CF0B1059}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{D1D42791-ECA1-4E5F-A719-3699D8F7D61E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1D42791-ECA1-4E5F-A719-3699D8F7D61E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D1D42791-ECA1-4E5F-A719-3699D8F7D61E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B8AFFE5-0348-437B-AC95-4175CF0B1059}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B8AFFE5-0348-437B-AC95-4175CF0B1059}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B8AFFE5-0348-437B-AC95-4175CF0B1059}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B8AFFE5-0348-437B-AC95-4175CF0B1059}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

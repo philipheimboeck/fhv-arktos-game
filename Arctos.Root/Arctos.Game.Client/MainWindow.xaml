@@ -7,7 +7,7 @@
         WindowStartupLocation="CenterScreen" WindowState="Maximized">
     <!-- add windowstyle=none to hide close toolbar -->
     <!-- WindowStyle="None"-->
-    <Grid Background="Aqua">
+    <Grid Background="Brown">
         <Grid x:Name="GameAreaGrid">
             
         </Grid>

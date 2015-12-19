@@ -20,7 +20,7 @@ namespace Arctos.Game.Middleware.Test
         {
             IProtocolLayer<object, object> protocol =   new PresentationLayer(
                                                             new SessionLayer(
-                                                                new TransportLayer("COM3")
+                                                                new TransportLayer("COM19")
                                                             )
                                                         );
 

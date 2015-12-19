@@ -29,7 +29,7 @@ namespace Arctos.Game.Client
             InitializeComponent(); 
             this.DataContext = this;
 
-            //GetExampleGame();
+            GetExampleGame();
         }
 
         /// <summary>
@@ -87,7 +87,7 @@ namespace Arctos.Game.Client
                 {
                     Label lbl = new Label
                     {
-                        Background = new SolidColorBrush(Colors.Red),
+                        Background = new SolidColorBrush(Colors.WhiteSmoke),
                         Width = game.AreaWidth,
                         Height = game.AreaHeight
                     };

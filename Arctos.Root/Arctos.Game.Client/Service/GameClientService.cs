@@ -16,9 +16,6 @@ namespace Arctos.Game.Client.Service
                 Byte[] data = System.Text.Encoding.ASCII.GetBytes(message);
                 NetworkStream stream = client.GetStream();
 
-                stream.Write(data, 0, data.Length);
-
-                Console.WriteLine("Sent: {0}", message);
                 data = new Byte[256];
 
                 String responseData = String.Empty;

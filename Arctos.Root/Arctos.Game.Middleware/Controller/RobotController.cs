@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ArctosGameServer.Communication;
 
 namespace ArctosGameServer.Controller
@@ -24,7 +25,7 @@ namespace ArctosGameServer.Controller
         public void Drive(double left, double right)
         {
             // TODO generate proper values and check if they are correct!
-            KeyValuePair<string, string> keyValue = new KeyValuePair<string, string>("drive", "-50, 50");
+            Tuple<string, string> keyValue = new Tuple<string, string>("drive", "-50, 50");
             PDU<object> pduObj = new PDU<object> { data = keyValue };
 
             if (!this.protocol.send(pduObj))
@@ -35,8 +36,7 @@ namespace ArctosGameServer.Controller
 
         public void ReadRFID()
         {
-            //PDU pdu = new PDU();
-           // this.protocol.receive(pdu);
+            PDU<object> receivedPDU = this.protocol.receive();
         }
     }
 }

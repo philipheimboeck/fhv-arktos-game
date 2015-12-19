@@ -33,7 +33,7 @@ namespace ArctosGameServer.Communication.Protocol
         /// <param name="pduInput"></param>
         protected override PDU<object> decomposePdu(PDU<object> pduInput)
         {
-            throw new NotImplementedException();
+            return pduInput;
         }
     }
 }

@@ -2,6 +2,7 @@
 using ArctosGameServer.Communication;
 using ArctosGameServer.Communication.Protocol;
 using ArctosGameServer.Controller;
+using ArctosGameServer.Service;
 
 namespace ArctosGameServer
 {
@@ -12,8 +13,8 @@ namespace ArctosGameServer
     {
         public App()
         {
-            //GameGuiService guiService = new GameGuiService();
-            //guiService.StartService();
+            GameGuiService guiService = new GameGuiService();
+            guiService.StartService();
         }
 
     }

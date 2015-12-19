@@ -50,8 +50,7 @@ namespace ArctosGameServer.Communication.Protocol
         {
             bool result = false;
 
-            //PDU<string> pduInput = composePdu(pdu);
-            PDU<object> pduInput = pdu;
+            PDU<object> pduInput = composePdu(pdu);
             if (pduInput == null || pduInput.data == null) return false;
 
             try
@@ -74,7 +73,7 @@ namespace ArctosGameServer.Communication.Protocol
         /// <returns></returns>
         protected override PDU<object> composePdu(PDU<object> pduInput)
         {
-           return null;
+           return pduInput;
         }
 
         /// <summary>
@@ -83,7 +82,7 @@ namespace ArctosGameServer.Communication.Protocol
         /// <param name="pduInput"></param>
         protected override PDU<object> decomposePdu(PDU<object> pduInput)
         {
-            return null;
+            return pduInput;
         }
     }
 }
