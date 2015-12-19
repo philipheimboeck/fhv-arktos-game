@@ -1,4 +1,6 @@
-﻿namespace ArctosGameServer.Communication.Protocol
+﻿using System;
+
+namespace ArctosGameServer.Communication.Protocol
 {
     /// <summary>
     /// Session Layer
@@ -9,9 +11,10 @@
         /// Constructor
         /// </summary>
         /// <param name="lower"></param>
-        public SessionLayer(IProtocolLayer lower)
+        public SessionLayer(IProtocolLayer<object, object> lower)
             : base(lower)
         {
+            base.lowerLayer = lower;
         }
 
         /// <summary>
@@ -19,7 +22,7 @@
         /// </summary>
         /// <param name="pduInput"></param>
         /// <returns></returns>
-        protected override PDU composePdu(PDU pduInput)
+        protected override PDU<object> composePdu(PDU<object> pduInput)
         {
             return pduInput;
         }
@@ -28,9 +31,9 @@
         /// Decompose PDU
         /// </summary>
         /// <param name="pduInput"></param>
-        protected override void decomposePdu(PDU pduInput)
+        protected override PDU<object> decomposePdu(PDU<object> pduInput)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
     }
 }

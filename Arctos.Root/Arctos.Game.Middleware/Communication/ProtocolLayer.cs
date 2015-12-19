@@ -1,14 +1,14 @@
 ﻿namespace ArctosGameServer.Communication
 {
-    public abstract class ProtocolLayer : IProtocolLayer
+    public abstract class ProtocolLayer : IProtocolLayer<object, object>
     {
-        private readonly IProtocolLayer lowerLayer;
+        protected IProtocolLayer<object, object> lowerLayer;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="lower"></param>
-        protected ProtocolLayer(IProtocolLayer lower)
+        protected ProtocolLayer(IProtocolLayer<object, object> lower)
         {
             this.lowerLayer = lower;
         }
@@ -18,10 +18,10 @@
         /// </summary>
         /// <param name="pdu"></param>
         /// <returns></returns>
-        public virtual bool send(PDU pdu)
+        public virtual bool send(PDU<object> pdu)
         {
             bool result = false;
-            PDU pduOut = this.composePdu(pdu);
+            PDU<object> pduOut = this.composePdu(pdu);
 
             if (this.lowerLayer != null)
             {
@@ -36,13 +36,13 @@
         /// </summary>
         /// <param name="pdu"></param>
         /// <returns></returns>
-        public virtual bool receive(PDU pdu)
+        public virtual PDU<object> receive()
         {
-            bool result = this.lowerLayer.receive(pdu);
-            if (result)
-                this.decomposePdu(pdu);
+            PDU<object> result = this.lowerLayer.receive();
+            if (result != null)
+                return this.decomposePdu(result);
 
-            return result;
+            return null;
         }
 
         /// <summary>
@@ -50,12 +50,12 @@
         /// </summary>
         /// <param name="pduInput"></param>
         /// <returns></returns>
-        protected abstract PDU composePdu(PDU pduInput);
+        protected abstract PDU<object> composePdu(PDU<object> pduInput);
 
         /// <summary>
         /// Decompose PDU
         /// </summary>
         /// <param name="pduInput"></param>
-        protected abstract void decomposePdu(PDU pduInput);
+        protected abstract PDU<object> decomposePdu(PDU<object> pduInput);
     }
 }

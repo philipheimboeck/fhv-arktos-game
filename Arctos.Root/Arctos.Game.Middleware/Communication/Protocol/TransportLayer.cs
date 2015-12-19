@@ -20,7 +20,6 @@ namespace ArctosGameServer.Communication.Protocol
             try
             {
                 this.serialPort = new SerialPort(portName, 9600, Parity.None, 8, StopBits.One);
-                this.serialPort.DataReceived += SerialPortOnDataReceived;
                 this.serialPort.Open();
             }
             catch (Exception ex)
@@ -29,22 +28,17 @@ namespace ArctosGameServer.Communication.Protocol
             }
         }
 
-        public override bool receive(PDU pdu)
+        public override PDU<object> receive()
         {
+            PDU<object> pduReceived = new PDU<object>();
+            if (this.serialPort.BytesToRead > 0)
+            {
+                char[] dataReceived = new char[128];
+                this.serialPort.Read(dataReceived, 0, 128);
+                pduReceived.data = dataReceived.ToString();
+            }
 
-            return false;
-        }
-
-        /// <summary>
-        /// OnDataReceived Event of the serial port
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="serialDataReceivedEventArgs"></param>
-        private void SerialPortOnDataReceived(object sender, SerialDataReceivedEventArgs serialDataReceivedEventArgs)
-        {
-            int dataLength = this.serialPort.BytesToRead;
-            //this.serialPort.readl
-            throw new NotImplementedException();
+            return pduReceived;
         }
 
         /// <summary>
@@ -52,16 +46,17 @@ namespace ArctosGameServer.Communication.Protocol
         /// </summary>
         /// <param name="pdu"></param>
         /// <returns></returns>
-        public override bool send(PDU pdu)
+        public override bool send(PDU<object> pdu)
         {
             bool result = false;
 
-            PDU pduInput = composePdu(pdu);
-            if (pduInput == null) return false;
+            //PDU<string> pduInput = composePdu(pdu);
+            PDU<object> pduInput = pdu;
+            if (pduInput == null || pduInput.data == null) return false;
 
             try
             {
-                this.serialPort.Write(pduInput.ComposedData);
+                this.serialPort.Write(pduInput.data.ToString());
                 result = true;
             }
             catch (Exception ex)
@@ -77,18 +72,18 @@ namespace ArctosGameServer.Communication.Protocol
         /// </summary>
         /// <param name="pduInput"></param>
         /// <returns></returns>
-        protected override PDU composePdu(PDU pduInput)
+        protected override PDU<object> composePdu(PDU<object> pduInput)
         {
-            return pduInput;
+           return null;
         }
 
         /// <summary>
         /// Decompose PDU
         /// </summary>
         /// <param name="pduInput"></param>
-        protected override void decomposePdu(PDU pduInput)
+        protected override PDU<object> decomposePdu(PDU<object> pduInput)
         {
-            throw new System.NotImplementedException();
+            return null;
         }
     }
 }

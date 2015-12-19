@@ -1,18 +1,10 @@
-﻿using System.Security.Policy;
-
-namespace ArctosGameServer.Communication
+﻿namespace ArctosGameServer.Communication
 {
     /// <summary>
     /// Packet Data Unit
     /// </summary>
-    public class PDU
+    public class PDU<T>
     {
-        public int Version { get; set; }
-        public int KeyLength { get; set; }
-        public int DataLength { get; set; }
-        public string Key { get; set; }
-        public string Data { get; set; }
-
-        public string ComposedData { get; set; }
+        public T data { get; set; }
     }
 }

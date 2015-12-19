@@ -1,8 +1,8 @@
 ﻿namespace ArctosGameServer.Communication
 {
-    public interface IProtocolLayer
+    public interface IProtocolLayer<T, TR>
     {
-        bool send(PDU pdu);
-        bool receive(PDU pdu);
+        bool send(PDU<T> pdu);
+        PDU<T> receive();
     }
 }
