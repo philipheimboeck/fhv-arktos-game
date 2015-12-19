@@ -1,0 +1,14 @@
+C:\privat\ITM3\arctos\ArctosGameRep\Arctos.Root\Arctos.Game.Client\bin\Debug\GameGui.exe.config
+C:\privat\ITM3\arctos\ArctosGameRep\Arctos.Root\Arctos.Game.Client\obj\Debug\GameGui.exe
+C:\privat\ITM3\arctos\ArctosGameRep\Arctos.Root\Arctos.Game.Client\obj\Debug\GameGui.pdb
+C:\privat\ITM3\arctos\ArctosGameRep\Arctos.Root\Arctos.Game.Client\bin\Debug\GameGui.exe
+C:\privat\ITM3\arctos\ArctosGameRep\Arctos.Root\Arctos.Game.Client\bin\Debug\GameGui.pdb
+C:\privat\ITM3\arctos\ArctosGameRep\Arctos.Root\Arctos.Game.Client\obj\Debug\MainWindow.g.cs
+C:\privat\ITM3\arctos\ArctosGameRep\Arctos.Root\Arctos.Game.Client\obj\Debug\App.g.cs
+C:\privat\ITM3\arctos\ArctosGameRep\Arctos.Root\Arctos.Game.Client\obj\Debug\GameGui_MarkupCompile.cache
+C:\privat\ITM3\arctos\ArctosGameRep\Arctos.Root\Arctos.Game.Client\obj\Debug\GameGui_MarkupCompile.lref
+C:\privat\ITM3\arctos\ArctosGameRep\Arctos.Root\Arctos.Game.Client\obj\Debug\MainWindow.baml
+C:\privat\ITM3\arctos\ArctosGameRep\Arctos.Root\Arctos.Game.Client\obj\Debug\GameGui.g.resources
+C:\privat\ITM3\arctos\ArctosGameRep\Arctos.Root\Arctos.Game.Client\obj\Debug\Arctos.Properties.Resources.resources
+C:\privat\ITM3\arctos\ArctosGameRep\Arctos.Root\Arctos.Game.Client\obj\Debug\Arctos.Game.Client.csproj.GenerateResource.Cache
+C:\privat\ITM3\arctos\ArctosGameRep\Arctos.Root\Arctos.Game.Client\obj\Debug\Arctos.Game.Client.csprojResolveAssemblyReference.cache
