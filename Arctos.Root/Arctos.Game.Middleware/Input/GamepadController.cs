@@ -87,6 +87,11 @@ namespace ArctosGameServer.Input
             }
         }
 
+        public double GetValue(Key key)
+        {
+            return _oldValues[key];
+        }
+
         public IDisposable Subscribe(IObserver<GamepadControllerEvent> observer)
         {
             // Add observer
