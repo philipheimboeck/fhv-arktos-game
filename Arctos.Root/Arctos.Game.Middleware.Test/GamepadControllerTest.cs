@@ -64,9 +64,10 @@ namespace Arctos.Game.Middleware.Test
         public void GamepadTestMethod()
         {
             System.Diagnostics.Debug.WriteLine("Test started");
-            while(!Finished)
+            var observer = new Observer(this);
+
+            while (!Finished)
             {
-                var observer = new Observer(this);
                 _controller.Subscribe(observer);
                 _controller.Update();
             }

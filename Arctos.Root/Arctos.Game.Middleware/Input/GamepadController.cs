@@ -9,10 +9,17 @@ namespace ArctosGameServer.Input
 {
     public class GamepadController : IObservable<GamepadController.GamepadControllerEvent>
     {
+        public enum Key
+        {
+            TRIGGER_LEFT,
+            TRIGGER_RIGHT
+        };
+
         private List<IObserver<GamepadController.GamepadControllerEvent>> _observers = new List<IObserver<GamepadControllerEvent>>();
 
         protected XBoxControllerWatcher _watcher;
         protected XBoxController _controller;
+        protected Dictionary<Key, double> _oldValues = new Dictionary<Key, double>();
 
         public GamepadController()
         {
@@ -22,6 +29,10 @@ namespace ArctosGameServer.Input
 
             // Check for already connected controllers
             _controller = XBoxController.GetConnectedControllers().FirstOrDefault();
+
+            // Initialize old values
+            _oldValues.Add(Key.TRIGGER_LEFT, 0);
+            _oldValues.Add(Key.TRIGGER_RIGHT, 0);
         }
 
         private void Watcher_ControllerConnected(XBoxController controller)
@@ -52,11 +63,27 @@ namespace ArctosGameServer.Input
         {
             if(_controller != null && _controller.IsConnected)
             {
-                var notification = new GamepadControllerEvent(GamepadControllerEvent.Key.TRIGGER_LEFT, _controller.TriggerLeftPosition);
-                Notify(notification);
+                // Read values
+                double leftTrigger = _controller.TriggerLeftPosition;
+                double rightTrigger = _controller.TriggerRightPosition;
 
-                var notification2 = new GamepadControllerEvent(GamepadControllerEvent.Key.TRIGGER_RIGHT, _controller.TriggerRightPosition);
-                Notify(notification2);
+                // If the values changed, send them
+
+                if(!_oldValues[Key.TRIGGER_LEFT].Equals(leftTrigger))
+                {
+                    _oldValues[Key.TRIGGER_LEFT] = leftTrigger;
+
+                    var notification = new GamepadControllerEvent(Key.TRIGGER_LEFT, leftTrigger);
+                    Notify(notification);
+                }
+
+                if (!_oldValues[Key.TRIGGER_RIGHT].Equals(rightTrigger))
+                {
+                    _oldValues[Key.TRIGGER_RIGHT] = rightTrigger;
+
+                    var notification = new GamepadControllerEvent(Key.TRIGGER_RIGHT, rightTrigger);
+                    Notify(notification);
+                }
             }
         }
 
@@ -104,12 +131,6 @@ namespace ArctosGameServer.Input
                 CONTROLLER_DISCONNECTED,
                 CONTROLLER_CONNECTED,
                 INPUT_CHANGE
-            };
-
-            public enum Key
-            {
-                TRIGGER_LEFT,
-                TRIGGER_RIGHT
             };
             
             public EventType Type { get; set; }
