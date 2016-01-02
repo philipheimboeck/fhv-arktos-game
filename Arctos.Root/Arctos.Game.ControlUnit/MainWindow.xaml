@@ -5,12 +5,48 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:game="clr-namespace:Arctos.Game"
         mc:Ignorable="d"
-        Title="Arctos Game" Height="350" Width="525">
+        Title="Arctos Game" Height="350" Width="525" d:DataContext="{d:DesignInstance game:ControlUnitApp}">
     <Grid>
-        <Label Content="Arctos Game" HorizontalAlignment="Left" Margin="23,29,0,0" VerticalAlignment="Top"/>
-        <Label Content="Connected Player" HorizontalAlignment="Left" Margin="23,77,0,0" VerticalAlignment="Top"/>
-        <Label Content="{Binding Path=CurrentApp}" HorizontalAlignment="Left" Margin="145,77,0,0" VerticalAlignment="Top"
-               d:DataContext="{d:DesignInstance game:App}" />
+        <Label Content="Arctos ControlUnit" HorizontalAlignment="Left" Margin="23,29,0,0" VerticalAlignment="Top" FontSize="20"/>
+
+        <Grid HorizontalAlignment="Left" Height="100" Margin="23,71,0,0" VerticalAlignment="Top" Width="458">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="120"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30"></RowDefinition>
+                <RowDefinition Height="30"></RowDefinition>
+                <RowDefinition Height="30"></RowDefinition>
+            </Grid.RowDefinitions>
+
+            <Label Content="Player:" Grid.Column="0"/>
+            <Label Content="{Binding PlayerStatus}" Grid.Column="1" />
+
+            <Label Content="Robot:" Grid.Column="0" Grid.Row="1"/>
+            <Label Content="{Binding RobotStatus}" Grid.Column="1" Grid.Row="1" />
+
+            <Label Content="Game:" Grid.Column="0" Grid.Row="2"/>
+            <Label Content="{Binding GameStatus}" Grid.Column="1" Grid.Row="2" />
+        </Grid>
+
+        <Grid HorizontalAlignment="Left" Height="100" Margin="23,176,0,0" VerticalAlignment="Top" Width="458">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="120"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30"></RowDefinition>
+                <RowDefinition Height="30"></RowDefinition>
+                <RowDefinition Height="30"></RowDefinition>
+            </Grid.RowDefinitions>
+
+            <Label Content="Robot Port:" Grid.Column="0"/>
+            <TextBox Grid.Column="1" Grid.Row="0" Height="23" TextWrapping="Wrap" Text="{Binding Path=RobotCOMPort}" Width="120" HorizontalAlignment="Left" />
+
+            <Button Content="Connect to Robot" Grid.Row="1" Grid.Column="1" Width="118" HorizontalAlignment="Left" Command="{Binding Path=UpdateCommand}" CommandParameter="ConnectRobot"/>
+
+        </Grid>
 
     </Grid>
 </Window>

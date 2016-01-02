@@ -57,6 +57,11 @@ namespace Arctos.Game.ControlUnit.Input
             }
         }
 
+        public bool IsConnected()
+        {
+            return (_controller != null && _controller.IsConnected);
+        }
+
         public void Update()
         {
             if(_controller != null && _controller.IsConnected)

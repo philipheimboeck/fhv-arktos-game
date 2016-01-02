@@ -8,28 +8,20 @@ namespace Arctos.Game
     /// </summary>
     public partial class App : Application
     {
-        /// <summary>
-        /// App startup
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void App_OnStartup(object sender, StartupEventArgs e)
         {
+            MainWindow window = new MainWindow();
+            
             string comPort = "COM1";
             for (int i = 0; i != e.Args.Length; ++i)
             {
                 comPort = e.Args[0];
             }
-            try
-            {
 
-                ControlUnitApp process = new ControlUnitApp(comPort);
-                process.Start();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
+            ControlUnitApp controlUnitVM = new ControlUnitApp(comPort);
+            window.DataContext = controlUnitVM;
+
+            window.Show();
         }
     }
 }
