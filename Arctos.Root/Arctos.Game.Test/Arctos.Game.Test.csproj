@@ -73,18 +73,18 @@
     <Compile Include="GamepadControllerTest.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Arctos.Game.ControlUnit\Arctos.Game.ControlUnit.csproj">
-      <Project>{DB778EC8-ACF8-422A-B24D-410DDA3EF7BF}</Project>
+      <Project>{db778ec8-acf8-422a-b24d-410dda3ef7bf}</Project>
       <Name>Arctos.Game.ControlUnit</Name>
     </ProjectReference>
     <ProjectReference Include="..\Arctos.Game.GameServer\Arctos.Game.GameServer.csproj">
-      <Project>{AD988769-BD9F-475C-885E-923798578E08}</Project>
+      <Project>{ad988769-bd9f-475c-885e-923798578e08}</Project>
       <Name>Arctos.Game.GameServer</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
