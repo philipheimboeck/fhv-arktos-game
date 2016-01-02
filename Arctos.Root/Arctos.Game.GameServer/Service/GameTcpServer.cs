@@ -17,7 +17,7 @@ namespace ArctosGameServer.Service
 
         public GameTcpServer()
         {
-            this._tcpListener = new TcpListener(IPAddress.Parse("127.0.0.1"), 13000);
+            this._tcpListener = new TcpListener(IPAddress.Any, 13000);
             this._tcpListener.Start();
         }
 
