@@ -1,5 +1,6 @@
 ﻿using ArctosGameServer.Controller;
 using System;
+using System.Windows;
 using Arctos.Game.ControlUnit.Input;
 using Arctos.Game.ControlUnit.View;
 using ArctosGameServer.Communication;
@@ -10,6 +11,8 @@ namespace Arctos.Game
 {
     public class ControlUnitApp : PropertyChangedBase, IObserver<GamepadController.GamepadControllerEvent>
     {
+        #region Properties
+
         private GamepadController _gamepadController;
         private RobotController _robotController;
         private GameTcpClient _client;
@@ -33,13 +36,25 @@ namespace Arctos.Game
             get { return _robotStatus; }
             set { _robotStatus = value; OnPropertyChanged(); }
         }
-        private string _robotRobotCOMPort = "COM";
+        private string _robotRobotCOMPort = "COM33";
         public string RobotCOMPort
         {
             get { return _robotRobotCOMPort; }
             set { _robotRobotCOMPort = value; OnPropertyChanged(); }
         }
+        private string _gameIP = "172.22.26.41";
+        public string GameIP
+        {
+            get { return _gameIP; }
+            set { _gameIP = value; OnPropertyChanged(); }
+        }
 
+        #endregion
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="comPort"></param>
         public ControlUnitApp(string comPort)
         {
             _gamepadController = new GamepadController();
@@ -48,8 +63,6 @@ namespace Arctos.Game
             this.ConnectRobot(comPort);
 
             if (_gamepadController.IsConnected()) PlayerStatus = "Connected";
-
-            _client = new GameTcpClient("127.0.0.1");
         }
 
         /// <summary>
@@ -75,22 +88,10 @@ namespace Arctos.Game
             }
         }
 
-        public override void Execute(object parameter)
-        {
-           switch(parameter.ToString())
-            {
-               case "ConnectRobot":
-                {
-                    this.ConnectRobot(RobotCOMPort);
-                } break;
-                case "Start":
-                    {
-                        Start();
-                    } break;
-            }
-        }
-
-        public void Start()
+        /// <summary>
+        /// Start the Control Unit
+        /// </summary>
+        private void Start()
         {
             // Game Loop
             while(true)
@@ -108,9 +109,56 @@ namespace Arctos.Game
                 }
 
                 // Read
-                _client.Send(new GameEvent(GameEvent.Type.AREA_UPDATE, "asdf"));
+                if (_client != null && _client.Connected)
+                {
+                    try
+                    {
+                        _client.Send(new GameEvent(GameEvent.Type.AREA_UPDATE, _robotController.ReadRFID()));
+                    }
+                    catch (Exception ex)
+                    {
+                        _client = null;
+                    }
+                }
             }
         }
+
+        /// <summary>
+        /// Execute Commands from ViewModel
+        /// </summary>
+        /// <param name="parameter"></param>
+        public override void Execute(object parameter)
+        {
+            try
+            {
+                switch (parameter.ToString())
+                {
+                    case "ConnectRobot":
+                        {
+                            this.ConnectRobot(RobotCOMPort);
+                        }
+                        break;
+                    case "ConnectGame":
+                        {
+                            _client = new GameTcpClient(this.GameIP);
+                            this.GameStatus = "Connected";
+                        }
+                        break;
+
+                    case "Start":
+                        {
+                            this.Start();
+                        }
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        #region Events
 
         public void OnCompleted()
         {
@@ -140,5 +188,7 @@ namespace Arctos.Game
                 PlayerStatus = "Disconnected";
             }
         }
+
+        #endregion
     }
 }

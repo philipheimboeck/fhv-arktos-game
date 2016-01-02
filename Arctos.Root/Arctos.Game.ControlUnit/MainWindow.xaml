@@ -33,6 +33,7 @@
         <Grid HorizontalAlignment="Left" Height="100" Margin="23,176,0,0" VerticalAlignment="Top" Width="458">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="120"></ColumnDefinition>
+                <ColumnDefinition Width="150"></ColumnDefinition>
                 <ColumnDefinition Width="*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
@@ -41,13 +42,16 @@
                 <RowDefinition Height="30"></RowDefinition>
             </Grid.RowDefinitions>
 
-            <Label Content="Robot Port:" Grid.Column="0"/>
+            <Label Content="Robot Port:" Grid.Column="0" Grid.Row="0"/>
             <TextBox Grid.Column="1" Grid.Row="0" Height="23" TextWrapping="Wrap" Text="{Binding Path=RobotCOMPort}" Width="120" HorizontalAlignment="Left" />
+            <Button Content="Connect to Robot" Grid.Column="2" Grid.Row="0" Width="118" Height="20" HorizontalAlignment="Left" Command="{Binding Path=UpdateCommand}" CommandParameter="ConnectRobot"/>
 
-            <Button Content="Connect to Robot" Grid.Row="1" Grid.Column="1" Width="118" HorizontalAlignment="Left" Command="{Binding Path=UpdateCommand}" CommandParameter="ConnectRobot"/>
+            <Label Content="Game Server:" Grid.Column="0" Grid.Row="1"/>
+            <TextBox Grid.Column="1" Grid.Row="1" Height="23" TextWrapping="Wrap" Text="{Binding Path=GameIP}" Width="120" HorizontalAlignment="Left" />
+            <Button x:Name="startButton" Grid.Row="1" Grid.Column="2" Content="Connect to Game" HorizontalAlignment="Left" VerticalAlignment="Center" Width="118" Command="{Binding Path=UpdateCommand}" CommandParameter="ConnectGame"/>
 
+            <Button Grid.Row="2" Grid.Column="2" Content="Start Game" HorizontalAlignment="Left" VerticalAlignment="Center" Width="118" Command="{Binding Path=UpdateCommand}" CommandParameter="Start"/>
         </Grid>
-        <Button x:Name="startButton" Content="Start" HorizontalAlignment="Left" Margin="433,292,0,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="-0.228,-0.57"  Command="{Binding Path=UpdateCommand}" CommandParameter="Start"/>
-
+        
     </Grid>
 </Window>
