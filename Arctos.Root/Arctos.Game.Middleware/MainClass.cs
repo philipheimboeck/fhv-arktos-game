@@ -39,8 +39,8 @@ namespace ArctosGameServer
 
                 if(_movementDirty)
                 {
-                    double left = _gamepadController.GetValue(GamepadController.Key.TRIGGER_LEFT);
-                    double right = _gamepadController.GetValue(GamepadController.Key.TRIGGER_RIGHT);
+                    int left = (int)_gamepadController.GetValue(GamepadController.Key.TRIGGER_LEFT);
+                    int right = (int)_gamepadController.GetValue(GamepadController.Key.TRIGGER_RIGHT);
 
                     // Drive
                     _robotController.Drive(left, right);

@@ -39,7 +39,7 @@ namespace ArctosGameServer.Communication.Protocol
             {
                 char[] dataReceived = new char[128];
                 this.serialPort.Read(dataReceived, 0, 128);
-                pduReceived.data = dataReceived.ToString();
+                pduReceived.data = dataReceived;
             }
 
             return pduReceived;

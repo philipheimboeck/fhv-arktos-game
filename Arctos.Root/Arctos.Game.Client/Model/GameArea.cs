@@ -1,72 +1,73 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.ComponentModel;
+﻿using System.Collections.ObjectModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using Arctos.Annotations;
 using Arctos.Game.Client.Model;
 
 namespace Arctos.Game.Client
 {
-    public class GameArea : INotifyPropertyChanged
+    public class GameArea : PropertyChangedBase
     {
-        private TrulyObservableCollection<Area> areaList;
-
-        public TrulyObservableCollection<Area> AreaList
-        {
-            get { return areaList; }
-            set { areaList = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public int Rows
-        {
-            get
-            {
-                if (AreaList != null && AreaList.Count > 0)
-                {
-                    return AreaList.Max(x => x.Row);
-                }
-                return 0;
-            }
-        }
-
-        public int Columns
-        {
-            get
-            {
-                if (AreaList != null && AreaList.Count > 0)
-                {
-                    return AreaList.Max(x => x.Column);
-                }
-                return 0;
-            }
-        }
-
-        public int AreaHeight { get; set; }
-        public int AreaWidth { get; set; }
-
-        public int GameWidth { get; set; }
-        public int GameHeight { get; set; }
-
         /// <summary>
         /// GameArea Constructor
         /// </summary>
         public GameArea()
         {
-            this.AreaList = new TrulyObservableCollection<Area>();
+            this.AreaList = new ObservableCollection<Area>();
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        /// <summary>
+        /// All available areas on this game field
+        /// </summary>
+        public ObservableCollection<Area> AreaList { get; set; }
 
-        [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        /// <summary>
+        /// Get the amount of rows for the game
+        /// </summary>
+        public int GameRows
         {
-            var handler = PropertyChanged;
-            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+            get
+            {
+                if (AreaList != null && AreaList.Count > 0)
+                {
+                    return AreaList.Max(x => x.Row) + 1;
+                }
+                return 0;
+            }
         }
+
+        /// <summary>
+        /// Get the amount of columns for the game
+        /// </summary>
+        public int GameColumns
+        {
+            get
+            {
+                if (AreaList != null && AreaList.Count > 0)
+                {
+                    return AreaList.Max(x => x.Column) + 1;
+                }
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Height of each field
+        /// </summary>
+        public int AreaHeight { get; set; }
+
+        /// <summary>
+        /// Width of each field
+        /// </summary>
+        public int AreaWidth { get; set; }
+
+        /// <summary>
+        /// Game width
+        /// </summary>
+        public int GameWidth { get; set; }
+
+        /// <summary>
+        /// Game height
+        /// </summary>
+        public int GameHeight { get; set; }
+
     }
 }

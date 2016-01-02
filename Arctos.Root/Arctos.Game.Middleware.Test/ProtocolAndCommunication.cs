@@ -18,6 +18,7 @@ namespace Arctos.Game.Middleware.Test
         [TestMethod]
         public void CallAllProtocolLayers()
         {
+
             IProtocolLayer<object, object> protocol =   new PresentationLayer(
                                                             new SessionLayer(
                                                                 new TransportLayer("COM33")

@@ -11,18 +11,12 @@ namespace Arctos.Game.Client.Model
     /// The Area indicates where the robot has to drive
     /// and where it already was
     /// </summary>
-    public class Area : INotifyPropertyChanged
+    public class Area : PropertyChangedBase
     {
-        public Area()
-        {
-            
-        }
-
         public int Row { get; set; }
         public int Column { get; set; }
 
         private bool isActive;
-
         public bool IsActive
         {
             get
@@ -33,6 +27,7 @@ namespace Arctos.Game.Client.Model
             {
                 isActive = value;
                 OnPropertyChanged();
+                OnPropertyChanged("Color");
             }
         }
 
@@ -51,15 +46,6 @@ namespace Arctos.Game.Client.Model
         {
             get { return _areaId; }
             set { _areaId = value; OnPropertyChanged(); }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            var handler = PropertyChanged;
-            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

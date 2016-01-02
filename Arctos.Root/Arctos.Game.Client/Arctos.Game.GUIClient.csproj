@@ -53,11 +53,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="GridAutoLayout.cs" />
-    <Compile Include="GridAwareItemsControl.cs" />
+    <Compile Include="View\Controls\GridAutoLayout.cs" />
+    <Compile Include="View\Controls\GridAwareItemsControl.cs" />
     <Compile Include="Properties\Annotations1.cs" />
     <Compile Include="Service\GameClientService.cs" />
-    <Compile Include="TrulyObservableCollection.cs" />
+    <Compile Include="View\Controls\PropertyChangedBase.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

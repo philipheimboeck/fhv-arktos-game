@@ -22,7 +22,7 @@ namespace ArctosGameServer.Controller
         /// </summary>
         /// <param name="left"></param>
         /// <param name="right"></param>
-        public void Drive(double left, double right)
+        public void Drive(int left, int right)
         {
             // TODO generate proper values and check if they are correct!
             Tuple<string, string> keyValue = new Tuple<string, string>("drive", left + "," + right);

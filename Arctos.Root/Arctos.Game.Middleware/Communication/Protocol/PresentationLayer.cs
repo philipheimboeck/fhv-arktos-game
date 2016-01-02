@@ -57,13 +57,13 @@ namespace ArctosGameServer.Communication.Protocol
             Tuple<string, string> pduDecomposed = null;
             if (pduInputData != null && pduInputData.data != null)
             {
-                string pduInput = pduInputData.data.ToString();
-                string version = pduInput.Take(2).ToString();
-                int dataLength = int.Parse(pduInput.Skip(2).Take(3).ToString());
-                int keyLength = int.Parse(pduInput.Skip(3).Take(3).ToString());
+                string pduInput = new string((char[]) pduInputData.data).TrimEnd('\0');
+                string version = pduInput.Substring(0, 2);
+                int keyLength = int.Parse(pduInput.Substring(2, 3));
+                int dataLength = int.Parse(pduInput.Substring(5, 3));
 
-                string key = pduInput.Skip(8).Take(keyLength).ToString();
-                string commandValue = pduInput.Skip(8 + keyLength).Take(dataLength).ToString();
+                string key = pduInput.Substring(8, keyLength);
+                string commandValue = pduInput.Substring(8 + keyLength, dataLength);
 
                 pduDecomposed = new Tuple<string, string>(key, commandValue);
             }
