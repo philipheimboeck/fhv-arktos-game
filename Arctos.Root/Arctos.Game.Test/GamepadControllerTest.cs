@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Text;
 using System.Collections.Generic;
+using Arctos.Game.ControlUnit.Input;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ArctosGameServer.Input;
 
 namespace Arctos.Game.Middleware.Test
 {

@@ -17,19 +17,12 @@ namespace ArctosGameServer.Communication.Protocol
         /// <param name="portName"></param>
         public TransportLayer(string portName) : base(null)
         {
-            try
-            {
-                this.serialPort = new SerialPort(portName, 9600, Parity.None, 8, StopBits.One);
+            this.serialPort = new SerialPort(portName, 9600, Parity.None, 8, StopBits.One);
 
-                //this.serialPort.ReadTimeout = 500;
-                //this.serialPort.WriteTimeout = 500;
+            //this.serialPort.ReadTimeout = 500;
+            //this.serialPort.WriteTimeout = 500;
 
-                this.serialPort.Open();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("ERROR - " + ex.Message);
-            }
+            this.serialPort.Open();
         }
 
         public override PDU<object> receive()

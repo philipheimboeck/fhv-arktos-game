@@ -1,33 +1,29 @@
 ﻿using ArctosGameServer.Communication;
 using ArctosGameServer.Communication.Protocol;
 using ArctosGameServer.Controller;
-using ArctosGameServer.Input;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Arctos.Game.ControlUnit.Input;
 
-namespace ArctosGameServer
+namespace Arctos.Game
 {
-    class MainClass : IObserver<GamepadController.GamepadControllerEvent>
+    class ControlUnitApp : IObserver<GamepadController.GamepadControllerEvent>
     {
         private GamepadController _gamepadController;
         private RobotController _robotController;
         private bool _movementDirty = false;
 
-        public MainClass(String comPort)
+        public ControlUnitApp(string comPort)
         {
             _gamepadController = new GamepadController();
             _gamepadController.Subscribe(this);
 
-            IProtocolLayer<object, object> protocol = new PresentationLayer(
-                                                            new SessionLayer(
-                                                                new TransportLayer(comPort)
-                                                            )
-                                                        );
+            //IProtocolLayer<object, object> protocol = new PresentationLayer(
+            //                                                new SessionLayer(
+            //                                                    new TransportLayer(comPort)
+            //                                                )
+            //                                            );
 
-            _robotController = new RobotController(protocol);
+            //_robotController = new RobotController(protocol);
         }
 
         public void Start()
@@ -66,18 +62,11 @@ namespace ArctosGameServer
                 // Driving values changed, therefore mark as dirty
                 _movementDirty = true;
             }
-        }
 
-        static void Main(string[] args)
-        {
-            string comPort = "COM1";
-            if(args.Length > 0)
+            if (value.Type.Equals(GamepadController.GamepadControllerEvent.EventType.CONTROLLER_CONNECTED))
             {
-                comPort = args[0];
+                
             }
-
-            MainClass process = new MainClass(comPort);
-            process.Start();
         }
     }
 }

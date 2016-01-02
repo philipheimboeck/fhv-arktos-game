@@ -73,9 +73,13 @@
     <Compile Include="GamepadControllerTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Arctos.Game.Middleware\Arctos.Game.Middleware.csproj">
+    <ProjectReference Include="..\Arctos.Game.ControlUnit\Arctos.Game.ControlUnit.csproj">
+      <Project>{DB778EC8-ACF8-422A-B24D-410DDA3EF7BF}</Project>
+      <Name>Arctos.Game.ControlUnit</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Arctos.Game.GameServer\Arctos.Game.GameServer.csproj">
       <Project>{AD988769-BD9F-475C-885E-923798578E08}</Project>
-      <Name>Arctos.Game.Middleware</Name>
+      <Name>Arctos.Game.GameServer</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
