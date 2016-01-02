@@ -20,12 +20,26 @@ namespace Arctos.Game.Middleware.Test
         {
             IProtocolLayer<object, object> protocol =   new PresentationLayer(
                                                             new SessionLayer(
-                                                                new TransportLayer("COM19")
+                                                                new TransportLayer("COM33")
                                                             )
                                                         );
 
-            RobotController robotController = new RobotController(protocol);
-            robotController.Drive(10, -10);
+
+            protocol.receive();
+
+            /*RobotController robotController = new RobotController(protocol);
+            while (true) { 
+                robotController.Drive(50, -50);
+
+                robotController.Drive(20, -50);
+
+                robotController.Drive(20, 20);
+
+                robotController.Drive(100, 100);
+
+                robotController.Drive(0, 0);
+            }*/
         }
+
     }
 }

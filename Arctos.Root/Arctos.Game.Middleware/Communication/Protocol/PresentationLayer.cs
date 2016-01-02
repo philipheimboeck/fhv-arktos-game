@@ -55,7 +55,7 @@ namespace ArctosGameServer.Communication.Protocol
         protected override PDU<object> decomposePdu(PDU<object> pduInputData)
         {
             Tuple<string, string> pduDecomposed = null;
-            if (pduInputData != null)
+            if (pduInputData != null && pduInputData.data != null)
             {
                 string pduInput = pduInputData.data.ToString();
                 string version = pduInput.Take(2).ToString();

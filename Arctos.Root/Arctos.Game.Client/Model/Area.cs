@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Windows.Media;
+using Arctos.Annotations;
 
 namespace Arctos.Game.Client.Model
 {
@@ -18,6 +21,28 @@ namespace Arctos.Game.Client.Model
         public int Row { get; set; }
         public int Column { get; set; }
 
+        private bool isActive;
+
+        public bool IsActive
+        {
+            get
+            {
+                return isActive;
+            }
+            set
+            {
+                isActive = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public SolidColorBrush Color
+        {
+            get {
+                return new SolidColorBrush(IsActive ? Colors.Red : Colors.Gray);
+            }
+        }
+
         /// <summary>
         /// AreaID
         /// </summary>
@@ -25,16 +50,16 @@ namespace Arctos.Game.Client.Model
         public string AreaID
         {
             get { return _areaId; }
-            set { _areaId = value; NotifyPropertyChanged("AreaID"); }
+            set { _areaId = value; OnPropertyChanged(); }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
-        public void NotifyPropertyChanged(string property)
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(property));
-            }
+            var handler = PropertyChanged;
+            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

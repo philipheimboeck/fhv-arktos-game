@@ -18,11 +18,33 @@ using Arctos.Game.Client.Service;
 
 namespace Arctos.Game.Client
 {
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
+        #region Properties
+
+        public GameArea Game { get; set; }
+
+        public int GameRows
+        {
+            get
+            {
+                return this.Game != null ? this.Game.Rows + 1 : 0;
+            }
+        }
+
+        public int GameColumns
+        {
+            get
+            {
+                return this.Game != null ? this.Game.Columns + 1 : 0;
+            }
+        }
+
+        #endregion
 
         public MainWindow()
         {
@@ -43,61 +65,72 @@ namespace Arctos.Game.Client
             {
                 AreaWidth = 100,
                 AreaHeight = 100,
-                AreaList = new List<Area>
+                AreaList = new TrulyObservableCollection<Area>
                 {
                     new Area
                     {
                         AreaID = "",
                         Column = 0,
-                        Row = 0
+                        Row = 0,
+                        IsActive = false
                     },
                     new Area
                     {
                         AreaID = "",
                         Column = 1,
-                        Row = 0
+                        Row = 0,
+                        IsActive = false
                     },
                     new Area
                     {
                         AreaID = "",
                         Column = 0,
-                        Row = 1
+                        Row = 1,
+                        IsActive = true
                     },
                     new Area
                     {
                         AreaID = "",
                         Column = 1,
-                        Row = 1
+                        Row = 1,
+                        IsActive = false
                     }
                 }
             };
 
-            for (int i = 0; i <= game.Columns; i++)
-            {
-                GameAreaGrid.ColumnDefinitions.Add(new ColumnDefinition());
-            }
-            for (int i = 0; i <= game.Columns; i++)
-            {
-                GameAreaGrid.RowDefinitions.Add(new RowDefinition());
-            }
+            this.Game = game;
 
-            for (int row = 0; row < GameAreaGrid.RowDefinitions.Count; row ++)
-            {
-                for (int column = 0; column < GameAreaGrid.ColumnDefinitions.Count; column ++)
-                {
-                    Label lbl = new Label
-                    {
-                        Background = new SolidColorBrush(Colors.WhiteSmoke),
-                        Width = game.AreaWidth,
-                        Height = game.AreaHeight
-                    };
-                    lbl.SetValue(Grid.ColumnProperty, column);
-                    lbl.SetValue(Grid.RowProperty, row);
-                    GameAreaGrid.Children.Add(lbl);
-                }
-            }
+            //for (int i = 0; i <= game.Columns; i++)
+            //{
+            //    GameAreaGrid.ColumnDefinitions.Add(new ColumnDefinition());
+            //}
+            //for (int i = 0; i <= game.Rows; i++)
+            //{
+            //    GameAreaGrid.RowDefinitions.Add(new RowDefinition());
+            //}
+
+            //for (int row = 0; row < GameAreaGrid.RowDefinitions.Count; row ++)
+            //{
+            //    for (int column = 0; column < GameAreaGrid.ColumnDefinitions.Count; column ++)
+            //    {
+            //        Label lbl = new Label
+            //        {
+            //            Background = new SolidColorBrush(Colors.WhiteSmoke),
+            //            Width = game.AreaWidth,
+            //            Height = game.AreaHeight
+            //        };
+            //        lbl.SetValue(Grid.ColumnProperty, column);
+            //        lbl.SetValue(Grid.RowProperty, row);
+            //        GameAreaGrid.Children.Add(lbl);
+            //    }
+            //}
 
             #endregion
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            this.Game.AreaList.First().IsActive = true;
         }
     }
 }

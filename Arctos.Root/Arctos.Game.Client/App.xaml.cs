@@ -16,8 +16,8 @@ namespace Arctos.Game.Client
     {
         public App()
         {
-            GameClientService clientService = new GameClientService();
-            clientService.Connect("127.0.0.1", "test");
+            //GameClientService clientService = new GameClientService();
+            //clientService.Connect("127.0.0.1", "test");
         }
     }
 }

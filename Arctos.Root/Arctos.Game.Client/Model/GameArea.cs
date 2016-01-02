@@ -1,12 +1,26 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using Arctos.Annotations;
 using Arctos.Game.Client.Model;
 
 namespace Arctos.Game.Client
 {
-    public class GameArea
+    public class GameArea : INotifyPropertyChanged
     {
-        public List<Area> AreaList { get; set; }
+        private TrulyObservableCollection<Area> areaList;
+
+        public TrulyObservableCollection<Area> AreaList
+        {
+            get { return areaList; }
+            set { areaList = value;
+                OnPropertyChanged();
+            }
+        }
 
         public int Rows
         {
@@ -43,8 +57,16 @@ namespace Arctos.Game.Client
         /// </summary>
         public GameArea()
         {
-            this.AreaList = new List<Area>();
+            this.AreaList = new TrulyObservableCollection<Area>();
         }
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            var handler = PropertyChanged;
+            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }
