@@ -63,7 +63,7 @@ namespace Arctos.Game.Middleware.Test
         [TestMethod]
         public void GamepadTestMethod()
         {
-           TestContext.WriteLine("Test started");
+            System.Diagnostics.Debug.WriteLine("Test started");
             while(!Finished)
             {
                 var observer = new Observer(this);
@@ -94,9 +94,9 @@ namespace Arctos.Game.Middleware.Test
 
             public void OnNext(GamepadController.GamepadControllerEvent value)
             {
-                _test.TestContext.WriteLine("Event: " + value.Type);
-                _test.TestContext.WriteLine("Key: " + (value.PressedKey != null ? value.PressedKey.ToString() : "none"));
-                _test.TestContext.WriteLine("Value: " + (value.Value != null ? value.Value.ToString() : "none"));
+                System.Diagnostics.Debug.WriteLine("Event: " + value.Type);
+                System.Diagnostics.Debug.WriteLine("Key: " + (value.PressedKey != null ? value.PressedKey.ToString() : "none"));
+                System.Diagnostics.Debug.WriteLine("Value: " + (value.Value != null ? value.Value.ToString() : "none"));
 
                 // Shut down test
                 if (value.Type.Equals(GamepadController.GamepadControllerEvent.EventType.CONTROLLER_DISCONNECTED))
