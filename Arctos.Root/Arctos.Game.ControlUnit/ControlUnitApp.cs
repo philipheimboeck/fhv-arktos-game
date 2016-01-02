@@ -60,7 +60,7 @@ namespace Arctos.Game
             _gamepadController = new GamepadController();
             _gamepadController.Subscribe(this);
 
-            this.ConnectRobot(comPort);
+            //this.ConnectRobot(comPort);
 
             if (_gamepadController.IsConnected()) PlayerStatus = "Connected";
         }
