@@ -35,8 +35,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>
-    </StartupObject>
+    <StartupObject>ArctosGameServer.Server</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Build.Framework" />
@@ -62,6 +61,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Controller\GameController.cs" />
+    <Compile Include="Server.cs" />
     <Compile Include="Service\ClientRequestHandler.cs" />
     <Compile Include="Service\GameTcpServer.cs" />
     <Page Include="MainWindow.xaml">

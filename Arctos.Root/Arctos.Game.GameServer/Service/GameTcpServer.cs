@@ -15,6 +15,12 @@ namespace ArctosGameServer.Service
         private TcpListener _tcpListener;
         private List<TcpClient> _clients = new List<TcpClient>();
 
+        public GameTcpServer()
+        {
+            this._tcpListener = new TcpListener(IPAddress.Parse("127.0.0.1"), 13000);
+            this._tcpListener.Start();
+        }
+
         public GameTcpServer(IPAddress ip, Int32 port)
         {
             this._tcpListener = new TcpListener(ip, port);
