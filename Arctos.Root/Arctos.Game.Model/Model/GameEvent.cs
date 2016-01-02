@@ -17,11 +17,15 @@ namespace ArctosGameServer.Communication
             GAME_STATUS_UPDATE
         }
 
-        public Type EventType { get; }
+        public Type EventType { get; set; }
 
-        public ISerializable Data { get; }
+        public Object Data { get; set; }
 
-        public GameEvent(Type type, ISerializable data)
+        public GameEvent()
+        {
+        }
+
+        public GameEvent(Type type, Object data)
         {
             EventType = type;
             Data = data;

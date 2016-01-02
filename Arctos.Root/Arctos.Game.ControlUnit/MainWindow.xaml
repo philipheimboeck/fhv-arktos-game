@@ -47,6 +47,7 @@
             <Button Content="Connect to Robot" Grid.Row="1" Grid.Column="1" Width="118" HorizontalAlignment="Left" Command="{Binding Path=UpdateCommand}" CommandParameter="ConnectRobot"/>
 
         </Grid>
+        <Button x:Name="startButton" Content="Start" HorizontalAlignment="Left" Margin="433,292,0,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="-0.228,-0.57"  Command="{Binding Path=UpdateCommand}" CommandParameter="Start"/>
 
     </Grid>
 </Window>

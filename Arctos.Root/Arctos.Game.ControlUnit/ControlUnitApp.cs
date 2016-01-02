@@ -4,6 +4,7 @@ using Arctos.Game.ControlUnit.Input;
 using Arctos.Game.ControlUnit.View;
 using ArctosGameServer.Communication;
 using ArctosGameServer.Communication.Protocol;
+using Arctos.Game.Middleware.Logic.Model.Client;
 
 namespace Arctos.Game
 {
@@ -11,6 +12,7 @@ namespace Arctos.Game
     {
         private GamepadController _gamepadController;
         private RobotController _robotController;
+        private GameTcpClient _client;
         private bool _movementDirty = false;
 
         private string _playerStatus = "Disconnected";
@@ -46,6 +48,8 @@ namespace Arctos.Game
             this.ConnectRobot(comPort);
 
             if (_gamepadController.IsConnected()) PlayerStatus = "Connected";
+
+            _client = new GameTcpClient("127.0.0.1");
         }
 
         /// <summary>
@@ -79,6 +83,10 @@ namespace Arctos.Game
                 {
                     this.ConnectRobot(RobotCOMPort);
                 } break;
+                case "Start":
+                    {
+                        Start();
+                    } break;
             }
         }
 
@@ -98,6 +106,9 @@ namespace Arctos.Game
                     _robotController.Drive(left, right);
                     _movementDirty = false;
                 }
+
+                // Read
+                _client.Send(new GameEvent(GameEvent.Type.AREA_UPDATE, "asdf"));
             }
         }
 

@@ -34,9 +34,10 @@ namespace ArctosGameServer.Controller
             }
         }
 
-        public void ReadRFID()
+        public String ReadRFID()
         {
             PDU<object> receivedPDU = this.protocol.receive();
+            return receivedPDU.data.ToString();
         }
     }
 }

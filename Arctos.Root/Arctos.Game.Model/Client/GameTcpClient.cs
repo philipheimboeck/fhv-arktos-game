@@ -11,7 +11,7 @@ using System.Xml.Serialization;
 
 namespace Arctos.Game.Middleware.Logic.Model.Client
 {
-    class GameTcpClient
+    public class GameTcpClient
     {
         private TcpClient _client;
 
