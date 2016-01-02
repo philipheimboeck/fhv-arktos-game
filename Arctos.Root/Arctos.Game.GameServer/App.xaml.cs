@@ -1,6 +1,4 @@
 ﻿using System.Windows;
-using ArctosGameServer.Communication;
-using ArctosGameServer.Communication.Protocol;
 using ArctosGameServer.Controller;
 using ArctosGameServer.Service;
 

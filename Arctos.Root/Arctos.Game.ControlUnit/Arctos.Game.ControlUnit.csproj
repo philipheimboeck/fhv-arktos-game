@@ -4,16 +4,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{AD988769-BD9F-475C-885E-923798578E08}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{DB778EC8-ACF8-422A-B24D-410DDA3EF7BF}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ArctosGameServer</RootNamespace>
-    <AssemblyName>ArctosGameServer</AssemblyName>
+    <RootNamespace>Arctos.Game</RootNamespace>
+    <AssemblyName>Arctos.Game</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
-    <NuGetPackageImportStamp>c7c18f75</NuGetPackageImportStamp>
+    <NuGetPackageImportStamp>8d6a2795</NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -35,14 +35,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>ArctosGameServer.MainClass</StartupObject>
+    <StartupObject>Arctos.Game.App</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="BrandonPotter.XBox, Version=1.0.5.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\XBoxController.1.0.5.0\lib\net40\BrandonPotter.XBox.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="SharpDX, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpDX.3.0.0\lib\net45\SharpDX.dll</HintPath>
       <Private>True</Private>
@@ -72,17 +71,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Communication\PDU.cs" />
-    <Compile Include="Communication\IProtocolLayer.cs" />
-    <Compile Include="Communication\ProtocolLayer.cs" />
-    <Compile Include="Communication\Protocol\PresentationLayer.cs" />
-    <Compile Include="Communication\Protocol\SessionLayer.cs" />
-    <Compile Include="Communication\Protocol\TransportLayer.cs" />
-    <Compile Include="Controller\GameController.cs" />
-    <Compile Include="Controller\RobotController.cs" />
-    <Compile Include="Input\GamepadController.cs" />
-    <Compile Include="MainClass.cs" />
-    <Compile Include="Service\GameGuiService.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -91,6 +79,16 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Communication\IProtocolLayer.cs" />
+    <Compile Include="Communication\PDU.cs" />
+    <Compile Include="Communication\ProtocolLayer.cs" />
+    <Compile Include="Communication\Protocol\PresentationLayer.cs" />
+    <Compile Include="Communication\Protocol\SessionLayer.cs" />
+    <Compile Include="Communication\Protocol\TransportLayer.cs" />
+    <Compile Include="Controller\GameController.cs" />
+    <Compile Include="Controller\RobotController.cs" />
+    <Compile Include="Input\GamepadController.cs" />
+    <Compile Include="MainClass.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

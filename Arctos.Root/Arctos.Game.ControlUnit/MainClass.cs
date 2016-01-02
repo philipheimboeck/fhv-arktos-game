@@ -3,12 +3,8 @@ using ArctosGameServer.Communication.Protocol;
 using ArctosGameServer.Controller;
 using ArctosGameServer.Input;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace ArctosGameServer
+namespace Arctos.Game
 {
     class MainClass : IObserver<GamepadController.GamepadControllerEvent>
     {
@@ -66,18 +62,6 @@ namespace ArctosGameServer
                 // Driving values changed, therefore mark as dirty
                 _movementDirty = true;
             }
-        }
-
-        static void Main(string[] args)
-        {
-            string comPort = "COM1";
-            if(args.Length > 0)
-            {
-                comPort = args[0];
-            }
-
-            MainClass process = new MainClass(comPort);
-            process.Start();
         }
     }
 }

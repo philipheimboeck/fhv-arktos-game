@@ -11,8 +11,20 @@
         public void GenerateGame()
         {
             // GameConfiguration
+        }
 
+        public void loop()
+        {
+            while (true)
+            {
+                //if RFID received
+                this.UpdateArea("RFID-TAG");
+            }
+        }
 
-        }  
+        private void UpdateArea(string areaID)
+        {
+            
+        }
     }
 }
