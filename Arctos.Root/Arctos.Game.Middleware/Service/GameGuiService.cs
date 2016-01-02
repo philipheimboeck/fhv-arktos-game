@@ -4,47 +4,89 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Build.Framework;
+using ArctosGameServer.Communication;
+using System.Collections.Generic;
+using System.Xml.Serialization;
 
 namespace ArctosGameServer.Service
 {
-    public class GameGuiService
+    public class GameGuiService : IObserver<GameEvent>
     {
-        private TcpListener tcpListener;
+        private TcpListener _tcpListener;
+        private List<TcpClient> _clients;
 
-        /// <summary>
-        /// Start the GameGui Service
-        /// </summary>
+        public GameGuiService(IPAddress ip, Int32 port)
+        {
+            this._tcpListener = new TcpListener(ip, port);
+            this._tcpListener.Start();
+        } 
+
         public void StartService()
         {
-            this.tcpListener = null;
+            WaitForClient();
+        }
 
-            try
+        private void WaitForClient()
+        {
+            _tcpListener.BeginAcceptTcpClient(new AsyncCallback(OnClientConnect), null);
+        }
+
+        private void OnClientConnect(IAsyncResult result)
+        {
+            // Create a new client
+            TcpClient clientSocket = default(TcpClient);
+            clientSocket = _tcpListener.EndAcceptTcpClient(result);
+            _clients.Add(clientSocket);
+
+            // And wait for the next client
+            WaitForClient();
+        }
+
+        public void Send(GameEvent gameEvent) 
+        {
+            // Remove disconnected clients
+            RemoveDisconnected();
+
+            // Send event to all clients
+            foreach(TcpClient client in _clients)
             {
-                Int32 port = 13000;
-                IPAddress localAddr = IPAddress.Parse("127.0.0.1");
-                this.tcpListener = new TcpListener(localAddr, port);
-
-                Task.Factory.StartNew(() =>
+                // Serialize and send event
+                var xmlSerializer = new XmlSerializer(typeof(GameEvent));
+                var stream = client.GetStream();
+                if (stream.CanWrite)
                 {
-                    this.tcpListener.Start();
-                    while (true)
-                    {
-                        TcpClient client = this.tcpListener.AcceptTcpClient();
-                        NetworkStream stream = client.GetStream();
-
-                        // send game information
-                        Byte[] data = System.Text.Encoding.ASCII.GetBytes("{GameConfig:SetActive-1}");
-                        stream.Write(data, 0, data.Length);
-
-                        // Shutdown and end connection
-                        client.Close();
-                    }
-                });
+                    xmlSerializer.Serialize(stream, gameEvent);
+                }
             }
-            catch (SocketException ex)
+        }
+
+        private void RemoveDisconnected()
+        {
+            // If not connected, remove it from the list
+            _clients.RemoveAll(x => x.Connected == false);
+        }
+
+        public void CloseConnections()
+        {
+            foreach (TcpClient client in _clients)
             {
-                MessageBox.Show(ex.Message);
+                client.Close();
             }
+        }
+
+        public void OnCompleted()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnError(Exception error)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnNext(GameEvent value)
+        {
+            Send(value);
         }
     }
 }
