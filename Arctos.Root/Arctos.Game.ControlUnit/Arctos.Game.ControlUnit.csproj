@@ -88,7 +88,7 @@
     <Compile Include="Controller\GameController.cs" />
     <Compile Include="Controller\RobotController.cs" />
     <Compile Include="Input\GamepadController.cs" />
-    <Compile Include="MainClass.cs" />
+    <Compile Include="ControlUnitApp.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

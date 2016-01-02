@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using BrandonPotter.XBox;
 
-namespace ArctosGameServer.Input
+namespace Arctos.Game.ControlUnit.Input
 {
     public class GamepadController : IObservable<GamepadController.GamepadControllerEvent>
     {
@@ -15,9 +15,9 @@ namespace ArctosGameServer.Input
 
         private List<IObserver<GamepadController.GamepadControllerEvent>> _observers = new List<IObserver<GamepadControllerEvent>>();
 
-        protected XBoxControllerWatcher _watcher;
-        protected XBoxController _controller;
-        protected Dictionary<Key, double> _oldValues = new Dictionary<Key, double>();
+        private XBoxControllerWatcher _watcher;
+        private XBoxController _controller;
+        private Dictionary<Key, double> _oldValues = new Dictionary<Key, double>();
 
         public GamepadController()
         {

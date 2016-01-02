@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 
 namespace Arctos.Game
 {
@@ -19,9 +20,16 @@ namespace Arctos.Game
             {
                 comPort = e.Args[0];
             }
+            try
+            {
 
-            MainClass process = new MainClass(comPort);
-            process.Start();
+                ControlUnitApp process = new ControlUnitApp(comPort);
+                process.Start();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
     }
 }

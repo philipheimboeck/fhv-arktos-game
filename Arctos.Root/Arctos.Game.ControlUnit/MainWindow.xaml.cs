@@ -7,6 +7,14 @@ namespace Arctos.Game
     /// </summary>
     public partial class MainWindow : Window
     {
+        public Application CurrentApp
+        {
+            get
+            {
+                return Application.Current;
+            }
+        }
+
         public MainWindow()
         {
             InitializeComponent();
