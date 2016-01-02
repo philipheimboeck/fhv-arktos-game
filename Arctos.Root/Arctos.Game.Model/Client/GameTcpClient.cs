@@ -27,6 +27,8 @@ namespace Arctos.Game.Middleware.Logic.Model.Client
             _client.Connect(host, 13000);
         }
 
+        public bool Connected { get { return this._client.Connected; } }
+
         public void Send(GameEvent gameEvent)
         {
             var serverStream = _client.GetStream();
@@ -79,5 +81,7 @@ namespace Arctos.Game.Middleware.Logic.Model.Client
         {
             _client.Close();
         }
+
+        
     }
 }
