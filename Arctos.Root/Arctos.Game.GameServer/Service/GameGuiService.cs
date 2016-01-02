@@ -13,7 +13,7 @@ namespace ArctosGameServer.Service
     public class GameGuiService : IObserver<GameEvent>
     {
         private TcpListener _tcpListener;
-        private List<TcpClient> _clients;
+        private List<TcpClient> _clients = new List<TcpClient>();
 
         public GameGuiService(IPAddress ip, Int32 port)
         {
