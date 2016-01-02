@@ -10,12 +10,12 @@ using System.Xml.Serialization;
 
 namespace ArctosGameServer.Service
 {
-    public class GameGuiService : IObserver<GameEvent>
+    public class GameTcpServer : IObserver<GameEvent>
     {
         private TcpListener _tcpListener;
         private List<TcpClient> _clients = new List<TcpClient>();
 
-        public GameGuiService(IPAddress ip, Int32 port)
+        public GameTcpServer(IPAddress ip, Int32 port)
         {
             this._tcpListener = new TcpListener(ip, port);
             this._tcpListener.Start();
@@ -38,6 +38,10 @@ namespace ArctosGameServer.Service
             clientSocket = _tcpListener.EndAcceptTcpClient(result);
             _clients.Add(clientSocket);
 
+            // Start the client handler
+            var handler = new ClientRequestHandler(clientSocket, this);
+            handler.StartClient();
+
             // And wait for the next client
             WaitForClient();
         }
@@ -58,6 +62,15 @@ namespace ArctosGameServer.Service
                     xmlSerializer.Serialize(stream, gameEvent);
                 }
             }
+        }
+        
+        /// <summary>
+        /// Will be called by the ClientRequest Handlers when they receive an event
+        /// </summary>
+        /// <param name="gameEvent"></param>
+        public void OnReceived(GameEvent gameEvent)
+        {
+            // TODO Implement
         }
 
         private void RemoveDisconnected()

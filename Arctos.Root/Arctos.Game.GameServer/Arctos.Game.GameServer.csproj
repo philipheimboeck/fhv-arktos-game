@@ -62,7 +62,8 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Controller\GameController.cs" />
-    <Compile Include="Service\GameGuiService.cs" />
+    <Compile Include="Service\ClientRequestHandler.cs" />
+    <Compile Include="Service\GameTcpServer.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
