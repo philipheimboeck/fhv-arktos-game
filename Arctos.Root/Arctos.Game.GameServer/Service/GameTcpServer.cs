@@ -4,17 +4,18 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Build.Framework;
-using ArctosGameServer.Communication;
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml.Serialization;
+using Arctos.Game.Middleware.Logic.Model.Model;
 
 namespace ArctosGameServer.Service
 {
-    public class GameTcpServer : IObserver<GameEvent>, IObservable<GameEvent>
+    public class GameTcpServer : IObserver<GameEvent>, IObservable<Tuple<Guid, GameEvent>>
     {
         private TcpListener _tcpListener;
-        private List<TcpClient> _clients = new List<TcpClient>();
-        private List<IObserver<GameEvent>> _observers = new List<IObserver<GameEvent>>();
+        private Dictionary<Guid, TcpClient> _clients = new Dictionary<Guid, TcpClient>();
+        private List<IObserver<Tuple<Guid, GameEvent>>> _observers = new List<IObserver<Tuple<Guid, GameEvent>>>();
 
         public GameTcpServer()
         {
@@ -26,7 +27,7 @@ namespace ArctosGameServer.Service
         {
             this._tcpListener = new TcpListener(ip, port);
             this._tcpListener.Start();
-        } 
+        }
 
         public void StartService()
         {
@@ -41,54 +42,79 @@ namespace ArctosGameServer.Service
         private void OnClientConnect(IAsyncResult result)
         {
             // Create a new client
-            TcpClient clientSocket = default(TcpClient);
+            var clientSocket = default(TcpClient);
             clientSocket = _tcpListener.EndAcceptTcpClient(result);
-            _clients.Add(clientSocket);
+
+            // Create a new Unique ID
+            var id = System.Guid.NewGuid();
+            _clients.Add(id, clientSocket);
 
             // Start the client handler
-            var handler = new ClientRequestHandler(clientSocket, this);
+            var handler = new ClientRequestHandler(id, clientSocket, this);
             handler.StartClient();
 
             // And wait for the next client
             WaitForClient();
         }
 
-        public void Send(GameEvent gameEvent) 
+        public void Send(GameEvent gameEvent)
         {
             // Remove disconnected clients
             RemoveDisconnected();
 
             // Send event to all clients
-            foreach(TcpClient client in _clients)
+            foreach (var client in _clients.Values)
             {
-                // Serialize and send event
-                var xmlSerializer = new XmlSerializer(typeof(GameEvent));
-                var stream = client.GetStream();
-                if (stream.CanWrite)
-                {
-                    xmlSerializer.Serialize(stream, gameEvent);
-                }
+                SendData(client, gameEvent);
             }
         }
-        
+
+        public void Send(GameEvent gameEvent, Guid clientId)
+        {
+            // Remove disconnected clients
+            RemoveDisconnected();
+
+            if (!_clients.ContainsKey(clientId))
+            {
+                throw new Exception("Client is disconnected!");
+            }
+
+            SendData(_clients[clientId], gameEvent);
+        }
+
+        protected void SendData(TcpClient client, GameEvent gameEvent)
+        {
+            // Serialize and send event
+            var xmlSerializer = new XmlSerializer(typeof(GameEvent));
+            var stream = client.GetStream();
+            if (stream.CanWrite)
+            {
+                xmlSerializer.Serialize(stream, gameEvent);
+            }
+        }
+
         /// <summary>
         /// Will be called by the ClientRequest Handlers when they receive an event
         /// </summary>
+        /// <param name="guid"></param>
         /// <param name="gameEvent"></param>
-        public void OnReceived(GameEvent gameEvent)
+        public void OnReceived(Guid guid, GameEvent gameEvent)
         {
-            NotifyObservers(gameEvent);
+            NotifyObservers(new Tuple<Guid, GameEvent>(guid, gameEvent));
         }
 
         private void RemoveDisconnected()
         {
             // If not connected, remove it from the list
-            _clients.RemoveAll(x => x.Connected == false);
+            _clients = _clients.Where(pair => pair.Value.Connected == true)
+                                 .ToDictionary(pair => pair.Key,
+                                               pair => pair.Value);
+
         }
 
         public void CloseConnections()
         {
-            foreach (TcpClient client in _clients)
+            foreach (var client in _clients.Values)
             {
                 client.Close();
             }
@@ -109,7 +135,7 @@ namespace ArctosGameServer.Service
             Send(value);
         }
 
-        public IDisposable Subscribe(IObserver<GameEvent> observer)
+        public IDisposable Subscribe(IObserver<Tuple<Guid,GameEvent>> observer)
         {
             if (!_observers.Contains(observer))
             {
@@ -118,14 +144,15 @@ namespace ArctosGameServer.Service
             return new Disposable(this, observer);
         }
 
-        public void Unsubscribe(IObserver<GameEvent> observer)
+        public void Unsubscribe(IObserver<Tuple<Guid, GameEvent>> observer)
         {
             _observers.Remove(observer);
         }
 
-        public void NotifyObservers(GameEvent e)
+        public void NotifyObservers(Tuple<Guid, GameEvent> e)
         {
-            foreach(var observer in _observers) {
+            foreach (var observer in _observers)
+            {
                 observer.OnNext(e);
             }
         }
@@ -134,9 +161,9 @@ namespace ArctosGameServer.Service
     public class Disposable : IDisposable
     {
         private GameTcpServer _server;
-        private IObserver<GameEvent> _observer;
+        private IObserver<Tuple<Guid, GameEvent>> _observer;
 
-        public Disposable(GameTcpServer server, IObserver<GameEvent> observer)
+        public Disposable(GameTcpServer server, IObserver<Tuple<Guid, GameEvent>> observer)
         {
             _server = server;
             _observer = observer;

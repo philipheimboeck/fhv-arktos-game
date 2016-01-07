@@ -6,6 +6,7 @@ using Arctos.Game.ControlUnit.View;
 using ArctosGameServer.Communication;
 using ArctosGameServer.Communication.Protocol;
 using Arctos.Game.Middleware.Logic.Model.Client;
+using Arctos.Game.Middleware.Logic.Model.Model;
 
 namespace Arctos.Game
 {
@@ -113,7 +114,7 @@ namespace Arctos.Game
                 {
                     try
                     {
-                        _client.Send(new GameEvent(GameEvent.Type.AREA_UPDATE, _robotController.ReadRFID()));
+                        _client.Send(new GameEvent(GameEvent.Type.AreaUpdate, _robotController.ReadRFID()));
                     }
                     catch (Exception ex)
                     {

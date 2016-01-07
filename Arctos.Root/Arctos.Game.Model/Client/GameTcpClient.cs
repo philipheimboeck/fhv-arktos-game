@@ -1,5 +1,4 @@
-﻿using ArctosGameServer.Communication;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,6 +7,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using Arctos.Game.Middleware.Logic.Model.Model;
 
 namespace Arctos.Game.Middleware.Logic.Model.Client
 {
