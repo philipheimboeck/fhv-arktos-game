@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Mail;
+using Arctos.Game.Client;
+using Arctos.Game.Client.Model;
 using Arctos.Game.Middleware.Logic.Model.Model;
 using ArctosGameServer.Domain;
 using ArctosGameServer.Service;
@@ -21,9 +24,13 @@ namespace ArctosGameServer.Controller
 
         private GameTcpServer _server;
 
+        private List<GameArea> _playableMaps = new List<GameArea>();
+
         public GameController(GameTcpServer server)
         {
             _server = server;
+
+            GenerateGame();
         }
 
         /// <summary>
@@ -31,8 +38,32 @@ namespace ArctosGameServer.Controller
         /// </summary>
         public void GenerateGame()
         {
+            // Todo: Make maps customable
 
-            // GameConfiguration
+            var areas = new ObservableCollection<Area>();
+            for (int i = 0; i < 10; i++)
+            {
+                for (int j = 0; j < 10; j++)
+                {
+                    areas.Add(new Area()
+                    {
+                        AreaID = i + ":" + j,
+                        Column = i,
+                        Row = j,
+                        IsActive = false
+                    });
+                }
+            }
+
+            var map = new GameArea()
+            {
+                Name = "Map 1",
+                AreaHeight = 1600,
+                AreaWidth = 850,
+                AreaList = areas
+            };
+
+            _playableMaps.Add(map);
         }
 
         public void Loop()
@@ -82,7 +113,7 @@ namespace ArctosGameServer.Controller
             if (!_players.ContainsKey(playerName))
             {
                 // Send NOT OK
-                _server.Send(new GameEvent(GameEvent.Type.GuiJoined, false), guid);
+                _server.Send(new GameEvent(GameEvent.Type.GuiJoined, null), guid);
                 return;
             }
 
@@ -90,7 +121,7 @@ namespace ArctosGameServer.Controller
             _players[playerName].GuiId = guid;
 
             // Send OK
-            _server.Send(new GameEvent(GameEvent.Type.GuiJoined, true), guid);
+            _server.Send(new GameEvent(GameEvent.Type.GuiJoined, _players[playerName].Map), guid);
         }
 
         private void PlayerRequest(Guid guid, string playerName)
@@ -103,17 +134,37 @@ namespace ArctosGameServer.Controller
                 return;
             }
 
+            // Is a map available
+            var map = InstantiateMap();
+            if (map == null)
+            {
+                _server.Send(new GameEvent(GameEvent.Type.PlayerJoined, false), guid);
+                return;
+            }
+
             // Add players instance to map
             var player = new Player
             {
                 ControlUnitId = guid,
-                Name = playerName
+                Name = playerName,
+                Map = map
             };
 
             _players.Add(playerName, player);
 
             // Send OK
             _server.Send(new GameEvent(GameEvent.Type.PlayerJoined, true), guid);
+        }
+
+        private GameArea InstantiateMap()
+        {
+            if (_playableMaps.Count > 0)
+            {
+                var map = _playableMaps[0];
+                _playableMaps.Remove(map);
+                return map;
+            }
+            return null;
         }
 
         public void OnCompleted()
@@ -132,14 +183,14 @@ namespace ArctosGameServer.Controller
             _receivedEvents.Enqueue(value);
         }
 
-        private void UpdateArea(Guid controlUnitGuid, string areaID)
+        private void UpdateArea(Guid controlUnitGuid, string areaId)
         {
             // Find GUI
             var player = findPlayerByCU(controlUnitGuid);
 
             if (player != null && !player.GuiId.Equals(Guid.Empty))
             {
-                _server.Send(new GameEvent(GameEvent.Type.AreaUpdate, areaID), player.GuiId);
+                _server.Send(new GameEvent(GameEvent.Type.AreaUpdate, areaId), player.GuiId);
             }
         }
 

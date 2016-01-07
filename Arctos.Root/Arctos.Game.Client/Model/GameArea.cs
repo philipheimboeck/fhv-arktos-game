@@ -1,9 +1,11 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Arctos.Game.Client.Model;
 
 namespace Arctos.Game.Client
 {
+    [Serializable]
     public class GameArea : PropertyChangedBase
     {
         /// <summary>
@@ -69,5 +71,9 @@ namespace Arctos.Game.Client
         /// </summary>
         public int GameHeight { get; set; }
 
+        /// <summary>
+        /// Game Map Name
+        /// </summary>
+        public string Name { get; set; }
     }
 }

@@ -106,6 +106,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Arctos.Game.Client\Arctos.Game.GUIClient.csproj">
+      <Project>{F53E8B76-8F8C-4008-8CC5-118F587B7534}</Project>
+      <Name>Arctos.Game.GUIClient</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Arctos.Game.Model\Arctos.Game.Model.csproj">
       <Project>{5b8affe5-0348-437b-ac95-4175cf0b1059}</Project>
       <Name>Arctos.Game.Model</Name>
