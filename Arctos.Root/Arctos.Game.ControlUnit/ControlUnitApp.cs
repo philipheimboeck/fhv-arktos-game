@@ -1,11 +1,13 @@
 ﻿using ArctosGameServer.Controller;
 using System;
+using System.ComponentModel;
 using System.Windows;
 using Arctos.Game.ControlUnit.Input;
-using Arctos.Game.ControlUnit.View;
 using ArctosGameServer.Communication;
 using ArctosGameServer.Communication.Protocol;
 using Arctos.Game.Middleware.Logic.Model.Client;
+using Arctos.Game.Middleware.Logic.Model.Model;
+using Arctos.Game.Model;
 
 namespace Arctos.Game
 {
@@ -13,10 +15,16 @@ namespace Arctos.Game
     {
         #region Properties
 
+        private const string GAME_STATE_START = "Start Game";
+        private const string GAME_STATE_STOP = "Stop Game";
+
+        private readonly BackgroundWorker worker = new BackgroundWorker();
+
         private GamepadController _gamepadController;
         private RobotController _robotController;
         private GameTcpClient _client;
         private bool _movementDirty = false;
+        private bool gameStarted = false;
 
         private string _playerStatus = "Disconnected";
         public string PlayerStatus
@@ -42,11 +50,18 @@ namespace Arctos.Game
             get { return _robotRobotCOMPort; }
             set { _robotRobotCOMPort = value; OnPropertyChanged(); }
         }
-        private string _gameIP = "172.22.26.41";
+        private string _gameIP = "172.22.25.74";
         public string GameIP
         {
             get { return _gameIP; }
             set { _gameIP = value; OnPropertyChanged(); }
+        }
+
+        private string _currentGameStatus = GAME_STATE_START;
+        public string CurrentGameStatus
+        {
+            get { return _currentGameStatus; }
+            set { _currentGameStatus = value; OnPropertyChanged(); }
         }
 
         #endregion
@@ -59,8 +74,6 @@ namespace Arctos.Game
         {
             _gamepadController = new GamepadController();
             _gamepadController.Subscribe(this);
-
-            //this.ConnectRobot(comPort);
 
             if (_gamepadController.IsConnected()) PlayerStatus = "Connected";
         }
@@ -79,47 +92,11 @@ namespace Arctos.Game
                         )
                     );
                 _robotController = new RobotController(protocol);
-
                 RobotStatus = "Connected to Port " + comPort;
             }
             catch (Exception ex)
             {
                 RobotStatus = ex.Message;
-            }
-        }
-
-        /// <summary>
-        /// Start the Control Unit
-        /// </summary>
-        private void Start()
-        {
-            // Game Loop
-            while(true)
-            {
-                _gamepadController.Update();
-
-                if(_movementDirty)
-                {
-                    int left = (int)_gamepadController.GetValue(GamepadController.Key.TRIGGER_LEFT);
-                    int right = (int)_gamepadController.GetValue(GamepadController.Key.TRIGGER_RIGHT);
-
-                    // Drive
-                    _robotController.Drive(left, right);
-                    _movementDirty = false;
-                }
-
-                // Read
-                if (_client != null && _client.Connected)
-                {
-                    try
-                    {
-                        _client.Send(new GameEvent(GameEvent.Type.AREA_UPDATE, _robotController.ReadRFID()));
-                    }
-                    catch (Exception ex)
-                    {
-                        _client = null;
-                    }
-                }
             }
         }
 
@@ -134,27 +111,101 @@ namespace Arctos.Game
                 switch (parameter.ToString())
                 {
                     case "ConnectRobot":
-                        {
-                            this.ConnectRobot(RobotCOMPort);
-                        }
-                        break;
+                    {
+                        this.ConnectRobot(RobotCOMPort);
+                    }
+                    break;
+
                     case "ConnectGame":
+                    {
+                        _client = new GameTcpClient(this.GameIP);
+
+                        if (_client.Connected) 
                         {
-                            _client = new GameTcpClient(this.GameIP);
-                            this.GameStatus = "Connected";
+                            _client.Send(new GameEvent(GameEvent.Type.PlayerRequest, "ninos"));
+
+                            GameEvent gameEvent;
+                            do {
+                                gameEvent = _client.Receive();
+                            } while (gameEvent != null && gameEvent.EventType != GameEvent.Type.PlayerJoined);
+                            if (gameEvent == null) return;
+
+                            bool isAvailable = (bool)gameEvent.Data;
+                            this.GameStatus = isAvailable ? "Connected" : "Username already taken";
                         }
-                        break;
+                    }
+                    break;
 
                     case "Start":
+                    {
+                        if (!gameStarted)
                         {
-                            this.Start();
+                            gameStarted = true;
+                            worker.DoWork += StartGame;
+                            worker.WorkerReportsProgress = true;
+                            worker.WorkerSupportsCancellation = true;
+                            worker.RunWorkerAsync();
+                            CurrentGameStatus = GAME_STATE_STOP;
                         }
-                        break;
+                        else
+                        {
+                            CurrentGameStatus = GAME_STATE_START;
+                            worker.CancelAsync();
+                        }
+                    }
+                    break;
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Start the Control Unit and Game Worker process
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="doWorkEventArgs"></param>
+        private void StartGame(object sender, DoWorkEventArgs doWorkEventArgs)
+        {
+            // Game Loop
+            while (true)
+            {
+                _gamepadController.Update();
+
+                if (_movementDirty)
+                {
+                    int left = (int)_gamepadController.GetValue(GamepadController.Key.TRIGGER_LEFT);
+                    int right = (int)_gamepadController.GetValue(GamepadController.Key.TRIGGER_RIGHT);
+
+                    // Drive
+                    _robotController.Drive(left, right);
+                    _movementDirty = false;
+                }
+
+                // Read
+                if (_client != null && _client.Connected)
+                {
+                    try
+                    {
+                        string rfid = _robotController.ReadRFID();
+                        if (!string.IsNullOrEmpty(rfid))
+                            _client.Send(new GameEvent(GameEvent.Type.AreaUpdate, rfid));
+                    }
+                    catch (Exception ex)
+                    {
+                        _client = null;
+                    }
+                }
+
+                // Exit Game Loop
+                if (worker.CancellationPending)
+                {
+                    doWorkEventArgs.Cancel = true;
+                    gameStarted = false;
+                    return;
+                }
             }
         }
 
