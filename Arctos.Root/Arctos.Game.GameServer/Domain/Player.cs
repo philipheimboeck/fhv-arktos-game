@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Arctos.Game.Client;
+using Arctos.Game.GUIClient;
 
 namespace ArctosGameServer.Domain
 {
