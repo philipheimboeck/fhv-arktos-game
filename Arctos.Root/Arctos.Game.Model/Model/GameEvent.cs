@@ -1,31 +1,29 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace ArctosGameServer.Communication
+namespace Arctos.Game.Middleware.Logic.Model.Model
 {
     [Serializable]
     public class GameEvent
     {
         public enum Type
         {
-            MAP,
-            AREA_UPDATE,
-            GAME_STATUS_UPDATE
+            PlayerRequest,
+            PlayerJoined,
+            PlayerLeft,
+            GuiRequest,
+            GuiJoined,
+            AreaUpdate
         }
 
         public Type EventType { get; set; }
 
-        public Object Data { get; set; }
+        public object Data { get; set; }
 
         public GameEvent()
         {
         }
 
-        public GameEvent(Type type, Object data)
+        public GameEvent(Type type, object data)
         {
             EventType = type;
             Data = data;
