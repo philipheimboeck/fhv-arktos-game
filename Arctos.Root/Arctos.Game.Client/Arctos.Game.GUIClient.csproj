@@ -57,7 +57,7 @@
     <Compile Include="View\Controls\GridAwareItemsControl.cs" />
     <Compile Include="Properties\Annotations1.cs" />
     <Compile Include="Service\GameClientService.cs" />
-    <Compile Include="View\Controls\PropertyChangedBase.cs" />
+    <Compile Include="View\GameViewModel.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -100,6 +100,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Arctos.Game.Model\Arctos.Game.Model.csproj">
+      <Project>{5b8affe5-0348-437b-ac95-4175cf0b1059}</Project>
+      <Name>Arctos.Game.Model</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

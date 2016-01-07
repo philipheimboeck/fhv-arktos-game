@@ -2,21 +2,11 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using Arctos.Game.Annotations;
 
-namespace Arctos.Game.ControlUnit.View
+namespace Arctos.Game.Model
 {
     public class PropertyChangedBase : INotifyPropertyChanged, ICommand
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            var handler = PropertyChanged;
-            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
-        }
-
         private ICommand mUpdater;
         public ICommand UpdateCommand
         {
@@ -39,5 +29,12 @@ namespace Arctos.Game.ControlUnit.View
         }
 
         public event EventHandler CanExecuteChanged;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            var handler = PropertyChanged;
+            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

@@ -51,7 +51,7 @@ namespace Arctos.Game.Client
             grid.ColumnDefinitions.Clear();
             for (int i = 0; i < (int)e.NewValue; i++)
             {
-                grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(1, GridUnitType.Star) });
+                grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(1.0, GridUnitType.Star) });
             }
         }
     }

@@ -1,23 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
-using Arctos.Game.Client.Service;
+﻿using System.Windows;
+using Arctos.View;
 
-namespace Arctos.Game.Client
+namespace Arctos.Game.GUIClient
 {
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
     public partial class App : Application
     {
-        public App()
+        private void App_OnStartup(object sender, StartupEventArgs e)
         {
-            //GameClientService clientService = new GameClientService();
-            //clientService.Connect("127.0.0.1", "test");
+            MainWindow window = new MainWindow { DataContext = new GameViewModel() };
+            window.Show();
         }
     }
 }

@@ -18,7 +18,7 @@ namespace ArctosGameServer.Controller
     public class GameController : IObserver<Tuple<Guid, GameEvent>>
     {
         private readonly ConcurrentQueue<Tuple<Guid, GameEvent>> _receivedEvents = new ConcurrentQueue<Tuple<Guid, GameEvent>>();
-        public bool ShutdownRequested { get; set; } = false;
+        public bool ShutdownRequested { get; set; }
 
         private Dictionary<string, Player> _players = new Dictionary<string, Player>();
 
