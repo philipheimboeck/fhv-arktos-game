@@ -11,6 +11,7 @@ namespace Arctos.Game.Client.Model
     /// The Area indicates where the robot has to drive
     /// and where it already was
     /// </summary>
+    [Serializable]
     public class Area : PropertyChangedBase
     {
         public int Row { get; set; }
