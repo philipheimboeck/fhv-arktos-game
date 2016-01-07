@@ -1,4 +1,5 @@
-﻿using ArctosGameServer.Service;
+﻿using ArctosGameServer.Controller;
+using ArctosGameServer.Service;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,18 +11,38 @@ namespace ArctosGameServer
 {
     class Server
     {
+        static GameController game;
+        static GameTcpServer server; 
 
         static void Main(string[] args)
         {
+            AppDomain.CurrentDomain.ProcessExit += new EventHandler(ProcessExit);
+
             Console.WriteLine("Starting server...");
-            var server = new GameTcpServer();
+
+            // Instantiate components
+            server = new GameTcpServer();
+            game = new GameController();
+
+            // Add listeners
+            server.Subscribe(game);
         
             // Start the TCP Service
             server.StartService();
 
-            while(true)
+            // Start the game
+            game.loop();
+        }
+
+        static void ProcessExit(object o, EventArgs args)
+        {
+            if (server != null)
             {
-                Thread.Sleep(500);
+                server.CloseConnections();
+            }
+            if (game != null)
+            {
+                game.ShutdownRequested = true; 
             }
         }
     }

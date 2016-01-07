@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
@@ -38,6 +39,7 @@ namespace ArctosGameServer.Service
 
         private void ReadCallback(IAsyncResult result)
         {
+            // Start of Transport Layer
             NetworkStream networkStream = _clientSocket.GetStream();
             
             int read = networkStream.EndRead(result);
@@ -51,14 +53,27 @@ namespace ArctosGameServer.Service
             byte[] buffer = result.AsyncState as byte[];
             string data = Encoding.Default.GetString(buffer, 0, read);
 
-            var serializer = new XmlSerializer(typeof(GameEvent));
-            using (TextReader tr = new StringReader(data))
-            {
-                // Deserialize entity
-                GameEvent gameEvent = (GameEvent)serializer.Deserialize(tr);
+            // Start of Session layer
 
-                // Notify Server about the event
-                _tcpServer.OnReceived(gameEvent);
+            // Start of Presentation Layer
+            var receivedPDUs = data.Split(new string[] { "<?xml" }, StringSplitOptions.RemoveEmptyEntries);
+            var serializer = new XmlSerializer(typeof(GameEvent));
+
+            foreach(string pdu in receivedPDUs)
+            {
+                // Add removed separator
+                var xmlString = "<?xml" + pdu;
+
+                using (TextReader tr = new StringReader(xmlString))
+                {
+                    // Start of Application Layer
+
+                    // Deserialize entity
+                    GameEvent gameEvent = (GameEvent)serializer.Deserialize(tr);
+
+                    // Notify Server about the event
+                    _tcpServer.OnReceived(gameEvent);
+                }
             }
 
             this.WaitForRequest();

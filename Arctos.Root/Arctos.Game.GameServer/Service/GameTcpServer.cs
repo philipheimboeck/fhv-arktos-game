@@ -10,10 +10,11 @@ using System.Xml.Serialization;
 
 namespace ArctosGameServer.Service
 {
-    public class GameTcpServer : IObserver<GameEvent>
+    public class GameTcpServer : IObserver<GameEvent>, IObservable<GameEvent>
     {
         private TcpListener _tcpListener;
         private List<TcpClient> _clients = new List<TcpClient>();
+        private List<IObserver<GameEvent>> _observers = new List<IObserver<GameEvent>>();
 
         public GameTcpServer()
         {
@@ -76,7 +77,7 @@ namespace ArctosGameServer.Service
         /// <param name="gameEvent"></param>
         public void OnReceived(GameEvent gameEvent)
         {
-            // TODO Implement
+            NotifyObservers(gameEvent);
         }
 
         private void RemoveDisconnected()
@@ -106,6 +107,44 @@ namespace ArctosGameServer.Service
         public void OnNext(GameEvent value)
         {
             Send(value);
+        }
+
+        public IDisposable Subscribe(IObserver<GameEvent> observer)
+        {
+            if (!_observers.Contains(observer))
+            {
+                _observers.Add(observer);
+            }
+            return new Disposable(this, observer);
+        }
+
+        public void Unsubscribe(IObserver<GameEvent> observer)
+        {
+            _observers.Remove(observer);
+        }
+
+        public void NotifyObservers(GameEvent e)
+        {
+            foreach(var observer in _observers) {
+                observer.OnNext(e);
+            }
+        }
+    }
+
+    public class Disposable : IDisposable
+    {
+        private GameTcpServer _server;
+        private IObserver<GameEvent> _observer;
+
+        public Disposable(GameTcpServer server, IObserver<GameEvent> observer)
+        {
+            _server = server;
+            _observer = observer;
+        }
+
+        public void Dispose()
+        {
+            _server.Unsubscribe(_observer);
         }
     }
 }
