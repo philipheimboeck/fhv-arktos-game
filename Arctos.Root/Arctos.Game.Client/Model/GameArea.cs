@@ -1,8 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
-using Arctos.Game.Client.Model;
+using Arctos.Game.Model;
 
-namespace Arctos.Game.Client
+namespace Arctos.Game.GUIClient
 {
     public class GameArea : PropertyChangedBase
     {

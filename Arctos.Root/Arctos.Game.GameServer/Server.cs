@@ -22,7 +22,7 @@ namespace ArctosGameServer
 
             // Instantiate components
             server = new GameTcpServer();
-            game = new GameController();
+            game = new GameController(server);
 
             // Add listeners
             server.Subscribe(game);
@@ -31,7 +31,7 @@ namespace ArctosGameServer
             server.StartService();
 
             // Start the game
-            game.loop();
+            game.Loop();
         }
 
         static void ProcessExit(object o, EventArgs args)

@@ -7,7 +7,10 @@ using ArctosGameServer.Communication;
 using ArctosGameServer.Communication.Protocol;
 using Arctos.Game.Middleware.Logic.Model.Client;
 using Arctos.Game.Middleware.Logic.Model.Model;
+<<<<<<< HEAD
 using Arctos.Game.Model;
+=======
+>>>>>>> 623406bbae973066ce60096ca9af94aa0db78933
 
 namespace Arctos.Game
 {

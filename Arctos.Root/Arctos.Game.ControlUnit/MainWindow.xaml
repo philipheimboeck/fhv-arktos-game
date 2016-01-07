@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:game="clr-namespace:Arctos.Game"
         mc:Ignorable="d"
-        Title="Arctos Game" Height="350" Width="525" d:DataContext="{d:DesignInstance game:ControlUnitApp}">
+        Title="Arctos ControlUnit" Height="350" Width="525" d:DataContext="{d:DesignInstance game:ControlUnitApp}">
     <Grid>
         <Label Content="Arctos ControlUnit" HorizontalAlignment="Left" Margin="23,29,0,0" VerticalAlignment="Top" FontSize="20"/>
 
@@ -50,7 +50,7 @@
             <TextBox Grid.Column="1" Grid.Row="1" Height="23" TextWrapping="Wrap" Text="{Binding Path=GameIP}" Width="120" HorizontalAlignment="Left" />
             <Button x:Name="startButton" Grid.Row="1" Grid.Column="2" Content="Connect to Game" HorizontalAlignment="Left" VerticalAlignment="Center" Width="118" Command="{Binding Path=UpdateCommand}" CommandParameter="ConnectGame"/>
 
-            <Button Grid.Row="2" Grid.Column="2" Content="Start Game" HorizontalAlignment="Left" VerticalAlignment="Center" Width="118" Command="{Binding Path=UpdateCommand}" CommandParameter="Start"/>
+            <Button Grid.Row="2" Grid.Column="2" Content="{Binding Path=CurrentGameStatus}" HorizontalAlignment="Left" VerticalAlignment="Center" Width="118" Command="{Binding Path=UpdateCommand}" CommandParameter="Start"/>
         </Grid>
         
     </Grid>

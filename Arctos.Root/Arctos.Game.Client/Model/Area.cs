@@ -4,8 +4,9 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Media;
 using Arctos.Annotations;
+using Arctos.Game.Model;
 
-namespace Arctos.Game.Client.Model
+namespace Arctos.Game.GUIClient
 {
     /// <summary>
     /// The Area indicates where the robot has to drive
