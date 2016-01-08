@@ -24,7 +24,6 @@
 
         private void UpdateArea(string areaID)
         {
-            
         }
     }
 }

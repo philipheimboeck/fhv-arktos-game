@@ -12,21 +12,14 @@ namespace Arctos.View
 {
     public class GameViewModel : PropertyChangedBase
     {
-        #region Properties
-
-        private GuiGameArea _game;
-        public GuiGameArea Game
+        public GameViewModel()
         {
-            get { return _game; }
-            set { _game = value; OnPropertyChanged(); }
+            // this.GetExampleGame();
+            this.GameConnected = false;
+
+            worker.WorkerSupportsCancellation = true;
+            worker.DoWork += ReceiveEvents;
         }
-
-        private GameTcpClient GameClient { get; set; }
-        private bool GameConnected { get; set; }
-
-        private readonly BackgroundWorker worker = new BackgroundWorker();
-
-        #endregion
 
         /// <summary>
         /// Execute Command from View
@@ -42,7 +35,7 @@ namespace Arctos.View
                     {
                         this.ConnectToGame("172.22.25.74");
                     }
-                    break;
+                        break;
                 }
             }
             catch (Exception ex)
@@ -65,13 +58,14 @@ namespace Arctos.View
                     this.GameClient.Send(new GameEvent(GameEvent.Type.GuiRequest, "ninos"));
 
                     GameEvent gameEvent;
-                    do {
+                    do
+                    {
                         gameEvent = this.GameClient.Receive();
                     } while (gameEvent != null && gameEvent.EventType != GameEvent.Type.GuiJoined);
 
                     if (gameEvent == null) return;
 
-                    GameArea gameArea = (GameArea) gameEvent.Data;
+                    var gameArea = (GameArea) gameEvent.Data;
                     if (gameArea != null)
                     {
                         this.Game = new GuiGameArea(gameArea)
@@ -80,7 +74,7 @@ namespace Arctos.View
                             AreaHeight = 850
                         };
                     }
-                        
+
 
                     this.GameConnected = true;
                     worker.RunWorkerAsync();
@@ -97,15 +91,6 @@ namespace Arctos.View
             }
         }
 
-        public GameViewModel()
-        {
-           // this.GetExampleGame();
-            this.GameConnected = false;
-
-            worker.WorkerSupportsCancellation = true;
-            worker.DoWork += ReceiveEvents;
-        }
-
         /// <summary>
         /// Wait for incoming events
         /// </summary>
@@ -115,7 +100,7 @@ namespace Arctos.View
         {
             while (true)
             {
-                GameEvent receivedEvent = this.GameClient.Receive();
+                var receivedEvent = this.GameClient.Receive();
 
                 if (receivedEvent != null)
                 {
@@ -123,10 +108,11 @@ namespace Arctos.View
                     {
                         case GameEvent.Type.AreaUpdate:
                         {
-                            Area receivedAreaUpdate = receivedEvent.Data as Area;
+                            var receivedAreaUpdate = receivedEvent.Data as Area;
                             if (receivedAreaUpdate != null)
                             {
-                                var foundArea = this.Game.AreaList.FirstOrDefault(x => x.AreaID.Equals(receivedAreaUpdate.AreaId));
+                                var foundArea =
+                                    this.Game.AreaList.FirstOrDefault(x => x.AreaId.Equals(receivedAreaUpdate.AreaId));
                                 if (foundArea != null)
                                     foundArea.IsActive = true;
                             }
@@ -149,14 +135,14 @@ namespace Arctos.View
         /// </summary>
         private void GetExampleGame()
         {
-            ObservableCollection<GuiArea> areas = new ObservableCollection<GuiArea>();
-            for (int rows = 0; rows < 4; rows++)
+            var areas = new ObservableCollection<GuiArea>();
+            for (var rows = 0; rows < 4; rows++)
             {
-                for (int cols = 0; cols < 4; cols++)
+                for (var cols = 0; cols < 4; cols++)
                 {
                     areas.Add(new GuiArea
                     {
-                        AreaID = "",
+                        AreaId = "",
                         Column = cols,
                         Row = rows,
                         IsActive = false
@@ -164,7 +150,7 @@ namespace Arctos.View
                 }
             }
 
-            GuiGameArea game = new GuiGameArea
+            var game = new GuiGameArea
             {
                 AreaWidth = 1600,
                 AreaHeight = 850,
@@ -174,5 +160,25 @@ namespace Arctos.View
             this.Game = game;
         }
 
+        #region Properties
+
+        private GuiGameArea _game;
+
+        public GuiGameArea Game
+        {
+            get { return _game; }
+            set
+            {
+                _game = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private GameTcpClient GameClient { get; set; }
+        private bool GameConnected { get; set; }
+
+        private readonly BackgroundWorker worker = new BackgroundWorker();
+
+        #endregion
     }
 }

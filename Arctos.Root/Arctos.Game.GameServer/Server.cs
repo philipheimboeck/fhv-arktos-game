@@ -1,20 +1,15 @@
-﻿using ArctosGameServer.Controller;
+﻿using System;
+using ArctosGameServer.Controller;
 using ArctosGameServer.Service;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace ArctosGameServer
 {
-    class Server
+    internal class Server
     {
-        static GameController game;
-        static GameTcpServer server; 
+        private static GameController game;
+        private static GameTcpServer server;
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             AppDomain.CurrentDomain.ProcessExit += new EventHandler(ProcessExit);
 
@@ -26,7 +21,7 @@ namespace ArctosGameServer
 
             // Add listeners
             server.Subscribe(game);
-        
+
             // Start the TCP Service
             server.StartService();
 
@@ -34,7 +29,7 @@ namespace ArctosGameServer
             game.Loop();
         }
 
-        static void ProcessExit(object o, EventArgs args)
+        private static void ProcessExit(object o, EventArgs args)
         {
             if (server != null)
             {
@@ -42,7 +37,7 @@ namespace ArctosGameServer
             }
             if (game != null)
             {
-                game.ShutdownRequested = true; 
+                game.ShutdownRequested = true;
             }
         }
     }

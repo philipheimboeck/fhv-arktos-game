@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Arctos.Game.Model;
 using System.Xml.Serialization;
+using Arctos.Game.Model;
 
 namespace Arctos.Game.GUIClient
 {
     [Serializable]
     public class GuiGameArea : PropertyChangedBase
     {
-
         /// <summary>
         /// GuiGameArea Constructor
         /// </summary>

@@ -15,10 +15,6 @@ namespace Arctos.Game.Middleware.Logic.Model.Model
             AreaUpdate
         }
 
-        public Type EventType { get; set; }
-
-        public object Data { get; set; }
-
         public GameEvent()
         {
         }
@@ -28,5 +24,9 @@ namespace Arctos.Game.Middleware.Logic.Model.Model
             EventType = type;
             Data = data;
         }
+
+        public Type EventType { get; set; }
+
+        public object Data { get; set; }
     }
 }

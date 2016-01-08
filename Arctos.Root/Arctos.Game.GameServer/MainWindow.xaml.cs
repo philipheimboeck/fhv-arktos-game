@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO.Ports;
-using System.Net;
-using System.Net.Sockets;
-using System.Windows;
+﻿using System.Windows;
 
 namespace ArctosGameServer
 {
@@ -23,7 +18,7 @@ namespace ArctosGameServer
         {
             if (msgData.Text.Length > 0)
             {
-               // alligator.Send(msgData.Text);
+                // alligator.Send(msgData.Text);
             }
         }
     }

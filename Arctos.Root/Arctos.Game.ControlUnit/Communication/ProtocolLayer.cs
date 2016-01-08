@@ -20,8 +20,8 @@
         /// <returns></returns>
         public virtual bool send(PDU<object> pdu)
         {
-            bool result = false;
-            PDU<object> pduOut = this.composePdu(pdu);
+            var result = false;
+            var pduOut = this.composePdu(pdu);
 
             if (this.lowerLayer != null)
             {
@@ -38,7 +38,7 @@
         /// <returns></returns>
         public virtual PDU<object> receive()
         {
-            PDU<object> result = this.lowerLayer.receive();
+            var result = this.lowerLayer.receive();
             if (result != null)
                 return this.decomposePdu(result);
 

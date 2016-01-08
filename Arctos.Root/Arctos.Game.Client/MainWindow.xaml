@@ -14,15 +14,14 @@
     <!-- add windowstyle=none to hide close toolbar -->
     <!-- WindowStyle="None"-->
     <StackPanel VerticalAlignment="Stretch">
-        <Button Content="Update" Command="{Binding Path=UpdateCommand}" CommandParameter="GuiRequest"></Button>
-    <gameGui:GridAwareItemsControl  ItemsSource="{Binding Path=Game.AreaList, UpdateSourceTrigger=PropertyChanged}">
+        <Button Content="Update" Command="{Binding Path=UpdateCommand}" CommandParameter="GuiRequest" />
+        <gameGui:GridAwareItemsControl  ItemsSource="{Binding Path=Game.AreaList, UpdateSourceTrigger=PropertyChanged}">
         <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
                     <Grid gameGui:GridAutoLayout.NumberOfRows="{Binding Game.GameColumns}"
                         gameGui:GridAutoLayout.NumberOfColumns="{Binding Game.GameRows}" VerticalAlignment="Stretch" Background="Red"
                         Width="{Binding Game.AreaWidth}"
-                        Height="{Binding Game.AreaHeight}">
-                    </Grid>
+                        Height="{Binding Game.AreaHeight}" />
             </ItemsPanelTemplate>
         </ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate>

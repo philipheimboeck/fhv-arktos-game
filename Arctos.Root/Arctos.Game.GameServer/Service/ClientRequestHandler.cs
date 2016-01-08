@@ -1,20 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Sockets;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Arctos.Game.Middleware.Logic.Model.Model;
 
 namespace ArctosGameServer.Service
 {
-    class ClientRequestHandler
+    internal class ClientRequestHandler
     {
-        protected Guid _id;
         protected TcpClient _clientSocket;
+        protected Guid _id;
         protected NetworkStream _networkStream = null;
         protected GameTcpServer _tcpServer = null;
 
@@ -34,7 +30,7 @@ namespace ArctosGameServer.Service
 
         private void WaitForRequest()
         {
-            byte[] buffer = new byte[_clientSocket.ReceiveBufferSize];
+            var buffer = new byte[_clientSocket.ReceiveBufferSize];
 
             _networkStream.BeginRead(buffer, 0, buffer.Length, ReadCallback, buffer);
         }
@@ -58,8 +54,8 @@ namespace ArctosGameServer.Service
             // Start of Session layer
 
             // Start of Presentation Layer
-            var receivedPdus = data.Split(new string[] { "<?xml" }, StringSplitOptions.RemoveEmptyEntries);
-            var serializer = new XmlSerializer(typeof(GameEvent));
+            var receivedPdus = data.Split(new string[] {"<?xml"}, StringSplitOptions.RemoveEmptyEntries);
+            var serializer = new XmlSerializer(typeof (GameEvent));
 
             foreach (var pdu in receivedPdus)
             {
@@ -71,7 +67,7 @@ namespace ArctosGameServer.Service
                     // Start of Application Layer
 
                     // Deserialize entity
-                    var gameEvent = (GameEvent)serializer.Deserialize(tr);
+                    var gameEvent = (GameEvent) serializer.Deserialize(tr);
 
                     // Notify Server about the event
                     _tcpServer.OnReceived(_id, gameEvent);
@@ -80,6 +76,5 @@ namespace ArctosGameServer.Service
 
             this.WaitForRequest();
         }
-
     }
 }

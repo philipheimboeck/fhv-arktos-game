@@ -1,6 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using System.Linq;
-using System.Windows;
+﻿using System.Windows;
 
 namespace Arctos.Game.GUIClient
 {
@@ -11,7 +9,7 @@ namespace Arctos.Game.GUIClient
     {
         public MainWindow()
         {
-            InitializeComponent(); 
+            InitializeComponent();
         }
     }
 }

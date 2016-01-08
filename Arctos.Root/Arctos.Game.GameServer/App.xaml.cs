@@ -1,5 +1,4 @@
 ﻿using System.Windows;
-using ArctosGameServer.Controller;
 using ArctosGameServer.Service;
 
 namespace ArctosGameServer
@@ -11,9 +10,8 @@ namespace ArctosGameServer
     {
         public App()
         {
-            GameTcpServer guiService = new GameTcpServer(System.Net.IPAddress.Parse("127.0.0.1"), 13000);
+            var guiService = new GameTcpServer(System.Net.IPAddress.Parse("127.0.0.1"), 13000);
             guiService.StartService();
         }
-
     }
 }

@@ -5,9 +5,19 @@ namespace Arctos.Game.Client
 {
     public class GridAutoLayout
     {
+        // Using a DependencyProperty as the backing store for NumberOfColumns.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty NumberOfColumnsProperty =
+            DependencyProperty.RegisterAttached("NumberOfColumns", typeof (int), typeof (GridAutoLayout),
+                new PropertyMetadata(1, NumberOfColumnsUpdated));
+
+        // Using a DependencyProperty as the backing store for NumberOfRows.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty NumberOfRowsProperty =
+            DependencyProperty.RegisterAttached("NumberOfRows", typeof (int), typeof (GridAutoLayout),
+                new PropertyMetadata(1, NumberOfRowsUpdated));
+
         public static int GetNumberOfColumns(DependencyObject obj)
         {
-            return (int)obj.GetValue(NumberOfColumnsProperty);
+            return (int) obj.GetValue(NumberOfColumnsProperty);
         }
 
         public static void SetNumberOfColumns(DependencyObject obj, int value)
@@ -15,13 +25,9 @@ namespace Arctos.Game.Client
             obj.SetValue(NumberOfColumnsProperty, value);
         }
 
-        // Using a DependencyProperty as the backing store for NumberOfColumns.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty NumberOfColumnsProperty =
-            DependencyProperty.RegisterAttached("NumberOfColumns", typeof(int), typeof(GridAutoLayout), new PropertyMetadata(1, NumberOfColumnsUpdated));
-
         public static int GetNumberOfRows(DependencyObject obj)
         {
-            return (int)obj.GetValue(NumberOfRowsProperty);
+            return (int) obj.GetValue(NumberOfRowsProperty);
         }
 
         public static void SetNumberOfRows(DependencyObject obj, int value)
@@ -29,29 +35,25 @@ namespace Arctos.Game.Client
             obj.SetValue(NumberOfRowsProperty, value);
         }
 
-        // Using a DependencyProperty as the backing store for NumberOfRows.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty NumberOfRowsProperty =
-            DependencyProperty.RegisterAttached("NumberOfRows", typeof(int), typeof(GridAutoLayout), new PropertyMetadata(1, NumberOfRowsUpdated));
-
         private static void NumberOfRowsUpdated(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            Grid grid = (Grid)d;
+            var grid = (Grid) d;
 
             grid.RowDefinitions.Clear();
-            for (int i = 0; i < (int)e.NewValue; i++)
+            for (var i = 0; i < (int) e.NewValue; i++)
             {
-                grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Star) });
+                grid.RowDefinitions.Add(new RowDefinition() {Height = new GridLength(1, GridUnitType.Star)});
             }
         }
 
         private static void NumberOfColumnsUpdated(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            Grid grid = (Grid)d;
+            var grid = (Grid) d;
 
             grid.ColumnDefinitions.Clear();
-            for (int i = 0; i < (int)e.NewValue; i++)
+            for (var i = 0; i < (int) e.NewValue; i++)
             {
-                grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(1.0, GridUnitType.Star) });
+                grid.ColumnDefinitions.Add(new ColumnDefinition() {Width = new GridLength(1.0, GridUnitType.Star)});
             }
         }
     }

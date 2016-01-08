@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using ArctosGameServer.Communication;
+﻿using ArctosGameServer.Communication;
 using ArctosGameServer.Communication.Protocol;
-using ArctosGameServer.Controller;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Arctos.Game.Middleware.Test
@@ -18,12 +14,11 @@ namespace Arctos.Game.Middleware.Test
         [TestMethod]
         public void CallAllProtocolLayers()
         {
-
-            IProtocolLayer<object, object> protocol =   new PresentationLayer(
-                                                            new SessionLayer(
-                                                                new TransportLayer("COM33")
-                                                            )
-                                                        );
+            IProtocolLayer<object, object> protocol = new PresentationLayer(
+                new SessionLayer(
+                    new TransportLayer("COM33")
+                    )
+                );
 
 
             protocol.receive();
@@ -41,6 +36,5 @@ namespace Arctos.Game.Middleware.Test
                 robotController.Drive(0, 0);
             }*/
         }
-
     }
 }

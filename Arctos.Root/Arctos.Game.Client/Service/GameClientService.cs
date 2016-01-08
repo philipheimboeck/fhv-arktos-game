@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net.Sockets;
-using System.Threading.Tasks;
 
 namespace Arctos.Game.Client.Service
 {
@@ -10,17 +9,17 @@ namespace Arctos.Game.Client.Service
         {
             try
             {
-                Int32 port = 13000;
-                TcpClient client = new TcpClient(server, port);
+                var port = 13000;
+                var client = new TcpClient(server, port);
 
-                Byte[] data = System.Text.Encoding.ASCII.GetBytes(message);
-                NetworkStream stream = client.GetStream();
+                var data = System.Text.Encoding.ASCII.GetBytes(message);
+                var stream = client.GetStream();
 
                 data = new Byte[256];
 
-                String responseData = String.Empty;
+                var responseData = String.Empty;
 
-                Int32 bytes = stream.Read(data, 0, data.Length);
+                var bytes = stream.Read(data, 0, data.Length);
                 responseData = System.Text.Encoding.ASCII.GetString(data, 0, bytes);
                 Console.WriteLine("Received: {0}", responseData);
 

@@ -8,6 +8,7 @@ namespace Arctos.Game.Model
     public class PropertyChangedBase : INotifyPropertyChanged, ICommand
     {
         private ICommand mUpdater;
+
         public ICommand UpdateCommand
         {
             get
@@ -31,6 +32,7 @@ namespace Arctos.Game.Model
         public event EventHandler CanExecuteChanged;
 
         public event PropertyChangedEventHandler PropertyChanged;
+
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             var handler = PropertyChanged;

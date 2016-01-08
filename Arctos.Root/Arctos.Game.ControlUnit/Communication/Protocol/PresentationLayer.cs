@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Text;
 
 namespace ArctosGameServer.Communication.Protocol
@@ -29,15 +28,19 @@ namespace ArctosGameServer.Communication.Protocol
         {
             PDU<object> pduCommand = null;
 
-            Tuple<string, string> dataTuple = pduInput.data as Tuple<string, string>;
+            var dataTuple = pduInput.data as Tuple<string, string>;
             if (dataTuple != null)
             {
-                string version = string.Format("{0:D2}", ProtocolVersion);
-                string dataLength = string.Format("{0:D3}", dataTuple.Item2.Length);
-                string keyLength = string.Format("{0:D3}", dataTuple.Item1.Length);
+                var version = string.Format("{0:D2}", ProtocolVersion);
+                var dataLength = string.Format("{0:D3}", dataTuple.Item2.Length);
+                var keyLength = string.Format("{0:D3}", dataTuple.Item1.Length);
 
-                StringBuilder composedData = new StringBuilder();
-                composedData.Append(version).Append(keyLength).Append(dataLength).Append(dataTuple.Item1).Append(dataTuple.Item2);
+                var composedData = new StringBuilder();
+                composedData.Append(version)
+                    .Append(keyLength)
+                    .Append(dataLength)
+                    .Append(dataTuple.Item1)
+                    .Append(dataTuple.Item2);
 
                 pduCommand = new PDU<object>
                 {
@@ -57,13 +60,13 @@ namespace ArctosGameServer.Communication.Protocol
             Tuple<string, string> pduDecomposed = null;
             if (pduInputData != null && pduInputData.data != null)
             {
-                string pduInput = new string((char[]) pduInputData.data).TrimEnd('\0');
-                string version = pduInput.Substring(0, 2);
-                int keyLength = int.Parse(pduInput.Substring(2, 3));
-                int dataLength = int.Parse(pduInput.Substring(5, 3));
+                var pduInput = new string((char[]) pduInputData.data).TrimEnd('\0');
+                var version = pduInput.Substring(0, 2);
+                var keyLength = int.Parse(pduInput.Substring(2, 3));
+                var dataLength = int.Parse(pduInput.Substring(5, 3));
 
-                string key = pduInput.Substring(8, keyLength);
-                string commandValue = pduInput.Substring(8 + keyLength, dataLength);
+                var key = pduInput.Substring(8, keyLength);
+                var commandValue = pduInput.Substring(8 + keyLength, dataLength);
 
                 pduDecomposed = new Tuple<string, string>(key, commandValue);
             }

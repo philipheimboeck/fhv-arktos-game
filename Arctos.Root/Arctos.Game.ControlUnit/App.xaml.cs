@@ -1,5 +1,4 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 
 namespace Arctos.Game
 {
@@ -10,15 +9,15 @@ namespace Arctos.Game
     {
         private void App_OnStartup(object sender, StartupEventArgs e)
         {
-            MainWindow window = new MainWindow();
-            
-            string comPort = "COM1";
-            for (int i = 0; i != e.Args.Length; ++i)
+            var window = new MainWindow();
+
+            var comPort = "COM1";
+            for (var i = 0; i != e.Args.Length; ++i)
             {
                 comPort = e.Args[0];
             }
 
-            ControlUnitApp controlUnitVM = new ControlUnitApp(comPort);
+            var controlUnitVM = new ControlUnitApp(comPort);
             window.DataContext = controlUnitVM;
 
             window.Show();

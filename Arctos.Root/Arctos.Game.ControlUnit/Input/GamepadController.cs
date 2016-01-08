@@ -13,11 +13,14 @@ namespace Arctos.Game.ControlUnit.Input
             TRIGGER_RIGHT
         };
 
-        private List<IObserver<GamepadController.GamepadControllerEvent>> _observers = new List<IObserver<GamepadControllerEvent>>();
+        private XBoxController _controller;
+
+        private List<IObserver<GamepadController.GamepadControllerEvent>> _observers =
+            new List<IObserver<GamepadControllerEvent>>();
+
+        private Dictionary<Key, double> _oldValues = new Dictionary<Key, double>();
 
         private XBoxControllerWatcher _watcher;
-        private XBoxController _controller;
-        private Dictionary<Key, double> _oldValues = new Dictionary<Key, double>();
 
         public GamepadController()
         {
@@ -33,10 +36,21 @@ namespace Arctos.Game.ControlUnit.Input
             _oldValues.Add(Key.TRIGGER_RIGHT, 0);
         }
 
+        public IDisposable Subscribe(IObserver<GamepadControllerEvent> observer)
+        {
+            // Add observer
+            if (!_observers.Contains(observer))
+            {
+                _observers.Add(observer);
+            }
+
+            return new Unsubscriber(_observers, observer);
+        }
+
         private void Watcher_ControllerConnected(XBoxController controller)
         {
             // Check if controller is not connected
-            if(this._controller == null)
+            if (this._controller == null)
             {
                 this._controller = controller;
 
@@ -48,7 +62,7 @@ namespace Arctos.Game.ControlUnit.Input
         private void Watcher_ControllerDisconnected(XBoxController controller)
         {
             // Check if the current controller is disconnected
-            if(this._controller.Equals(controller))
+            if (this._controller.Equals(controller))
             {
                 this._controller = null;
 
@@ -64,15 +78,15 @@ namespace Arctos.Game.ControlUnit.Input
 
         public void Update()
         {
-            if(_controller != null && _controller.IsConnected)
+            if (_controller != null && _controller.IsConnected)
             {
                 // Read values
-                double leftTrigger = _controller.TriggerLeftPosition;
-                double rightTrigger = _controller.TriggerRightPosition;
+                var leftTrigger = _controller.TriggerLeftPosition;
+                var rightTrigger = _controller.TriggerRightPosition;
 
                 // If the values changed, send them
 
-                if(!_oldValues[Key.TRIGGER_LEFT].Equals(leftTrigger))
+                if (!_oldValues[Key.TRIGGER_LEFT].Equals(leftTrigger))
                 {
                     _oldValues[Key.TRIGGER_LEFT] = leftTrigger;
 
@@ -95,29 +109,21 @@ namespace Arctos.Game.ControlUnit.Input
             return _oldValues[key];
         }
 
-        public IDisposable Subscribe(IObserver<GamepadControllerEvent> observer)
+        private void Notify(GamepadControllerEvent eventObject)
         {
-            // Add observer
-            if (!_observers.Contains(observer))
+            foreach (var observer in _observers)
             {
-                _observers.Add(observer);
-            }
-
-            return new Unsubscriber(_observers, observer);
-        }
-
-        private void Notify(GamepadControllerEvent eventObject) {
-            foreach(IObserver<GamepadControllerEvent> observer in _observers) {
                 observer.OnNext(eventObject);
             }
         }
 
         public class Unsubscriber : IDisposable
         {
-            private List<IObserver<GamepadControllerEvent>> _observers;
             private IObserver<GamepadControllerEvent> _observer;
+            private List<IObserver<GamepadControllerEvent>> _observers;
 
-            public Unsubscriber(List<IObserver<GamepadControllerEvent>> observers, IObserver<GamepadControllerEvent> observer)
+            public Unsubscriber(List<IObserver<GamepadControllerEvent>> observers,
+                IObserver<GamepadControllerEvent> observer)
             {
                 _observers = observers;
                 _observer = observer;
@@ -140,12 +146,6 @@ namespace Arctos.Game.ControlUnit.Input
                 CONTROLLER_CONNECTED,
                 INPUT_CHANGE
             };
-            
-            public EventType Type { get; set; }
-
-            public Key? PressedKey { get; set; }
-
-            public double? Value { get; set; }
 
             public GamepadControllerEvent(EventType type)
             {
@@ -158,6 +158,12 @@ namespace Arctos.Game.ControlUnit.Input
                 PressedKey = key;
                 Value = value;
             }
+
+            public EventType Type { get; set; }
+
+            public Key? PressedKey { get; set; }
+
+            public double? Value { get; set; }
         }
     }
 }

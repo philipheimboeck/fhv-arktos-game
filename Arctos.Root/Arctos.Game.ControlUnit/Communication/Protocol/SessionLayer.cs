@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ArctosGameServer.Communication.Protocol
+﻿namespace ArctosGameServer.Communication.Protocol
 {
     /// <summary>
     /// Session Layer

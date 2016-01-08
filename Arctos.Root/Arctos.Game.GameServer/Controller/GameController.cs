@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using Arctos.Game.Middleware.Logic.Model.Model;
 using Arctos.Game.Model;
@@ -15,20 +14,38 @@ namespace ArctosGameServer.Controller
     /// </summary>
     public class GameController : IObserver<Tuple<Guid, GameEvent>>
     {
-        private readonly ConcurrentQueue<Tuple<Guid, GameEvent>> _receivedEvents = new ConcurrentQueue<Tuple<Guid, GameEvent>>();
-        public bool ShutdownRequested { get; set; }
+        private readonly ConcurrentQueue<Tuple<Guid, GameEvent>> _receivedEvents =
+            new ConcurrentQueue<Tuple<Guid, GameEvent>>();
+
+        private List<GameArea> _playableMaps = new List<GameArea>();
 
         private Dictionary<string, Player> _players = new Dictionary<string, Player>();
 
         private GameTcpServer _server;
-
-        private List<GameArea> _playableMaps = new List<GameArea>();
 
         public GameController(GameTcpServer server)
         {
             _server = server;
 
             GenerateGame();
+        }
+
+        public bool ShutdownRequested { get; set; }
+
+        public void OnCompleted()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnError(Exception error)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnNext(Tuple<Guid, GameEvent> value)
+        {
+            // Receive GameEvent
+            _receivedEvents.Enqueue(value);
         }
 
         /// <summary>
@@ -39,9 +56,9 @@ namespace ArctosGameServer.Controller
             // Todo: Make maps customable
 
             var areas = new List<Area>();
-            for (int i = 0; i < 10; i++)
+            for (var i = 0; i < 10; i++)
             {
-                for (int j = 0; j < 10; j++)
+                for (var j = 0; j < 10; j++)
                 {
                     areas.Add(new Area()
                     {
@@ -70,33 +87,32 @@ namespace ArctosGameServer.Controller
                 Tuple<Guid, GameEvent> e = null;
                 while (_receivedEvents.TryDequeue(out e))
                 {
-
                     switch (e.Item2.EventType)
                     {
                         case GameEvent.Type.PlayerRequest:
-                            {
-                                var playerName = (string)e.Item2.Data;
-                                PlayerRequest(e.Item1, playerName);
-                            }
+                        {
+                            var playerName = (string) e.Item2.Data;
+                            PlayerRequest(e.Item1, playerName);
+                        }
                             break;
                         case GameEvent.Type.PlayerJoined:
                             break;
                         case GameEvent.Type.PlayerLeft:
                             break;
                         case GameEvent.Type.GuiRequest:
-                            {
-                                var playerName = (string)e.Item2.Data;
-                                GuiRequest(e.Item1, playerName);
-                            }
+                        {
+                            var playerName = (string) e.Item2.Data;
+                            GuiRequest(e.Item1, playerName);
+                        }
                             break;
                         case GameEvent.Type.GuiJoined:
                             // Should never occur
                             break;
                         case GameEvent.Type.AreaUpdate:
-                            {
-                                var area = (string)e.Item2.Data;
-                                UpdateArea(e.Item1, area);
-                            }
+                        {
+                            var area = (string) e.Item2.Data;
+                            UpdateArea(e.Item1, area);
+                        }
                             break;
                     }
                 }
@@ -161,22 +177,6 @@ namespace ArctosGameServer.Controller
                 return map;
             }
             return null;
-        }
-
-        public void OnCompleted()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void OnError(Exception error)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void OnNext(Tuple<Guid, GameEvent> value)
-        {
-            // Receive GameEvent
-            _receivedEvents.Enqueue(value);
         }
 
         private void UpdateArea(Guid controlUnitGuid, string areaId)

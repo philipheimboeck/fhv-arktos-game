@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Windows.Media;
-using Arctos.Annotations;
 using Arctos.Game.Model;
 
 namespace Arctos.Game.GUIClient
@@ -15,39 +11,15 @@ namespace Arctos.Game.GUIClient
     [Serializable]
     public class GuiArea : PropertyChangedBase
     {
-        public int Row { get; set; }
-        public int Column { get; set; }
-
-        private bool isActive;
-        public bool IsActive
-        {
-            get
-            {
-                return isActive;
-            }
-            set
-            {
-                isActive = value;
-                OnPropertyChanged();
-                OnPropertyChanged("Color");
-            }
-        }
-
-        public SolidColorBrush Color
-        {
-            get {
-                return new SolidColorBrush(IsActive ? Colors.Red : Colors.Gray);
-            }
-        }
-
         /// <summary>
         /// AreaID
         /// </summary>
         private string _areaId;
 
+        private bool isActive;
+
         public GuiArea()
         {
-            
         }
 
         /// <summary>
@@ -61,10 +33,33 @@ namespace Arctos.Game.GUIClient
             Row = area.Row;
         }
 
+        public int Row { get; set; }
+        public int Column { get; set; }
+
+        public bool IsActive
+        {
+            get { return isActive; }
+            set
+            {
+                isActive = value;
+                OnPropertyChanged();
+                OnPropertyChanged("Color");
+            }
+        }
+
+        public SolidColorBrush Color
+        {
+            get { return new SolidColorBrush(IsActive ? Colors.Red : Colors.Gray); }
+        }
+
         public string AreaId
         {
             get { return _areaId; }
-            set { _areaId = value; OnPropertyChanged(); }
+            set
+            {
+                _areaId = value;
+                OnPropertyChanged();
+            }
         }
     }
 }

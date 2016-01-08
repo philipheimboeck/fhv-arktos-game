@@ -27,10 +27,10 @@ namespace ArctosGameServer.Communication.Protocol
 
         public override PDU<object> receive()
         {
-            PDU<object> pduReceived = new PDU<object>();
+            var pduReceived = new PDU<object>();
             if (this.serialPort.BytesToRead > 0)
             {
-                char[] dataReceived = new char[128];
+                var dataReceived = new char[128];
                 this.serialPort.Read(dataReceived, 0, 128);
                 pduReceived.data = dataReceived;
             }
@@ -45,9 +45,9 @@ namespace ArctosGameServer.Communication.Protocol
         /// <returns></returns>
         public override bool send(PDU<object> pdu)
         {
-            bool result = false;
+            var result = false;
 
-            PDU<object> pduInput = composePdu(pdu);
+            var pduInput = composePdu(pdu);
             if (pduInput == null || pduInput.data == null) return false;
 
             try
@@ -70,7 +70,7 @@ namespace ArctosGameServer.Communication.Protocol
         /// <returns></returns>
         protected override PDU<object> composePdu(PDU<object> pduInput)
         {
-           return pduInput;
+            return pduInput;
         }
 
         /// <summary>

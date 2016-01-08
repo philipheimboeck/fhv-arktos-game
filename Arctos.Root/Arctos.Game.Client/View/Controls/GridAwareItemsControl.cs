@@ -1,6 +1,5 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 
 namespace Arctos.Game.Client
 {
@@ -8,15 +7,15 @@ namespace Arctos.Game.Client
     {
         protected override DependencyObject GetContainerForItemOverride()
         {
-            ContentPresenter container = (ContentPresenter)base.GetContainerForItemOverride();
+            var container = (ContentPresenter) base.GetContainerForItemOverride();
             if (ItemTemplate == null)
             {
                 return container;
             }
 
-            FrameworkElement content = (FrameworkElement)ItemTemplate.LoadContent();
-            BindingExpression rowBinding = content.GetBindingExpression(Grid.RowProperty);
-            BindingExpression columnBinding = content.GetBindingExpression(Grid.ColumnProperty);
+            var content = (FrameworkElement) ItemTemplate.LoadContent();
+            var rowBinding = content.GetBindingExpression(Grid.RowProperty);
+            var columnBinding = content.GetBindingExpression(Grid.ColumnProperty);
 
             if (rowBinding != null)
             {

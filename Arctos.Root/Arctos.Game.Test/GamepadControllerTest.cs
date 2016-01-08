@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Text;
-using System.Collections.Generic;
 using Arctos.Game.ControlUnit.Input;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -13,14 +11,15 @@ namespace Arctos.Game.Middleware.Test
     public class GamepadControllerTest
     {
         private GamepadController _controller;
-        bool Finished { get; set; }
+
+        private TestContext testContextInstance;
 
         public GamepadControllerTest()
         {
             _controller = new GamepadController();
         }
 
-        private TestContext testContextInstance;
+        private bool Finished { get; set; }
 
         /// <summary>
         ///Ruft den Textkontext mit Informationen über
@@ -28,37 +27,9 @@ namespace Arctos.Game.Middleware.Test
         ///</summary>
         public TestContext TestContext
         {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
+            get { return testContextInstance; }
+            set { testContextInstance = value; }
         }
-
-        #region Zusätzliche Testattribute
-        //
-        // Sie können beim Schreiben der Tests folgende zusätzliche Attribute verwenden:
-        //
-        // Verwenden Sie ClassInitialize, um vor Ausführung des ersten Tests in der Klasse Code auszuführen.
-        // [ClassInitialize()]
-        // public static void MyClassInitialize(TestContext testContext) { }
-        //
-        // Verwenden Sie ClassCleanup, um nach Ausführung aller Tests in einer Klasse Code auszuführen.
-        // [ClassCleanup()]
-        // public static void MyClassCleanup() { }
-        //
-        // Mit TestInitialize können Sie vor jedem einzelnen Test Code ausführen. 
-        // [TestInitialize()]
-        // public void MyTestInitialize() { }
-        //
-        // Mit TestCleanup können Sie nach jedem Test Code ausführen.
-        // [TestCleanup()]
-        // public void MyTestCleanup() { }
-        //
-        #endregion
 
         [TestMethod]
         public void GamepadTestMethod()
@@ -71,12 +42,11 @@ namespace Arctos.Game.Middleware.Test
                 _controller.Subscribe(observer);
                 _controller.Update();
             }
-            
         }
 
         private class Observer : IObserver<GamepadController.GamepadControllerEvent>
         {
-            GamepadControllerTest _test;
+            private GamepadControllerTest _test;
 
             public Observer(GamepadControllerTest test)
             {
@@ -96,7 +66,8 @@ namespace Arctos.Game.Middleware.Test
             public void OnNext(GamepadController.GamepadControllerEvent value)
             {
                 System.Diagnostics.Debug.WriteLine("Event: " + value.Type);
-                System.Diagnostics.Debug.WriteLine("Key: " + (value.PressedKey != null ? value.PressedKey.ToString() : "none"));
+                System.Diagnostics.Debug.WriteLine("Key: " +
+                                                   (value.PressedKey != null ? value.PressedKey.ToString() : "none"));
                 System.Diagnostics.Debug.WriteLine("Value: " + (value.Value != null ? value.Value.ToString() : "none"));
 
                 // Shut down test
@@ -106,5 +77,29 @@ namespace Arctos.Game.Middleware.Test
                 }
             }
         }
+
+        #region Zusätzliche Testattribute
+
+        //
+        // Sie können beim Schreiben der Tests folgende zusätzliche Attribute verwenden:
+        //
+        // Verwenden Sie ClassInitialize, um vor Ausführung des ersten Tests in der Klasse Code auszuführen.
+        // [ClassInitialize()]
+        // public static void MyClassInitialize(TestContext testContext) { }
+        //
+        // Verwenden Sie ClassCleanup, um nach Ausführung aller Tests in einer Klasse Code auszuführen.
+        // [ClassCleanup()]
+        // public static void MyClassCleanup() { }
+        //
+        // Mit TestInitialize können Sie vor jedem einzelnen Test Code ausführen. 
+        // [TestInitialize()]
+        // public void MyTestInitialize() { }
+        //
+        // Mit TestCleanup können Sie nach jedem Test Code ausführen.
+        // [TestCleanup()]
+        // public void MyTestCleanup() { }
+        //
+
+        #endregion
     }
 }

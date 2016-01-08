@@ -1,71 +1,18 @@
-﻿using ArctosGameServer.Controller;
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Windows;
 using Arctos.Game.ControlUnit.Input;
-using ArctosGameServer.Communication;
-using ArctosGameServer.Communication.Protocol;
 using Arctos.Game.Middleware.Logic.Model.Client;
 using Arctos.Game.Middleware.Logic.Model.Model;
 using Arctos.Game.Model;
+using ArctosGameServer.Communication;
+using ArctosGameServer.Communication.Protocol;
+using ArctosGameServer.Controller;
 
 namespace Arctos.Game
 {
     public class ControlUnitApp : PropertyChangedBase, IObserver<GamepadController.GamepadControllerEvent>
     {
-        #region Properties
-
-        private const string GAME_STATE_START = "Start Game";
-        private const string GAME_STATE_STOP = "Stop Game";
-
-        private readonly BackgroundWorker worker = new BackgroundWorker();
-
-        private GamepadController _gamepadController;
-        private RobotController _robotController;
-        private GameTcpClient _client;
-        private bool _movementDirty = false;
-        private bool gameStarted = false;
-
-        private string _playerStatus = "Disconnected";
-        public string PlayerStatus
-        {
-            get { return _playerStatus; }
-            set { _playerStatus = value; OnPropertyChanged(); }
-        }
-        private string _gameStatus = "Disconnected";
-        public string GameStatus
-        {
-            get { return _gameStatus; }
-            set { _gameStatus = value; OnPropertyChanged(); }
-        }
-        private string _robotStatus = "Disconnected";
-        public string RobotStatus
-        {
-            get { return _robotStatus; }
-            set { _robotStatus = value; OnPropertyChanged(); }
-        }
-        private string _robotRobotCOMPort = "COM33";
-        public string RobotCOMPort
-        {
-            get { return _robotRobotCOMPort; }
-            set { _robotRobotCOMPort = value; OnPropertyChanged(); }
-        }
-        private string _gameIP = "172.22.25.74";
-        public string GameIP
-        {
-            get { return _gameIP; }
-            set { _gameIP = value; OnPropertyChanged(); }
-        }
-
-        private string _currentGameStatus = GAME_STATE_START;
-        public string CurrentGameStatus
-        {
-            get { return _currentGameStatus; }
-            set { _currentGameStatus = value; OnPropertyChanged(); }
-        }
-
-        #endregion
-
         /// <summary>
         /// Constructor
         /// </summary>
@@ -114,27 +61,28 @@ namespace Arctos.Game
                     {
                         this.ConnectRobot(RobotCOMPort);
                     }
-                    break;
+                        break;
 
                     case "ConnectGame":
                     {
                         _client = new GameTcpClient(this.GameIP);
 
-                        if (_client.Connected) 
+                        if (_client.Connected)
                         {
                             _client.Send(new GameEvent(GameEvent.Type.PlayerRequest, "ninos"));
 
                             GameEvent gameEvent;
-                            do {
+                            do
+                            {
                                 gameEvent = _client.Receive();
                             } while (gameEvent != null && gameEvent.EventType != GameEvent.Type.PlayerJoined);
                             if (gameEvent == null) return;
 
-                            bool isAvailable = (bool)gameEvent.Data;
+                            var isAvailable = (bool) gameEvent.Data;
                             this.GameStatus = isAvailable ? "Connected" : "Username already taken";
                         }
                     }
-                    break;
+                        break;
 
                     case "Start":
                     {
@@ -153,7 +101,7 @@ namespace Arctos.Game
                             worker.CancelAsync();
                         }
                     }
-                    break;
+                        break;
                 }
             }
             catch (Exception ex)
@@ -176,8 +124,8 @@ namespace Arctos.Game
 
                 if (_movementDirty)
                 {
-                    int left = (int)_gamepadController.GetValue(GamepadController.Key.TRIGGER_LEFT);
-                    int right = (int)_gamepadController.GetValue(GamepadController.Key.TRIGGER_RIGHT);
+                    var left = (int) _gamepadController.GetValue(GamepadController.Key.TRIGGER_LEFT);
+                    var right = (int) _gamepadController.GetValue(GamepadController.Key.TRIGGER_RIGHT);
 
                     // Drive
                     _robotController.Drive(left, right);
@@ -189,7 +137,7 @@ namespace Arctos.Game
                 {
                     try
                     {
-                        string rfid = _robotController.ReadRFID();
+                        var rfid = _robotController.ReadRFID();
                         if (!string.IsNullOrEmpty(rfid))
                             _client.Send(new GameEvent(GameEvent.Type.AreaUpdate, rfid));
                     }
@@ -209,6 +157,93 @@ namespace Arctos.Game
             }
         }
 
+        #region Properties
+
+        private const string GAME_STATE_START = "Start Game";
+        private const string GAME_STATE_STOP = "Stop Game";
+
+        private readonly BackgroundWorker worker = new BackgroundWorker();
+
+        private GamepadController _gamepadController;
+        private RobotController _robotController;
+        private GameTcpClient _client;
+        private bool _movementDirty = false;
+        private bool gameStarted = false;
+
+        private string _playerStatus = "Disconnected";
+
+        public string PlayerStatus
+        {
+            get { return _playerStatus; }
+            set
+            {
+                _playerStatus = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _gameStatus = "Disconnected";
+
+        public string GameStatus
+        {
+            get { return _gameStatus; }
+            set
+            {
+                _gameStatus = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _robotStatus = "Disconnected";
+
+        public string RobotStatus
+        {
+            get { return _robotStatus; }
+            set
+            {
+                _robotStatus = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _robotRobotCOMPort = "COM33";
+
+        public string RobotCOMPort
+        {
+            get { return _robotRobotCOMPort; }
+            set
+            {
+                _robotRobotCOMPort = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _gameIP = "172.22.25.74";
+
+        public string GameIP
+        {
+            get { return _gameIP; }
+            set
+            {
+                _gameIP = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _currentGameStatus = GAME_STATE_START;
+
+        public string CurrentGameStatus
+        {
+            get { return _currentGameStatus; }
+            set
+            {
+                _currentGameStatus = value;
+                OnPropertyChanged();
+            }
+        }
+
+        #endregion
+
         #region Events
 
         public void OnCompleted()
@@ -223,7 +258,7 @@ namespace Arctos.Game
 
         public void OnNext(GamepadController.GamepadControllerEvent value)
         {
-            if(value.Type.Equals(GamepadController.GamepadControllerEvent.EventType.INPUT_CHANGE))
+            if (value.Type.Equals(GamepadController.GamepadControllerEvent.EventType.INPUT_CHANGE))
             {
                 // Driving values changed, therefore mark as dirty
                 _movementDirty = true;
