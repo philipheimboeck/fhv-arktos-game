@@ -57,10 +57,11 @@ namespace ArctosGameServer.Communication.Protocol
         /// <param name="pduInput"></param>
         protected override PDU<object> decomposePdu(PDU<object> pduInputData)
         {
+            PDU<object> pdu = new PDU<object>();
             Tuple<string, string> pduDecomposed = null;
             if (pduInputData != null && pduInputData.data != null)
             {
-                var pduInput = new string((char[]) pduInputData.data).TrimEnd('\0');
+                var pduInput = new string( (char[]) pduInputData.data).TrimEnd('\0');
                 var version = pduInput.Substring(0, 2);
                 var keyLength = int.Parse(pduInput.Substring(2, 3));
                 var dataLength = int.Parse(pduInput.Substring(5, 3));
@@ -69,9 +70,11 @@ namespace ArctosGameServer.Communication.Protocol
                 var commandValue = pduInput.Substring(8 + keyLength, dataLength);
 
                 pduDecomposed = new Tuple<string, string>(key, commandValue);
+                pdu.Key = key;
             }
 
-            return new PDU<object> {data = pduDecomposed};
+            pdu.data = pduDecomposed;
+            return pdu;
         }
     }
 }

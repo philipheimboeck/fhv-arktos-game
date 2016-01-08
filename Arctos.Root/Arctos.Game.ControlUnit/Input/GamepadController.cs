@@ -22,6 +22,8 @@ namespace Arctos.Game.ControlUnit.Input
 
         private XBoxControllerWatcher _watcher;
 
+        private const int TURN_SPEED = 25;
+
         public GamepadController()
         {
             _watcher = new XBoxControllerWatcher();
@@ -93,20 +95,20 @@ namespace Arctos.Game.ControlUnit.Input
                     if (leftButton && rightButton)
                     {
                         // If both buttons are pressed drive backwards
-                        _movementValues[Wheels.WheelLeft] = -100;
-                        _movementValues[Wheels.WheelRight] = -100;
+                        _movementValues[Wheels.WheelLeft] = -TURN_SPEED;
+                        _movementValues[Wheels.WheelRight] = -TURN_SPEED;
                     }
                     else if (rightButton)
                     {
                         // If only right button pressed turn right
-                        _movementValues[Wheels.WheelLeft] = 100;
-                        _movementValues[Wheels.WheelRight] = -100;
+                        _movementValues[Wheels.WheelLeft] = TURN_SPEED;
+                        _movementValues[Wheels.WheelRight] = -TURN_SPEED;
                     }
                     else
                     {
                         // If only left button pressed turn left
-                        _movementValues[Wheels.WheelLeft] = -100;
-                        _movementValues[Wheels.WheelRight] = 100;
+                        _movementValues[Wheels.WheelLeft] = -TURN_SPEED;
+                        _movementValues[Wheels.WheelRight] = TURN_SPEED;
                     }
 
                     notification = true;

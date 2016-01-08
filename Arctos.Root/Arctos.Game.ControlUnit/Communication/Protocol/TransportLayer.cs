@@ -30,9 +30,28 @@ namespace ArctosGameServer.Communication.Protocol
             var pduReceived = new PDU<object>();
             if (this.serialPort.BytesToRead > 0)
             {
-                var dataReceived = new char[128];
-                this.serialPort.Read(dataReceived, 0, 128);
-                pduReceived.data = dataReceived;
+                char[] frameHeader = new char[8];
+                this.serialPort.Read(frameHeader, 0, 8);
+
+                var pduInput = new string(frameHeader);
+
+                var keyLength = int.Parse(pduInput.Substring(2, 3));
+                var dataLength = int.Parse(pduInput.Substring(5, 3));
+
+                char[] frameBuffer = new char[120];
+                this.serialPort.Read(frameBuffer, 0, keyLength + dataLength);
+
+                char[] frame = new char[128];
+                for (int i = 0; i < 8; i++)
+                {
+                    frame[i] = frameHeader[i];
+                }
+                for (int i = 0; i < (keyLength + dataLength); i++)
+                {
+                    frame[i + 8] = frameBuffer[i];
+                }
+
+                pduReceived.data = frame;
             }
 
             return pduReceived;

@@ -71,6 +71,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Controller\Events\ReceivedDataEvent.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

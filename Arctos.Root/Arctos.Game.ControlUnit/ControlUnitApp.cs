@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Timers;
 using System.Windows;
 using Arctos.Game.ControlUnit.Input;
 using Arctos.Game.Middleware.Logic.Model.Client;
@@ -8,6 +9,7 @@ using Arctos.Game.Model;
 using ArctosGameServer.Communication;
 using ArctosGameServer.Communication.Protocol;
 using ArctosGameServer.Controller;
+using ArctosGameServer.Controller.Events;
 
 namespace Arctos.Game
 {
@@ -25,11 +27,16 @@ namespace Arctos.Game
             if (_gamepadController.IsConnected()) PlayerStatus = "Connected";
         }
 
+        private void TimerOnElapsed(object sender, ElapsedEventArgs elapsedEventArgs)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Try to esablish a connection to the robot
         /// </summary>
         /// <param name="comPort"></param>
-        private void ConnectRobot(string comPort)
+        private void WaitForRobot(string comPort)
         {
             try
             {
@@ -38,7 +45,17 @@ namespace Arctos.Game
                         new TransportLayer(comPort)
                         )
                     );
+
                 _robotController = new RobotController(protocol);
+                _robotController.HeartbeatEvent += RobotControllerOnHeartbeatEvent;
+                _robotController.RfidEvent += RobotControllerOnRfidEvent;
+
+                do
+                {
+                    _robotController.ReadBluetoothData();
+                    // Wait until robot has connected
+                } while (IsWaitingForRobot);
+
                 RobotStatus = "Connected to Port " + comPort;
             }
             catch (Exception ex)
@@ -57,9 +74,9 @@ namespace Arctos.Game
             {
                 switch (parameter.ToString())
                 {
-                    case "ConnectRobot":
+                    case "WaitForRobot":
                     {
-                        this.ConnectRobot(RobotCOMPort);
+                        this.WaitForRobot(RobotCOMPort);
                     }
                         break;
 
@@ -120,8 +137,8 @@ namespace Arctos.Game
             // Game Loop
             while (true)
             {
+                // Gamepad updates
                 _gamepadController.Update();
-
                 if (_movementDirty)
                 {
                     var left = (int) _gamepadController.GetValue(GamepadController.Wheels.WheelLeft);
@@ -132,20 +149,8 @@ namespace Arctos.Game
                     _movementDirty = false;
                 }
 
-                // Read
-                if (_client != null && _client.Connected)
-                {
-                    try
-                    {
-                        var rfid = _robotController.ReadRFID();
-                        if (!string.IsNullOrEmpty(rfid))
-                            _client.Send(new GameEvent(GameEvent.Type.AreaUpdate, rfid));
-                    }
-                    catch (Exception ex)
-                    {
-                        _client = null;
-                    }
-                }
+                // Read Bluetooth Data
+                _robotController.ReadBluetoothData();
 
                 // Exit Game Loop
                 if (worker.CancellationPending)
@@ -157,7 +162,48 @@ namespace Arctos.Game
             }
         }
 
+        private void checkHeartbeat(object sender, EventArgs elapsed)
+        {
+            
+        }
+
+        /// <summary>
+        /// Send Area Update on RFID read
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="receivedDataEventArgs"></param>
+        private void RobotControllerOnRfidEvent(object sender, ReceivedDataEventArgs receivedDataEventArgs)
+        {
+            if (_client == null || !_client.Connected) return;
+
+            try
+            {
+                string rfidTag = receivedDataEventArgs.Data as string;
+                if(rfidTag != null)
+                    _client.Send(new GameEvent(GameEvent.Type.AreaUpdate, rfidTag));
+            }
+            catch (Exception ex)
+            {
+                _client = null;
+            }
+        }
+
+        /// <summary>
+        /// Keep track of the robot heartbeat
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="receivedDataEventArgs"></param>
+        private void RobotControllerOnHeartbeatEvent(object sender, ReceivedDataEventArgs receivedDataEventArgs)
+        {
+            IsWaitingForRobot = false;
+            //throw new NotImplementedException();
+        }
+
         #region Properties
+
+        private bool IsWaitingForRobot = true;
+
+        private Timer HeartbeatTimer = new Timer(1000);
 
         private const string GAME_STATE_START = "Start Game";
         private const string GAME_STATE_STOP = "Stop Game";
