@@ -12,6 +12,7 @@
         <Grid HorizontalAlignment="Left" Height="100" Margin="23,71,0,0" VerticalAlignment="Top" Width="458">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="120" />
+                <ColumnDefinition Width="25" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
@@ -21,13 +22,67 @@
             </Grid.RowDefinitions>
 
             <Label Content="Player:" Grid.Column="0"/>
-            <Label Content="{Binding PlayerStatus}" Grid.Column="1" />
+            <Ellipse Grid.Column="1" Grid.Row="0" HorizontalAlignment="Left" Height="15" Stroke="Transparent" VerticalAlignment="Center" Width="15">
+                <Ellipse.Style>
+                    <Style TargetType="Ellipse">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=PlayerStatus}"
+                                     Value="True">
+                                <Setter Property="Fill"
+                                    Value="Green" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=PlayerStatus}"
+                                     Value="False">
+                                <Setter Property="Fill"
+                                    Value="Red" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Ellipse.Style>
+            </Ellipse>
+            <Label Content="{Binding PlayerStatusText}" Grid.Column="2" Grid.Row="0" VerticalAlignment="Center" />
 
             <Label Content="Robot:" Grid.Column="0" Grid.Row="1"/>
-            <Label Content="{Binding RobotStatus}" Grid.Column="1" Grid.Row="1" />
+            <Label Content="{Binding RobotStatusText}" Grid.Column="2" Grid.Row="1" VerticalAlignment="Center" />
+            <Ellipse Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" Height="15" Stroke="Transparent" VerticalAlignment="Center" Width="15">
+                <Ellipse.Style>
+                    <Style TargetType="Ellipse">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=RobotStatus}"
+                                     Value="True">
+                                <Setter Property="Fill"
+                                    Value="Green" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=RobotStatus}"
+                                     Value="False">
+                                <Setter Property="Fill"
+                                    Value="Red" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Ellipse.Style>
+            </Ellipse>
 
             <Label Content="Game:" Grid.Column="0" Grid.Row="2"/>
-            <Label Content="{Binding GameStatus}" Grid.Column="1" Grid.Row="2" />
+            <Ellipse Grid.Column="1" Grid.Row="2" HorizontalAlignment="Left" Height="15" Stroke="Transparent" VerticalAlignment="Center" Width="15">
+                <Ellipse.Style>
+                    <Style TargetType="Ellipse">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=GameStatus}"
+                                     Value="True">
+                                <Setter Property="Fill"
+                                    Value="Green" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=GameStatus}"
+                                     Value="False">
+                                <Setter Property="Fill"
+                                    Value="Red" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Ellipse.Style>
+            </Ellipse>
+            <Label Content="{Binding GameStatusText}" Grid.Column="2" Grid.Row="2" VerticalAlignment="Center" />
         </Grid>
 
         <Grid HorizontalAlignment="Left" Height="100" Margin="23,176,0,0" VerticalAlignment="Top" Width="458">
@@ -52,6 +107,6 @@
 
             <Button Grid.Row="2" Grid.Column="2" Content="{Binding Path=CurrentGameStatus}" HorizontalAlignment="Left" VerticalAlignment="Center" Width="118" Command="{Binding Path=UpdateCommand}" CommandParameter="Start"/>
         </Grid>
-        
+
     </Grid>
 </Window>

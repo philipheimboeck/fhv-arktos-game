@@ -19,7 +19,7 @@
         <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
                     <Grid gameGui:GridAutoLayout.NumberOfRows="{Binding Game.GameColumns}"
-                        gameGui:GridAutoLayout.NumberOfColumns="{Binding Game.GameRows}" VerticalAlignment="Stretch" Background="Red"
+                        gameGui:GridAutoLayout.NumberOfColumns="{Binding Game.GameRows}" VerticalAlignment="Stretch" Background="White"
                         Width="{Binding Game.AreaWidth}"
                         Height="{Binding Game.AreaHeight}" />
             </ItemsPanelTemplate>

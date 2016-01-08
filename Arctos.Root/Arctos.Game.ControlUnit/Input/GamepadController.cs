@@ -116,16 +116,16 @@ namespace Arctos.Game.ControlUnit.Input
                 else
                 {
                     // Send movement by triggers
-                    if (!_movementValues[Wheels.WheelLeft].Equals(leftTrigger))
+                    if (!_movementValues[Wheels.WheelRight].Equals(leftTrigger))
                     {
-                        _movementValues[Wheels.WheelLeft] = leftTrigger;
+                        _movementValues[Wheels.WheelRight] = leftTrigger;
 
                         notification = true;
                     }
 
-                    if (!_movementValues[Wheels.WheelRight].Equals(rightTrigger))
+                    if (!_movementValues[Wheels.WheelLeft].Equals(rightTrigger))
                     {
-                        _movementValues[Wheels.WheelRight] = rightTrigger;
+                        _movementValues[Wheels.WheelLeft] = rightTrigger;
 
                         notification = true;
                     }
