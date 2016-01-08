@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Arctos.Game.Middleware.Logic.Model.Model;
 using Arctos.Game.Model;
@@ -54,11 +55,17 @@ namespace ArctosGameServer.Controller
         public void GenerateGame()
         {
             // Todo: Make maps customable
+            int width = 10;
+            int height = 10;
 
+            // Generate path
+            var path = createPath(width, height);
+
+            // Generate Map
             var areas = new List<Area>();
-            for (var i = 0; i < 10; i++)
+            for (var i = 0; i < width; i++)
             {
-                for (var j = 0; j < 10; j++)
+                for (var j = 0; j < height; j++)
                 {
                     areas.Add(new Area()
                     {
@@ -75,8 +82,73 @@ namespace ArctosGameServer.Controller
                 Name = "Map 1",
                 AreaList = areas
             };
+            map.setPath(path);
 
             _playableMaps.Add(map);
+        }
+
+        /// <summary>
+        /// Creates a random path through the fields
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <returns></returns>
+        private List<Tuple<int, int>> createPath(int width, int height)
+        {
+            List<Tuple<int, int>> path = new List<Tuple<int, int>>();
+            Random r = new Random();
+
+            // Add start field
+            var current = new Tuple<int, int>(r.Next(0, width - 1), height - 1);
+            path.Add(current);
+
+            int direction = 0; // 0 -> Top, 1 -> Left, 2 -> Right
+
+            // Create new fields until the top is reached
+            while (current.Item2 > 0)
+            {
+                // Check for possible directions
+                bool[] possibleDirections = {true, true, true};
+
+                // Left is not possible when there is no left field or when the player went right last time
+                possibleDirections[1] = current.Item1 > 0 && direction != 2;
+
+                // Right is not possible when there is no right field or when the player went left last time
+                possibleDirections[2] = current.Item1 < width - 1 && direction != 1;
+                
+                if (possibleDirections.Count(x => x == true) == 0)
+                {
+                    // No way found! Aborting!
+                    throw new Exception("No way found!");
+                }
+
+                // Retrieve one possible direction
+                do
+                {
+                    direction = r.Next(0, 3);
+                } while (!possibleDirections[direction]);
+
+                // Add new tuple
+                int posX = current.Item1;
+                int posY = current.Item2;
+
+                switch (direction)
+                {
+                    case 0:
+                        posY--;
+                        break;
+                    case 1:
+                        posX--;
+                        break;
+                    case 2:
+                        posX++;
+                        break;
+                }
+                current = new Tuple<int, int>(posX, posY);
+                path.Add(current);
+            }
+
+            return path;
         }
 
         public void Loop()

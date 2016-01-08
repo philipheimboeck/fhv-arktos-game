@@ -19,8 +19,9 @@ namespace Arctos.Game.Model
         /// <summary>
         /// All available areas on this game field
         /// </summary>
-        [XmlElement]
         public List<Area> AreaList { get; set; }
+
+        public List<Area> Path { get; set; }
 
         /// <summary>
         /// Get the amount of rows for the game
@@ -56,5 +57,17 @@ namespace Arctos.Game.Model
         /// Game Map Name
         /// </summary>
         public string Name { get; set; }
+
+        public void setPath(List<Tuple<int, int>> path)
+        {
+            List<Area> newPath = new List<Area>();
+
+            foreach(var tuple in path)
+            {
+                newPath.Add(AreaList.Find(x => x.Column == tuple.Item1 && x.Row == tuple.Item2));
+            }
+
+            Path = newPath;
+        }
     }
 }
