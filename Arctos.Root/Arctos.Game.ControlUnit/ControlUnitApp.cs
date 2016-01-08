@@ -124,8 +124,8 @@ namespace Arctos.Game
 
                 if (_movementDirty)
                 {
-                    var left = (int) _gamepadController.GetValue(GamepadController.Key.TRIGGER_LEFT);
-                    var right = (int) _gamepadController.GetValue(GamepadController.Key.TRIGGER_RIGHT);
+                    var left = (int) _gamepadController.GetValue(GamepadController.Wheels.WheelLeft);
+                    var right = (int) _gamepadController.GetValue(GamepadController.Wheels.WheelRight);
 
                     // Drive
                     _robotController.Drive(left, right);
@@ -258,18 +258,18 @@ namespace Arctos.Game
 
         public void OnNext(GamepadController.GamepadControllerEvent value)
         {
-            if (value.Type.Equals(GamepadController.GamepadControllerEvent.EventType.INPUT_CHANGE))
+            if (value.Type.Equals(GamepadController.GamepadControllerEvent.EventType.InputChange))
             {
                 // Driving values changed, therefore mark as dirty
                 _movementDirty = true;
             }
 
-            if (value.Type.Equals(GamepadController.GamepadControllerEvent.EventType.CONTROLLER_CONNECTED))
+            if (value.Type.Equals(GamepadController.GamepadControllerEvent.EventType.ControllerConnected))
             {
                 PlayerStatus = "Connected";
             }
 
-            if (value.Type.Equals(GamepadController.GamepadControllerEvent.EventType.CONTROLLER_DISCONNECTED))
+            if (value.Type.Equals(GamepadController.GamepadControllerEvent.EventType.ControllerDisconnected))
             {
                 PlayerStatus = "Disconnected";
             }

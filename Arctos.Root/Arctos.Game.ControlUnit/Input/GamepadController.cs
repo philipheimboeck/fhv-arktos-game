@@ -7,10 +7,10 @@ namespace Arctos.Game.ControlUnit.Input
 {
     public class GamepadController : IObservable<GamepadController.GamepadControllerEvent>
     {
-        public enum Key
+        public enum Wheels
         {
-            TRIGGER_LEFT,
-            TRIGGER_RIGHT
+            WheelLeft,
+            WheelRight
         };
 
         private XBoxController _controller;
@@ -18,7 +18,7 @@ namespace Arctos.Game.ControlUnit.Input
         private List<IObserver<GamepadController.GamepadControllerEvent>> _observers =
             new List<IObserver<GamepadControllerEvent>>();
 
-        private Dictionary<Key, double> _oldValues = new Dictionary<Key, double>();
+        private Dictionary<Wheels, double> _movementValues = new Dictionary<Wheels, double>();
 
         private XBoxControllerWatcher _watcher;
 
@@ -31,9 +31,9 @@ namespace Arctos.Game.ControlUnit.Input
             // Check for already connected controllers
             _controller = XBoxController.GetConnectedControllers().FirstOrDefault();
 
-            // Initialize old values
-            _oldValues.Add(Key.TRIGGER_LEFT, 0);
-            _oldValues.Add(Key.TRIGGER_RIGHT, 0);
+            // Initialize movement values
+            _movementValues.Add(Wheels.WheelLeft, 0);
+            _movementValues.Add(Wheels.WheelRight, 0);
         }
 
         public IDisposable Subscribe(IObserver<GamepadControllerEvent> observer)
@@ -55,7 +55,7 @@ namespace Arctos.Game.ControlUnit.Input
                 this._controller = controller;
 
                 // Notify about connection
-                Notify(new GamepadControllerEvent(GamepadControllerEvent.EventType.CONTROLLER_CONNECTED));
+                Notify(new GamepadControllerEvent(GamepadControllerEvent.EventType.ControllerConnected));
             }
         }
 
@@ -67,7 +67,7 @@ namespace Arctos.Game.ControlUnit.Input
                 this._controller = null;
 
                 // Notify about disconnection
-                Notify(new GamepadControllerEvent(GamepadControllerEvent.EventType.CONTROLLER_DISCONNECTED));
+                Notify(new GamepadControllerEvent(GamepadControllerEvent.EventType.ControllerDisconnected));
             }
         }
 
@@ -83,30 +83,62 @@ namespace Arctos.Game.ControlUnit.Input
                 // Read values
                 var leftTrigger = _controller.TriggerLeftPosition;
                 var rightTrigger = _controller.TriggerRightPosition;
+                var leftButton = _controller.ButtonShoulderLeftPressed;
+                var rightButton = _controller.ButtonShoulderRightPressed;
 
-                // If the values changed, send them
-
-                if (!_oldValues[Key.TRIGGER_LEFT].Equals(leftTrigger))
+                var notification = false;
+                // If any sholder button is pressed suppress the triggers
+                if (leftButton || rightButton)
                 {
-                    _oldValues[Key.TRIGGER_LEFT] = leftTrigger;
+                    if (leftButton && rightButton)
+                    {
+                        // If both buttons are pressed drive backwards
+                        _movementValues[Wheels.WheelLeft] = -100;
+                        _movementValues[Wheels.WheelRight] = -100;
+                    }
+                    else if (rightButton)
+                    {
+                        // If only right button pressed turn right
+                        _movementValues[Wheels.WheelLeft] = 100;
+                        _movementValues[Wheels.WheelRight] = -100;
+                    }
+                    else
+                    {
+                        // If only left button pressed turn left
+                        _movementValues[Wheels.WheelLeft] = -100;
+                        _movementValues[Wheels.WheelRight] = 100;
+                    }
 
-                    var notification = new GamepadControllerEvent(Key.TRIGGER_LEFT, leftTrigger);
-                    Notify(notification);
+                    notification = true;
+                }
+                else
+                {
+                    // Send movement by triggers
+                    if (!_movementValues[Wheels.WheelLeft].Equals(leftTrigger))
+                    {
+                        _movementValues[Wheels.WheelLeft] = leftTrigger;
+
+                        notification = true;
+                    }
+
+                    if (!_movementValues[Wheels.WheelRight].Equals(rightTrigger))
+                    {
+                        _movementValues[Wheels.WheelRight] = rightTrigger;
+
+                        notification = true;
+                    }
                 }
 
-                if (!_oldValues[Key.TRIGGER_RIGHT].Equals(rightTrigger))
+                if (notification)
                 {
-                    _oldValues[Key.TRIGGER_RIGHT] = rightTrigger;
-
-                    var notification = new GamepadControllerEvent(Key.TRIGGER_RIGHT, rightTrigger);
-                    Notify(notification);
+                    Notify(new GamepadControllerEvent(GamepadControllerEvent.EventType.InputChange));
                 }
             }
         }
 
-        public double GetValue(Key key)
+        public double GetValue(Wheels wheels)
         {
-            return _oldValues[key];
+            return _movementValues[wheels];
         }
 
         private void Notify(GamepadControllerEvent eventObject)
@@ -142,9 +174,9 @@ namespace Arctos.Game.ControlUnit.Input
         {
             public enum EventType
             {
-                CONTROLLER_DISCONNECTED,
-                CONTROLLER_CONNECTED,
-                INPUT_CHANGE
+                ControllerDisconnected,
+                ControllerConnected,
+                InputChange
             };
 
             public GamepadControllerEvent(EventType type)
@@ -152,16 +184,9 @@ namespace Arctos.Game.ControlUnit.Input
                 Type = type;
             }
 
-            public GamepadControllerEvent(Key key, double value)
-            {
-                Type = EventType.INPUT_CHANGE;
-                PressedKey = key;
-                Value = value;
-            }
-
             public EventType Type { get; set; }
 
-            public Key? PressedKey { get; set; }
+            public Wheels? PressedWheels { get; set; }
 
             public double? Value { get; set; }
         }

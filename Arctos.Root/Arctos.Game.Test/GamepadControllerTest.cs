@@ -66,12 +66,12 @@ namespace Arctos.Game.Middleware.Test
             public void OnNext(GamepadController.GamepadControllerEvent value)
             {
                 System.Diagnostics.Debug.WriteLine("Event: " + value.Type);
-                System.Diagnostics.Debug.WriteLine("Key: " +
-                                                   (value.PressedKey != null ? value.PressedKey.ToString() : "none"));
+                System.Diagnostics.Debug.WriteLine("Wheels: " +
+                                                   (value.PressedWheels != null ? value.PressedWheels.ToString() : "none"));
                 System.Diagnostics.Debug.WriteLine("Value: " + (value.Value != null ? value.Value.ToString() : "none"));
 
                 // Shut down test
-                if (value.Type.Equals(GamepadController.GamepadControllerEvent.EventType.CONTROLLER_DISCONNECTED))
+                if (value.Type.Equals(GamepadController.GamepadControllerEvent.EventType.ControllerDisconnected))
                 {
                     _test.Finished = true;
                 }
