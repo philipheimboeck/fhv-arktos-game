@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -8,10 +9,10 @@ using Arctos.Game.Middleware.Logic.Model.Model;
 
 namespace ArctosGameServer.Service
 {
-    public class GameTcpServer : IObserver<GameEvent>, IObservable<Tuple<Guid, GameEvent>>
+    public class GameTcpServer : IObserver<GameEvent<object>>, IObservable<Tuple<Guid, GameEvent<object>>>
     {
         private Dictionary<Guid, TcpClient> _clients = new Dictionary<Guid, TcpClient>();
-        private List<IObserver<Tuple<Guid, GameEvent>>> _observers = new List<IObserver<Tuple<Guid, GameEvent>>>();
+        private List<IObserver<Tuple<Guid, GameEvent<dynamic>>>> _observers = new List<IObserver<Tuple<Guid, GameEvent<dynamic>>>>();
         private TcpListener _tcpListener;
 
         public GameTcpServer()
@@ -26,7 +27,7 @@ namespace ArctosGameServer.Service
             this._tcpListener.Start();
         }
 
-        public IDisposable Subscribe(IObserver<Tuple<Guid, GameEvent>> observer)
+        public IDisposable Subscribe(IObserver<Tuple<Guid, GameEvent<object>>> observer)
         {
             if (!_observers.Contains(observer))
             {
@@ -45,7 +46,7 @@ namespace ArctosGameServer.Service
             throw new NotImplementedException();
         }
 
-        public void OnNext(GameEvent value)
+        public void OnNext(GameEvent<object> value)
         {
             Send(value);
         }
@@ -78,7 +79,7 @@ namespace ArctosGameServer.Service
             WaitForClient();
         }
 
-        public void Send(GameEvent gameEvent)
+        public void Send<T>(GameEvent<T> gameEvent)
         {
             // Remove disconnected clients
             RemoveDisconnected();
@@ -90,7 +91,7 @@ namespace ArctosGameServer.Service
             }
         }
 
-        public void Send(GameEvent gameEvent, Guid clientId)
+        public void Send<T>(GameEvent<T> gameEvent, Guid clientId)
         {
             // Remove disconnected clients
             RemoveDisconnected();
@@ -103,10 +104,10 @@ namespace ArctosGameServer.Service
             SendData(_clients[clientId], gameEvent);
         }
 
-        protected void SendData(TcpClient client, GameEvent gameEvent)
+        protected void SendData<T>(TcpClient client, GameEvent<T> gameEvent)
         {
             // Serialize and send event
-            var xmlSerializer = new XmlSerializer(typeof (GameEvent));
+            var xmlSerializer = new XmlSerializer(typeof (GameEvent<T>));
             var stream = client.GetStream();
             if (stream.CanWrite)
             {
@@ -119,9 +120,9 @@ namespace ArctosGameServer.Service
         /// </summary>
         /// <param name="guid"></param>
         /// <param name="gameEvent"></param>
-        public void OnReceived(Guid guid, GameEvent gameEvent)
+        public void OnReceived(Guid guid, GameEvent<dynamic> gameEvent)
         {
-            NotifyObservers(new Tuple<Guid, GameEvent>(guid, gameEvent));
+            NotifyObservers(new Tuple<Guid, GameEvent<dynamic>>(guid, gameEvent));
         }
 
         private void RemoveDisconnected()
@@ -140,26 +141,36 @@ namespace ArctosGameServer.Service
             }
         }
 
-        public void Unsubscribe(IObserver<Tuple<Guid, GameEvent>> observer)
+        public void Unsubscribe(IObserver<Tuple<Guid, GameEvent<object>>> observer)
         {
             _observers.Remove(observer);
         }
 
-        public void NotifyObservers(Tuple<Guid, GameEvent> e)
+        public void NotifyObservers(Tuple<Guid, GameEvent<dynamic>> e)
         {
             foreach (var observer in _observers)
             {
                 observer.OnNext(e);
             }
         }
+
+        /// <summary>
+        /// Will be called by the ClientRequestHandler when it closes
+        /// </summary>
+        /// <param name="clientRequestHandler"></param>
+        public void ClientClosed(Guid clientId)
+        {
+            // Todo: Throw Connection Lost GameEvent
+            
+        }
     }
 
     public class Disposable : IDisposable
     {
-        private IObserver<Tuple<Guid, GameEvent>> _observer;
+        private IObserver<Tuple<Guid, GameEvent<object>>> _observer;
         private GameTcpServer _server;
 
-        public Disposable(GameTcpServer server, IObserver<Tuple<Guid, GameEvent>> observer)
+        public Disposable(GameTcpServer server, IObserver<Tuple<Guid, GameEvent<object>>> observer)
         {
             _server = server;
             _observer = observer;

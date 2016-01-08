@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Xml.Serialization;
 using Arctos.Game.Middleware.Logic.Model.Model;
@@ -28,6 +30,14 @@ namespace ArctosGameServer.Service
             WaitForRequest();
         }
 
+        public void Close()
+        {
+            _networkStream.Close();
+            _clientSocket.Close();
+
+            _tcpServer.ClientClosed(_id);
+        }
+
         private void WaitForRequest()
         {
             var buffer = new byte[_clientSocket.ReceiveBufferSize];
@@ -38,41 +48,50 @@ namespace ArctosGameServer.Service
         private void ReadCallback(IAsyncResult result)
         {
             // Start of Transport Layer
-            var networkStream = _clientSocket.GetStream();
-
-            var read = networkStream.EndRead(result);
-            if (read == 0)
+            try
             {
-                _networkStream.Close();
-                _clientSocket.Close();
-                return;
-            }
+                var networkStream = _clientSocket.GetStream();
 
-            var buffer = result.AsyncState as byte[];
-            var data = Encoding.Default.GetString(buffer, 0, read);
-
-            // Start of Session layer
-
-            // Start of Presentation Layer
-            var receivedPdus = data.Split(new string[] {"<?xml"}, StringSplitOptions.RemoveEmptyEntries);
-            var serializer = new XmlSerializer(typeof (GameEvent));
-
-            foreach (var pdu in receivedPdus)
-            {
-                // Add removed separator
-                var xmlString = "<?xml" + pdu;
-
-                using (TextReader tr = new StringReader(xmlString))
+                var read = networkStream.EndRead(result);
+                if (read == 0)
                 {
-                    // Start of Application Layer
+                    Close();
+                    return;
+                }
 
-                    // Deserialize entity
-                    var gameEvent = (GameEvent) serializer.Deserialize(tr);
+                var buffer = result.AsyncState as byte[];
+                var data = Encoding.Default.GetString(buffer, 0, read);
 
-                    // Notify Server about the event
-                    _tcpServer.OnReceived(_id, gameEvent);
+                // Start of Session layer
+
+                // Start of Presentation Layer
+                var receivedPdus = data.Split(new string[] {"<?xml"}, StringSplitOptions.RemoveEmptyEntries);
+                var serializer = new XmlSerializer(typeof (GameEvent<dynamic>));
+
+                foreach (var pdu in receivedPdus)
+                {
+                    // Add removed separator
+                    var xmlString = "<?xml" + pdu;
+
+                    using (TextReader tr = new StringReader(xmlString))
+                    {
+                        // Start of Application Layer
+
+                        // Deserialize entity
+                        var gameEvent = (GameEvent<dynamic>) serializer.Deserialize(tr);
+
+                        // Notify Server about the event
+                        _tcpServer.OnReceived(_id, gameEvent);
+                    }
                 }
             }
+            catch (IOException ex)
+            {
+                Debug.WriteLine("Closing connection because: " + ex.Message);
+                Close();
+                return;
+            }
+            
 
             this.WaitForRequest();
         }

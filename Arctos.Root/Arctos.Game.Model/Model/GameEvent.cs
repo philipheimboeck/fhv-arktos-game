@@ -3,30 +3,22 @@
 namespace Arctos.Game.Middleware.Logic.Model.Model
 {
     [Serializable]
-    public class GameEvent
+    public class GameEvent<T>
     {
-        public enum Type
-        {
-            PlayerRequest,
-            PlayerJoined,
-            PlayerLeft,
-            GuiRequest,
-            GuiJoined,
-            AreaUpdate
-        }
+        
 
         public GameEvent()
         {
         }
 
-        public GameEvent(Type type, object data)
+        public GameEvent(GameEventType gameEventType, T data)
         {
-            EventType = type;
+            EventGameEventType = gameEventType;
             Data = data;
         }
 
-        public Type EventType { get; set; }
+        public GameEventType EventGameEventType { get; set; }
 
-        public object Data { get; set; }
+        public T Data { get; set; }
     }
 }

@@ -55,13 +55,13 @@ namespace Arctos.View
                 if (this.GameClient.Connected)
                 {
                     // Request gui for username
-                    this.GameClient.Send(new GameEvent(GameEvent.Type.GuiRequest, "ninos"));
+                    this.GameClient.Send(new GameEvent<String>(GameEventType.GuiRequest, "ninos"));
 
-                    GameEvent gameEvent;
+                    GameEvent<dynamic> gameEvent;
                     do
                     {
                         gameEvent = this.GameClient.Receive();
-                    } while (gameEvent != null && gameEvent.EventType != GameEvent.Type.GuiJoined);
+                    } while (gameEvent != null && gameEvent.EventGameEventType != GameEventType.GuiJoined);
 
                     if (gameEvent == null) return;
 
@@ -104,9 +104,9 @@ namespace Arctos.View
 
                 if (receivedEvent != null)
                 {
-                    switch (receivedEvent.EventType)
+                    switch (receivedEvent.EventGameEventType)
                     {
-                        case GameEvent.Type.AreaUpdate:
+                        case GameEventType.AreaUpdate:
                         {
                             var receivedAreaUpdate = receivedEvent.Data as Area;
                             if (receivedAreaUpdate != null)

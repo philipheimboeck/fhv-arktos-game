@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Xml.Serialization;
 using Arctos.Game.Middleware.Logic.Model.Model;
 using Arctos.Game.Model;
 using ArctosGameServer.Domain;
@@ -12,10 +14,10 @@ namespace ArctosGameServer.Controller
     /// <summary>
     /// The GameController
     /// </summary>
-    public class GameController : IObserver<Tuple<Guid, GameEvent>>
+    public class GameController : IObserver<Tuple<Guid, GameEvent<Object>>>
     {
-        private readonly ConcurrentQueue<Tuple<Guid, GameEvent>> _receivedEvents =
-            new ConcurrentQueue<Tuple<Guid, GameEvent>>();
+        private readonly ConcurrentQueue<Tuple<Guid, GameEvent<dynamic>>> _receivedEvents =
+            new ConcurrentQueue<Tuple<Guid, GameEvent<dynamic>>>();
 
         private List<GameArea> _playableMaps = new List<GameArea>();
 
@@ -42,7 +44,7 @@ namespace ArctosGameServer.Controller
             throw new NotImplementedException();
         }
 
-        public void OnNext(Tuple<Guid, GameEvent> value)
+        public void OnNext(Tuple<Guid, GameEvent<dynamic>> value)
         {
             // Receive GameEvent
             _receivedEvents.Enqueue(value);
@@ -84,31 +86,31 @@ namespace ArctosGameServer.Controller
             while (!ShutdownRequested)
             {
                 // Process all received events
-                Tuple<Guid, GameEvent> e = null;
+                Tuple<Guid, GameEvent<dynamic>> e = null;
                 while (_receivedEvents.TryDequeue(out e))
                 {
-                    switch (e.Item2.EventType)
+                    switch (e.Item2.EventGameEventType)
                     {
-                        case GameEvent.Type.PlayerRequest:
+                        case GameEventType.PlayerRequest:
                         {
                             var playerName = (string) e.Item2.Data;
                             PlayerRequest(e.Item1, playerName);
                         }
                             break;
-                        case GameEvent.Type.PlayerJoined:
+                        case GameEventType.PlayerJoined:
                             break;
-                        case GameEvent.Type.PlayerLeft:
+                        case GameEventType.PlayerLeft:
                             break;
-                        case GameEvent.Type.GuiRequest:
+                        case GameEventType.GuiRequest:
                         {
                             var playerName = (string) e.Item2.Data;
                             GuiRequest(e.Item1, playerName);
                         }
                             break;
-                        case GameEvent.Type.GuiJoined:
+                        case GameEventType.GuiJoined:
                             // Should never occur
                             break;
-                        case GameEvent.Type.AreaUpdate:
+                        case GameEventType.AreaUpdate:
                         {
                             var area = (string) e.Item2.Data;
                             UpdateArea(e.Item1, area);
@@ -125,7 +127,7 @@ namespace ArctosGameServer.Controller
             if (!_players.ContainsKey(playerName))
             {
                 // Send NOT OK
-                _server.Send(new GameEvent(GameEvent.Type.GuiJoined, null), guid);
+                _server.Send(new GameEvent<GameArea>(GameEventType.GuiJoined, null), guid);
                 return;
             }
 
@@ -133,7 +135,7 @@ namespace ArctosGameServer.Controller
             _players[playerName].GuiId = guid;
 
             // Send OK
-            _server.Send(new GameEvent(GameEvent.Type.GuiJoined, _players[playerName].Map), guid);
+            _server.Send(new GameEvent<GameArea>(GameEventType.GuiJoined, _players[playerName].Map), guid);
         }
 
         private void PlayerRequest(Guid guid, string playerName)
@@ -142,7 +144,7 @@ namespace ArctosGameServer.Controller
             if (_players.ContainsKey(playerName))
             {
                 // Send NOT OK
-                _server.Send(new GameEvent(GameEvent.Type.PlayerJoined, false), guid);
+                _server.Send(new GameEvent<Boolean>(GameEventType.PlayerJoined, false), guid);
                 return;
             }
 
@@ -150,7 +152,7 @@ namespace ArctosGameServer.Controller
             var map = InstantiateMap();
             if (map == null)
             {
-                _server.Send(new GameEvent(GameEvent.Type.PlayerJoined, false), guid);
+                _server.Send(new GameEvent<Boolean>(GameEventType.PlayerJoined, false), guid);
                 return;
             }
 
@@ -165,7 +167,7 @@ namespace ArctosGameServer.Controller
             _players.Add(playerName, player);
 
             // Send OK
-            _server.Send(new GameEvent(GameEvent.Type.PlayerJoined, true), guid);
+            _server.Send(new GameEvent<Boolean>(GameEventType.PlayerJoined, true), guid);
         }
 
         private GameArea InstantiateMap()
@@ -186,7 +188,7 @@ namespace ArctosGameServer.Controller
 
             if (player != null && !player.GuiId.Equals(Guid.Empty))
             {
-                _server.Send(new GameEvent(GameEvent.Type.AreaUpdate, areaId), player.GuiId);
+                _server.Send(new GameEvent<String>(GameEventType.AreaUpdate, areaId), player.GuiId);
             }
         }
 

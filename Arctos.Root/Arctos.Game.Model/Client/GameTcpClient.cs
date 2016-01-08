@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Xml.Serialization;
 using Arctos.Game.Middleware.Logic.Model.Model;
@@ -28,17 +29,17 @@ namespace Arctos.Game.Middleware.Logic.Model.Client
             get { return this._client.Connected; }
         }
 
-        public void Send(GameEvent gameEvent)
+        public void Send<T>(GameEvent<T> gameEvent)
         {
             var serverStream = _client.GetStream();
-            var serializer = new XmlSerializer(typeof (GameEvent));
+            var serializer = new XmlSerializer(typeof (GameEvent<T>));
 
             serializer.Serialize(serverStream, gameEvent);
 
             serverStream.Flush();
         }
 
-        public GameEvent Receive()
+        public GameEvent<dynamic> Receive()
         {
             var message = new StringBuilder();
             var serverStream = _client.GetStream();
@@ -67,11 +68,11 @@ namespace Arctos.Game.Middleware.Logic.Model.Client
             }
             var xml = message.ToString();
 
-            var serializer = new XmlSerializer(typeof (GameEvent));
+            var serializer = new XmlSerializer(typeof (GameEvent<dynamic>));
             using (TextReader tr = new StringReader(xml))
             {
                 // Deserialize entity
-                var gameEvent = (GameEvent) serializer.Deserialize(tr);
+                var gameEvent = (GameEvent<dynamic>) serializer.Deserialize(tr);
                 return gameEvent;
             }
         }

@@ -69,13 +69,13 @@ namespace Arctos.Game
 
                         if (_client.Connected)
                         {
-                            _client.Send(new GameEvent(GameEvent.Type.PlayerRequest, "ninos"));
+                            _client.Send(new GameEvent<string>(GameEventType.PlayerRequest, "ninos"));
 
-                            GameEvent gameEvent;
+                            GameEvent<dynamic> gameEvent;
                             do
                             {
                                 gameEvent = _client.Receive();
-                            } while (gameEvent != null && gameEvent.EventType != GameEvent.Type.PlayerJoined);
+                            } while (gameEvent != null && gameEvent.EventGameEventType != GameEventType.PlayerJoined);
                             if (gameEvent == null) return;
 
                             var isAvailable = (bool) gameEvent.Data;
@@ -139,7 +139,7 @@ namespace Arctos.Game
                     {
                         var rfid = _robotController.ReadRFID();
                         if (!string.IsNullOrEmpty(rfid))
-                            _client.Send(new GameEvent(GameEvent.Type.AreaUpdate, rfid));
+                            _client.Send(new GameEvent<string>(GameEventType.AreaUpdate, rfid));
                     }
                     catch (Exception ex)
                     {

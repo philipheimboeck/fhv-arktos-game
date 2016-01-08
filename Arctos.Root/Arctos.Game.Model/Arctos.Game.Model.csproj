@@ -43,8 +43,12 @@
     <Compile Include="Model\Area.cs" />
     <Compile Include="Model\GameArea.cs" />
     <Compile Include="Model\GameEvent.cs" />
+    <Compile Include="Model\GameEventType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModel\PropertyChangedBase.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Events\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
