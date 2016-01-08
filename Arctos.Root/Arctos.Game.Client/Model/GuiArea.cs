@@ -9,11 +9,11 @@ using Arctos.Game.Model;
 namespace Arctos.Game.GUIClient
 {
     /// <summary>
-    /// The Area indicates where the robot has to drive
+    /// The GuiArea indicates where the robot has to drive
     /// and where it already was
     /// </summary>
     [Serializable]
-    public class Area : PropertyChangedBase
+    public class GuiArea : PropertyChangedBase
     {
         public int Row { get; set; }
         public int Column { get; set; }
@@ -44,7 +44,24 @@ namespace Arctos.Game.GUIClient
         /// AreaID
         /// </summary>
         private string _areaId;
-        public string AreaID
+
+        public GuiArea()
+        {
+            
+        }
+
+        /// <summary>
+        /// Create a new GuiArea instance based on an Area instance
+        /// </summary>
+        /// <param name="area"></param>
+        public GuiArea(Area area)
+        {
+            AreaId = area.AreaId;
+            Column = area.Column;
+            Row = area.Row;
+        }
+
+        public string AreaId
         {
             get { return _areaId; }
             set { _areaId = value; OnPropertyChanged(); }

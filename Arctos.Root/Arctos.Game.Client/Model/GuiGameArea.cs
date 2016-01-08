@@ -2,24 +2,40 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 using Arctos.Game.Model;
+using System.Xml.Serialization;
 
 namespace Arctos.Game.GUIClient
 {
     [Serializable]
-    public class GameArea : PropertyChangedBase
+    public class GuiGameArea : PropertyChangedBase
     {
+
         /// <summary>
-        /// GameArea Constructor
+        /// GuiGameArea Constructor
         /// </summary>
-        public GameArea()
+        public GuiGameArea()
         {
-            this.AreaList = new ObservableCollection<Area>();
+            this.AreaList = new ObservableCollection<GuiArea>();
+        }
+
+        /// <summary>
+        /// Create a new GuiGameArea instance based on a GameArea instance
+        /// </summary>
+        /// <param name="gameArea"></param>
+        public GuiGameArea(GameArea gameArea)
+        {
+            AreaList = new ObservableCollection<GuiArea>();
+            foreach (var area in gameArea.AreaList)
+            {
+                AreaList.Add(new GuiArea(area));
+            }
         }
 
         /// <summary>
         /// All available areas on this game field
         /// </summary>
-        public ObservableCollection<Area> AreaList { get; set; }
+        [XmlElement]
+        public ObservableCollection<GuiArea> AreaList { get; set; }
 
         /// <summary>
         /// Get the amount of rows for the game

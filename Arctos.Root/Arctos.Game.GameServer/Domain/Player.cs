@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Arctos.Game.Client;
-using Arctos.Game.GUIClient;
+using Arctos.Game.Model;
 
 namespace ArctosGameServer.Domain
 {

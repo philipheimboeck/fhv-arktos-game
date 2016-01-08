@@ -40,7 +40,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Client\GameTcpClient.cs" />
-    <Compile Include="Model\GameConfiguration.cs" />
+    <Compile Include="Model\Area.cs" />
+    <Compile Include="Model\GameArea.cs" />
     <Compile Include="Model\GameEvent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModel\PropertyChangedBase.cs" />

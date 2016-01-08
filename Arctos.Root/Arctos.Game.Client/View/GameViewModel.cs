@@ -14,8 +14,8 @@ namespace Arctos.View
     {
         #region Properties
 
-        private GameArea _game;
-        public GameArea Game
+        private GuiGameArea _game;
+        public GuiGameArea Game
         {
             get { return _game; }
             set { _game = value; OnPropertyChanged(); }
@@ -73,7 +73,14 @@ namespace Arctos.View
 
                     GameArea gameArea = (GameArea) gameEvent.Data;
                     if (gameArea != null)
-                        this.Game = gameArea;
+                    {
+                        this.Game = new GuiGameArea(gameArea)
+                        {
+                            AreaWidth = 1600,
+                            AreaHeight = 850
+                        };
+                    }
+                        
 
                     this.GameConnected = true;
                     worker.RunWorkerAsync();
@@ -119,7 +126,7 @@ namespace Arctos.View
                             Area receivedAreaUpdate = receivedEvent.Data as Area;
                             if (receivedAreaUpdate != null)
                             {
-                                var foundArea = this.Game.AreaList.FirstOrDefault(x => x.AreaID.Equals(receivedAreaUpdate.AreaID));
+                                var foundArea = this.Game.AreaList.FirstOrDefault(x => x.AreaID.Equals(receivedAreaUpdate.AreaId));
                                 if (foundArea != null)
                                     foundArea.IsActive = true;
                             }
@@ -142,12 +149,12 @@ namespace Arctos.View
         /// </summary>
         private void GetExampleGame()
         {
-            ObservableCollection<Area> areas = new ObservableCollection<Area>();
+            ObservableCollection<GuiArea> areas = new ObservableCollection<GuiArea>();
             for (int rows = 0; rows < 4; rows++)
             {
                 for (int cols = 0; cols < 4; cols++)
                 {
-                    areas.Add(new Area
+                    areas.Add(new GuiArea
                     {
                         AreaID = "",
                         Column = cols,
@@ -157,7 +164,7 @@ namespace Arctos.View
                 }
             }
 
-            GameArea game = new GameArea
+            GuiGameArea game = new GuiGameArea
             {
                 AreaWidth = 1600,
                 AreaHeight = 850,

@@ -66,8 +66,8 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\Area.cs" />
-    <Compile Include="Model\GameArea.cs" />
+    <Compile Include="Model\GuiArea.cs" />
+    <Compile Include="Model\GuiGameArea.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

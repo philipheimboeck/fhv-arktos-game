@@ -3,8 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Arctos.Game.GUIClient;
 using Arctos.Game.Middleware.Logic.Model.Model;
+using Arctos.Game.Model;
 using ArctosGameServer.Domain;
 using ArctosGameServer.Service;
 
@@ -38,14 +38,14 @@ namespace ArctosGameServer.Controller
         {
             // Todo: Make maps customable
 
-            var areas = new ObservableCollection<Area>();
+            var areas = new List<Area>();
             for (int i = 0; i < 10; i++)
             {
                 for (int j = 0; j < 10; j++)
                 {
                     areas.Add(new Area()
                     {
-                        AreaID = i + ":" + j,
+                        AreaId = i + ":" + j,
                         Column = i,
                         Row = j,
                         IsActive = false
@@ -56,8 +56,6 @@ namespace ArctosGameServer.Controller
             var map = new GameArea()
             {
                 Name = "Map 1",
-                AreaHeight = 1600,
-                AreaWidth = 850,
                 AreaList = areas
             };
 
