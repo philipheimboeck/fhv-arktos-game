@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Arctos.Game.Middleware.Logic.Model.Model;
 using Arctos.Game.Model;
+using ArctosGameServer.Controller.Events;
 using ArctosGameServer.Domain;
 using ArctosGameServer.Service;
 
@@ -49,14 +49,21 @@ namespace ArctosGameServer.Controller
             _receivedEvents.Enqueue(value);
         }
 
+        #region Events
+
+        public event PlayerJoinedEventHandler PlayerJoinedEvent;
+        public event GuiJoinedEventHandler GuiJoinedEvent;
+
+        #endregion
+
         /// <summary>
         /// Generates a new map
         /// </summary>
         public void GenerateGame()
         {
             // Todo: Make maps customable
-            int width = 10;
-            int height = 10;
+            var width = 10;
+            var height = 10;
 
             // Generate path
             var path = createPath(width, height);
@@ -95,14 +102,14 @@ namespace ArctosGameServer.Controller
         /// <returns></returns>
         private List<Tuple<int, int>> createPath(int width, int height)
         {
-            List<Tuple<int, int>> path = new List<Tuple<int, int>>();
-            Random r = new Random();
+            var path = new List<Tuple<int, int>>();
+            var r = new Random();
 
             // Add start field
             var current = new Tuple<int, int>(r.Next(0, width - 1), height - 1);
             path.Add(current);
 
-            int direction = 0; // 0 -> Top, 1 -> Left, 2 -> Right
+            var direction = 0; // 0 -> Top, 1 -> Left, 2 -> Right
 
             // Create new fields until the top is reached
             while (current.Item2 > 0)
@@ -115,7 +122,7 @@ namespace ArctosGameServer.Controller
 
                 // Right is not possible when there is no right field or when the player went left last time
                 possibleDirections[2] = current.Item1 < width - 1 && direction != 1;
-                
+
                 if (possibleDirections.Count(x => x == true) == 0)
                 {
                     // No way found! Aborting!
@@ -129,8 +136,8 @@ namespace ArctosGameServer.Controller
                 } while (!possibleDirections[direction]);
 
                 // Add new tuple
-                int posX = current.Item1;
-                int posY = current.Item2;
+                var posX = current.Item1;
+                var posY = current.Item2;
 
                 switch (direction)
                 {
@@ -206,6 +213,9 @@ namespace ArctosGameServer.Controller
 
             // Send OK
             _server.Send(new GameEvent(GameEvent.Type.GuiJoined, _players[playerName].Map), guid);
+
+            // Send Event
+            OnGuiJoinedEvent(new GuidJoinedEventArgs(_players[playerName]));
         }
 
         private void PlayerRequest(Guid guid, string playerName)
@@ -214,7 +224,7 @@ namespace ArctosGameServer.Controller
             if (_players.ContainsKey(playerName))
             {
                 // Send NOT OK
-                _server.Send(new GameEvent(GameEvent.Type.PlayerJoined, false), guid);
+                _server.Send(new GameEvent(GameEvent.Type.PlayerJoined, new Tuple<bool, string>(false, "Username already taken")), guid);
                 return;
             }
 
@@ -222,7 +232,7 @@ namespace ArctosGameServer.Controller
             var map = InstantiateMap();
             if (map == null)
             {
-                _server.Send(new GameEvent(GameEvent.Type.PlayerJoined, false), guid);
+                _server.Send(new GameEvent(GameEvent.Type.PlayerJoined, new Tuple<bool, string>(false, "No map available")), guid);
                 return;
             }
 
@@ -234,10 +244,14 @@ namespace ArctosGameServer.Controller
                 Map = map
             };
 
+            // Add player
             _players.Add(playerName, player);
 
             // Send OK
-            _server.Send(new GameEvent(GameEvent.Type.PlayerJoined, true), guid);
+            _server.Send(new GameEvent(GameEvent.Type.PlayerJoined, new Tuple<bool, string>(true, "Player added")), guid);
+
+            // Send Event
+            OnPlayerJoinedEvent(new PlayerJoinedEventArgs(player));
         }
 
         private GameArea InstantiateMap()
@@ -265,6 +279,17 @@ namespace ArctosGameServer.Controller
         private Player findPlayerByCU(Guid controlUnitGuid)
         {
             return _players.Values.FirstOrDefault(player => player.ControlUnitId.Equals(controlUnitGuid));
+        }
+
+
+        protected virtual void OnPlayerJoinedEvent(PlayerJoinedEventArgs e)
+        {
+            PlayerJoinedEvent?.Invoke(this, e);
+        }
+
+        protected virtual void OnGuiJoinedEvent(GuidJoinedEventArgs e)
+        {
+            GuiJoinedEvent?.Invoke(this, e);
         }
     }
 }

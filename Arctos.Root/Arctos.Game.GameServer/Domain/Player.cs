@@ -3,7 +3,7 @@ using Arctos.Game.Model;
 
 namespace ArctosGameServer.Domain
 {
-    internal class Player
+    public class Player
     {
         public string Name { get; set; }
 
@@ -12,5 +12,7 @@ namespace ArctosGameServer.Domain
         public Guid GuiId { get; set; }
 
         public GameArea Map { get; set; }
+
+        public bool PlayerReady { get; set; }
     }
 }

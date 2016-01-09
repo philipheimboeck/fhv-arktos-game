@@ -1,5 +1,11 @@
-﻿using System.Windows;
+﻿using System;
+using System.ComponentModel;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using ArctosGameServer.Controller;
 using ArctosGameServer.Service;
+using ArctosGameServer.ViewModel;
 
 namespace ArctosGameServer
 {
@@ -8,10 +14,52 @@ namespace ArctosGameServer
     /// </summary>
     public partial class App : Application
     {
-        public App()
+        private GameTcpServer _server;
+        private GameController _game;
+
+        private void App_OnStartup(object sender, StartupEventArgs e)
         {
-            var guiService = new GameTcpServer(System.Net.IPAddress.Parse("127.0.0.1"), 13000);
-            guiService.StartService();
+            // Start the components
+            StartComponents();
+
+            // Create a viewmodel
+            var vm = new ServerViewModel(_game);
+
+            // Initialize window
+            var window = new Server
+            {
+                DataContext = vm
+            };
+            window.Show();
+        }
+       
+        private void StartComponents()
+        {
+            // Instantiate components
+            _server = new GameTcpServer();
+            _game = new GameController(_server);
+
+            // Add listeners
+            _server.Subscribe(_game);
+
+            // Start the TCP Service
+            _server.StartService();
+
+            // Start the game
+            BackgroundWorker worker = new BackgroundWorker();
+            worker.DoWork += (sender, args) => _game.Loop();
+            worker.RunWorkerAsync();
+        }
+
+        private void App_OnExit(object sender, ExitEventArgs e)
+        {
+            // Close the game
+            _server?.CloseConnections();
+
+            if (_game != null)
+            {
+                _game.ShutdownRequested = true;
+            }
         }
     }
 }
