@@ -54,7 +54,7 @@ namespace ArctosGameServer
         private void App_OnExit(object sender, ExitEventArgs e)
         {
             // Close the game
-            _server?.CloseConnections();
+            if (_server != null) _server.CloseConnections();
 
             if (_game != null)
             {

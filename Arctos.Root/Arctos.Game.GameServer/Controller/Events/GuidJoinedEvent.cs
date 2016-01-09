@@ -7,7 +7,7 @@ namespace ArctosGameServer.Controller.Events
 
     public class GuidJoinedEventArgs : EventArgs
     {
-        public Player Player { get; }
+        public Player Player { get; private set; }
 
         public GuidJoinedEventArgs(Player player)
         {
