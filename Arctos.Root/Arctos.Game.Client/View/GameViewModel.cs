@@ -137,7 +137,7 @@ namespace Arctos.View
                             // Game Ready, show the path
                             case GameEvent.Type.GameReady:
                             {
-                                var receivedAreaUpdate = receivedEvent.Data as List<GameEventTuple>;
+                                var receivedAreaUpdate = receivedEvent.Data as Path;
                                 if (receivedAreaUpdate == null)
                                 {
                                     // game not ready, show as message
@@ -147,7 +147,7 @@ namespace Arctos.View
                                 {
                                     this.ShowInformationOverlay("game not ready");
 
-                                    this.GameArea.setPath(receivedAreaUpdate.Select(x => new Tuple<int, int>((int)x.Item1, (int)x.Item2)).ToList());
+                                    this.GameArea.setPath(receivedAreaUpdate.Waypoints.Select(x => new Tuple<int, int>((int)x.Item1, (int)x.Item2)).ToList());
 
                                     // Show Path step by step
                                     foreach (Area areaPath in this.GameArea.Path)

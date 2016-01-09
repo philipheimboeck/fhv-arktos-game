@@ -4,16 +4,10 @@ using System.Xml.Serialization;
 namespace Arctos.Game.Middleware.Logic.Model.Model
 {
     [Serializable]
-    public class GameEventTuple
+    public class GameEventTuple<T1, T2>
     {
-        [XmlElement("string", Type = typeof(string))]
-        [XmlElement("bool", Type = typeof(bool))]
-        [XmlElement("int", Type = typeof(int))]
-        public object Item1 { get; set; }
+        public T1 Item1 { get; set; }
 
-        [XmlElement("string", Type = typeof(string))]
-        [XmlElement("bool", Type = typeof(bool))]
-        [XmlElement("int", Type = typeof(int))]
-        public object Item2 { get; set; }
+        public T2 Item2 { get; set; }
     }
 }

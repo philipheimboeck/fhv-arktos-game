@@ -212,12 +212,12 @@ namespace ArctosGameServer.Controller
                     }
 
                     // Notify CUs and GUIs
-                    /*List<GameEventTuple> tuples = new List<GameEventTuple>();
+                    var tuples = new List<GameEventTuple<int, int>>();
                     foreach(var t in path)
                     {
-                        tuples.Add(new GameEventTuple() { Item1 = t.Item1, Item2 = t.Item1 });
-                    }*/
-                    var sendPath = new Path() {Waypoints = path};
+                        tuples.Add(new GameEventTuple<int, int>() { Item1 = t.Item1, Item2 = t.Item1 });
+                    }
+                    var sendPath = new Path() { Waypoints = tuples };
                     _server.Send(new GameEvent(GameEvent.Type.GameReady, sendPath));
 
                     // Send Event
@@ -264,7 +264,7 @@ namespace ArctosGameServer.Controller
             {
                 // Send NOT OK
                 _server.Send(
-                    new GameEvent(GameEvent.Type.PlayerJoined, new GameEventTuple()
+                    new GameEvent(GameEvent.Type.PlayerJoined, new GameEventTuple<bool, string>()
                     {
                         Item1 = false,
                         Item2 = "Username already taken"
@@ -278,7 +278,7 @@ namespace ArctosGameServer.Controller
             if (map == null)
             {
                 _server.Send(
-                    new GameEvent(GameEvent.Type.PlayerJoined, new GameEventTuple()
+                    new GameEvent(GameEvent.Type.PlayerJoined, new GameEventTuple<bool, string>()
                     {
                         Item1 = false,
                         Item2 = "No map available"
@@ -299,7 +299,7 @@ namespace ArctosGameServer.Controller
             _players.Add(playerName, player);
 
             // Send OK
-            _server.Send(new GameEvent(GameEvent.Type.PlayerJoined, new GameEventTuple()
+            _server.Send(new GameEvent(GameEvent.Type.PlayerJoined, new GameEventTuple<bool, string>()
             {
                 Item1 = false,
                 Item2 = "Player added"

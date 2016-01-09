@@ -251,7 +251,7 @@ namespace Arctos.Game
                                 } while (gameEvent != null && gameEvent.EventType != GameEvent.Type.PlayerJoined);
                                 if (gameEvent == null) return;
 
-                                var isAvailable = (Tuple<bool, string>) gameEvent.Data;
+                                var isAvailable = (GameEventTuple<bool, string>) gameEvent.Data;
                                 this.GameStatusText = isAvailable.Item1 ? CONNECTED : isAvailable.Item2;
                                 this.GameStatus = isAvailable.Item1;
                                 this.ButtonGameStatus = GAME_CONNECT;
