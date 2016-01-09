@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Xml.Serialization;
 using Arctos.Game.Model;
 
@@ -14,7 +15,9 @@ namespace Arctos.Game.Middleware.Logic.Model.Model
             PlayerLeft,
             GuiRequest,
             GuiJoined,
-            AreaUpdate
+            AreaUpdate,
+            GameReady,
+            GameStart
         }
 
         public GameEvent()
@@ -34,6 +37,7 @@ namespace Arctos.Game.Middleware.Logic.Model.Model
         [XmlElement("string", Type = typeof(string))]
         [XmlElement("bool", Type = typeof(bool))]
         [XmlElement("tupleBoolString", Type = typeof(Tuple<bool, string>))]
+        [XmlElement("path", Type = typeof(List<Tuple<int, int>>))]
         public object Data { get; set; }
     }
 }

@@ -61,6 +61,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Controller\Events\GuidJoinedEvent.cs" />
+    <Compile Include="Controller\Events\GameReadyEvent.cs" />
     <Compile Include="Controller\GameController.cs" />
     <Compile Include="Domain\Player.cs" />
     <Compile Include="Controller\Events\PlayerJoinedEvent.cs" />
@@ -74,7 +75,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ViewModel\PlayerViewModel.cs" />
-    <Compile Include="ViewModel\ServerViewModel.cs" />
+    <Compile Include="ViewModel\GameViewModel.cs" />
     <Page Include="Server.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

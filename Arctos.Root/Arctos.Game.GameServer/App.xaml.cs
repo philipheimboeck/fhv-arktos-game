@@ -23,7 +23,7 @@ namespace ArctosGameServer
             StartComponents();
 
             // Create a viewmodel
-            var vm = new ServerViewModel(_game);
+            var vm = new GameViewModel(_game);
 
             // Initialize window
             var window = new Server

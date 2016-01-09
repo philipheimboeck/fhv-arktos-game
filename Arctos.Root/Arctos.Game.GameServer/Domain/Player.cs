@@ -12,7 +12,6 @@ namespace ArctosGameServer.Domain
         public Guid GuiId { get; set; }
 
         public GameArea Map { get; set; }
-
-        public bool PlayerReady { get; set; }
+        public Area Location { get; set; }
     }
 }
