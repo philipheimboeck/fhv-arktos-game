@@ -388,7 +388,7 @@ namespace ArctosGameServer.Controller
         public void StartGame()
         {
             // Check if all players are ready
-            if (PlayersReady())
+            if (!PlayersReady())
             {
                 return;
             }
