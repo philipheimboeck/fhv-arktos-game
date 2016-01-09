@@ -3,11 +3,11 @@
 namespace Arctos.Game
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for ControlUnitView.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class ControlUnitView : Window
     {
-        public MainWindow()
+        public ControlUnitView()
         {
             InitializeComponent();
         }

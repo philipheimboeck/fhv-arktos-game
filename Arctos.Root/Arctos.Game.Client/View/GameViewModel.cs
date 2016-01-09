@@ -1,8 +1,10 @@
 ﻿using System;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading;
 using System.Windows;
+using System.Windows.Threading;
 using Arctos.Game.GUIClient;
 using Arctos.Game.Middleware.Logic.Model.Client;
 using Arctos.Game.Middleware.Logic.Model.Model;
@@ -10,89 +12,94 @@ using Arctos.Game.Model;
 
 namespace Arctos.View
 {
+    /// <summary>
+    /// GUI View Model
+    /// </summary>
     public class GameViewModel : PropertyChangedBase
     {
+        #region Properties
+
+        private bool _showGameInformation;
+        public bool ShowGameInformation
+        {
+            get { return _showGameInformation; }
+            set
+            {
+                _showGameInformation = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _gameInformation;
+        public string GameInformation
+        {
+            get { return _gameInformation; }
+            set
+            {
+                _gameInformation = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private GuiGameArea _guiGameInstance;
+        public GuiGameArea GUIGameInstance
+        {
+            get { return _guiGameInstance; }
+            set
+            {
+                _guiGameInstance = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private GameArea GameArea { get; set; }
+
+        private GameTcpClient GameClient { get; set; }
+        private readonly BackgroundWorker eventBackgroundWorker = new BackgroundWorker();
+
+        #endregion
+
+        /// <summary>
+        /// Show a message overlay
+        /// </summary>
+        /// <param name="message"></param>
+        public void ShowInformationOverlay(string message)
+        {
+            this.GameInformation = message;
+            this.ShowGameInformation = true;
+            Wait(2);
+            this.ShowGameInformation = false;
+            this.GameInformation = "";
+        }
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="gameArea"></param>
+        public GameViewModel(GameTcpClient client)
+        {
+            this.GameClient = client;
+
+            InitializeGameViewModel();
+        }
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public GameViewModel()
         {
-            // this.GetExampleGame();
-            this.GameConnected = false;
-
-            worker.WorkerSupportsCancellation = true;
-            worker.DoWork += ReceiveEvents;
+            InitializeGameViewModel();
         }
 
         /// <summary>
-        /// Execute Command from View
+        /// Initialize GameView Model
         /// </summary>
-        /// <param name="parameter"></param>
-        public override void Execute(object parameter)
+        private void InitializeGameViewModel()
         {
-            try
-            {
-                switch (parameter.ToString())
-                {
-                    case "GuiRequest":
-                    {
-                        this.ConnectToGame("172.22.25.74");
-                    }
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// Connect to GameServer to get Game configuration and current game state
-        /// </summary>
-        private void ConnectToGame(string gameServer)
-        {
-            try
-            {
-                this.GameClient = new GameTcpClient(gameServer);
-                if (this.GameClient.Connected)
-                {
-                    // Request gui for username
-                    this.GameClient.Send(new GameEvent(GameEvent.Type.GuiRequest, "ninos"));
-
-                    GameEvent gameEvent;
-                    do
-                    {
-                        gameEvent = this.GameClient.Receive();
-                    } while (gameEvent != null && gameEvent.EventType != GameEvent.Type.GuiJoined);
-
-                    if (gameEvent == null) return;
-
-                    var gameArea = (GameArea) gameEvent.Data;
-                    if (gameArea != null)
-                    {
-                        this.Game = new GuiGameArea(gameArea)
-                        {
-                            AreaWidth = 1600,
-                            AreaHeight = 850
-                        };
-
-                        foreach (Area area in gameArea.Path)
-                        {
-                            this.Game.AreaList.First(x => x.AreaId.Equals(area.AreaId)).IsActive = true;
-                        }
-                    }
-
-                    this.GameConnected = true;
-                    worker.RunWorkerAsync();
-                }
-                else
-                {
-                    this.GameConnected = false;
-                    MessageBox.Show("Could not connect to GameServer");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
+            eventBackgroundWorker.WorkerSupportsCancellation = true;
+            eventBackgroundWorker.DoWork += ReceiveEvents;
+            eventBackgroundWorker.RunWorkerAsync();
         }
 
         /// <summary>
@@ -104,85 +111,85 @@ namespace Arctos.View
         {
             while (true)
             {
-                var receivedEvent = this.GameClient.Receive();
-
-                if (receivedEvent != null)
+                try
                 {
-                    switch (receivedEvent.EventType)
+                    var receivedEvent = this.GameClient.Receive();
+
+                    if (receivedEvent != null)
                     {
-                        case GameEvent.Type.AreaUpdate:
+                        switch (receivedEvent.EventType)
                         {
-                            var receivedAreaUpdate = receivedEvent.Data as Area;
-                            if (receivedAreaUpdate != null)
+                            // Area Update
+                            case GameEvent.Type.AreaUpdate:
                             {
-                                var foundArea =
-                                    this.Game.AreaList.FirstOrDefault(x => x.AreaId.Equals(receivedAreaUpdate.AreaId));
-                                if (foundArea != null)
-                                    foundArea.IsActive = true;
+                                var receivedAreaUpdate = receivedEvent.Data as Area;
+                                if (receivedAreaUpdate != null)
+                                {
+                                    var foundArea =
+                                        this.GUIGameInstance.AreaList.FirstOrDefault(
+                                            x => x.AreaId.Equals(receivedAreaUpdate.AreaId));
+                                    if (foundArea != null)
+                                        foundArea.IsActive = true;
+                                }
                             }
-                        }
+                                break;
+
+                            // Game Ready, show the path
+                            case GameEvent.Type.GameReady:
+                            {
+                                var receivedAreaUpdate = receivedEvent.Data as List<GameEventTuple>;
+                                if (receivedAreaUpdate == null)
+                                {
+                                    // game not ready, show as message
+                                    this.ShowInformationOverlay("game not ready");
+                                }
+                                else
+                                {
+                                    this.ShowInformationOverlay("game not ready");
+
+                                    this.GameArea.setPath(receivedAreaUpdate.Select(x => new Tuple<int, int>((int)x.Item1, (int)x.Item2)).ToList());
+
+                                    // Show Path step by step
+                                    foreach (Area areaPath in this.GameArea.Path)
+                                    {
+                                        this.GUIGameInstance.AreaList.FirstOrDefault(
+                                            area => area.AreaId.Equals(areaPath.AreaId)).IsActive = true;
+                                        Wait(2);
+                                    }
+
+                                    this.GUIGameInstance.AreaList.Select(i =>
+                                    {
+                                        i.IsActive = false;
+                                        return i;
+                                    }).ToList();
+                                }
+                            }
                             break;
+                        }
+                    }
+
+                    if (eventBackgroundWorker.CancellationPending)
+                    {
+                        doWorkEventArgs.Cancel = true;
+                        return;
                     }
                 }
-
-                if (worker.CancellationPending)
+                catch (Exception ex)
                 {
-                    doWorkEventArgs.Cancel = true;
-                    this.GameConnected = false;
-                    return;
+                    MessageBox.Show(ex.Message);
                 }
             }
         }
 
-        /// <summary>
-        /// Generate a example game field
-        /// </summary>
-        private void GetExampleGame()
+        private void Wait(double seconds)
         {
-            var areas = new ObservableCollection<GuiArea>();
-            for (var rows = 0; rows < 4; rows++)
+            var frame = new DispatcherFrame();
+            new Thread((ThreadStart)(() =>
             {
-                for (var cols = 0; cols < 4; cols++)
-                {
-                    areas.Add(new GuiArea
-                    {
-                        AreaId = "",
-                        Column = cols,
-                        Row = rows,
-                        IsActive = false
-                    });
-                }
-            }
-
-            var game = new GuiGameArea
-            {
-                AreaWidth = 1600,
-                AreaHeight = 850,
-                AreaList = areas
-            };
-
-            this.Game = game;
+                Thread.Sleep(TimeSpan.FromSeconds(seconds));
+                frame.Continue = false;
+            })).Start();
+            Dispatcher.PushFrame(frame);
         }
-
-        #region Properties
-
-        private GuiGameArea _game;
-
-        public GuiGameArea Game
-        {
-            get { return _game; }
-            set
-            {
-                _game = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private GameTcpClient GameClient { get; set; }
-        private bool GameConnected { get; set; }
-
-        private readonly BackgroundWorker worker = new BackgroundWorker();
-
-        #endregion
     }
 }

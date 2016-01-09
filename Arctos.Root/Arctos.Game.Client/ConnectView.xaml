@@ -1,0 +1,36 @@
+﻿<Window x:Class="Arctos.ConnectView" 
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:gameGui="clr-namespace:Arctos.Game.Client"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:view="clr-namespace:Arctos.View"
+        mc:Ignorable="d"
+        Title="ARCTOS - Connect to GUIGameInstance" Height="500" Width="500"
+        WindowStartupLocation="CenterScreen"
+        d:DataContext="{d:DesignInstance view:ConnectViewModel, IsDesignTimeCreatable=True}">
+    <Grid>
+
+        <Label Content="Arctos GUIGameInstance GUI" HorizontalAlignment="Left" Margin="23,29,0,0" VerticalAlignment="Top" FontSize="20"/>
+
+        <Grid Margin="20,100">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="160"></ColumnDefinition>
+                <ColumnDefinition Width="160"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30"></RowDefinition>
+                <RowDefinition Height="30"></RowDefinition>
+                <RowDefinition Height="30"></RowDefinition>
+            </Grid.RowDefinitions>
+
+            <Label Content="Player Name:" Grid.Column="0" Grid.Row="0"/>
+            <TextBox Grid.Column="1" Grid.Row="0" Text="{Binding Path=PlayerName}" Height="23" TextWrapping="Wrap" Width="120" HorizontalAlignment="Left"/>
+
+            <Label Content="Server:" Grid.Column="0" Grid.Row="1"/>
+            <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding Path=GameServer}" Height="23" TextWrapping="Wrap" Width="120" HorizontalAlignment="Left"/>
+
+            <Button Grid.Row="2" Grid.Column="1" Height="20" Width="120" Content="{Binding Path=ButtonConnect}" HorizontalAlignment="Left" Command="{Binding Path=UpdateCommand}" CommandParameter="GuiRequest" />
+        </Grid>
+    </Grid>
+</Window>

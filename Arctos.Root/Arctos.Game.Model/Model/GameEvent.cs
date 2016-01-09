@@ -36,8 +36,8 @@ namespace Arctos.Game.Middleware.Logic.Model.Model
         [XmlElement("area", Type = typeof(Area))]
         [XmlElement("string", Type = typeof(string))]
         [XmlElement("bool", Type = typeof(bool))]
-        [XmlElement("tupleBoolString", Type = typeof(Tuple<bool, string>))]
-        [XmlElement("path", Type = typeof(List<Tuple<int, int>>))]
+        [XmlElement("gameEventTuple", Type = typeof(GameEventTuple))]
+        [XmlElement("path", Type = typeof(List<GameEventTuple>))]
         public object Data { get; set; }
     }
 }
