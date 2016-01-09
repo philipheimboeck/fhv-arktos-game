@@ -1,17 +1,15 @@
 ﻿<Window x:Class="Arctos.ConnectView" 
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:gameGui="clr-namespace:Arctos.Game.Client"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:view="clr-namespace:Arctos.View"
         mc:Ignorable="d"
-        Title="ARCTOS - Connect to GUIGameInstance" Height="500" Width="500"
+        Title="ARCTOS - Connect to GUIGameInstance" Height="331.51" Width="500"
         WindowStartupLocation="CenterScreen"
         d:DataContext="{d:DesignInstance view:ConnectViewModel, IsDesignTimeCreatable=True}">
     <Grid>
-
-        <Label Content="Arctos GUIGameInstance GUI" HorizontalAlignment="Left" Margin="23,29,0,0" VerticalAlignment="Top" FontSize="20"/>
+        <Label Content="Arctos GUI" HorizontalAlignment="Left" Margin="23,29,0,0" VerticalAlignment="Top" FontSize="20"/>
 
         <Grid Margin="20,100">
             <Grid.ColumnDefinitions>

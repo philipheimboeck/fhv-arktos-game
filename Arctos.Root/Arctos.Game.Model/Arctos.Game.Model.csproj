@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Client\GameTcpClient.cs" />
+    <Compile Include="Client\ReceivedEvent.cs" />
     <Compile Include="Model\Area.cs" />
     <Compile Include="Model\GameArea.cs" />
     <Compile Include="Model\GameEvent.cs" />

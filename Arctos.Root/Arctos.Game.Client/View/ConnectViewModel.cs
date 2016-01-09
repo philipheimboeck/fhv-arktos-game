@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Windows;
 using Arctos.Game.GUIClient;
 using Arctos.Game.Middleware.Logic.Model.Client;
@@ -105,38 +106,8 @@ namespace Arctos.View
                     // Request gui for username
                     this.GameClient.Send(new GameEvent(GameEvent.Type.GuiRequest, this.PlayerName));
 
-                    GameEvent gameEvent;
-                    do
-                    {
-                        gameEvent = this.GameClient.Receive();
-                    } while (gameEvent != null && gameEvent.EventType != GameEvent.Type.GuiJoined);
-
-                    var isGuiJoined = (bool)gameEvent.Data;
-
-                    if (isGuiJoined)
-                    {
-                        this.GameConnected = true;
-
-                        this.CurrentGameView = new GameView {DataContext = new GameViewModel(this.GameClient)};
-                        this.CurrentGameView.Show();
-                    }
-                    else
-                    {
-                        MessageBox.Show("Did not receive any new Games! Please try again.");
-                    }
-
-                    //var gameArea = (GameArea)gameEvent.Data;
-                    //if (gameArea != null)
-                    //{
-                    //    this.GameConnected = true;
-
-                    //    this.CurrentGameView = new GameView { DataContext = new GameViewModel(this.GameClient, gameArea) };
-                    //    this.CurrentGameView.Show();
-                    //}
-                    //else
-                    //{
-                    //    MessageBox.Show("Did not receive any new Games! Please try again.");
-                    //}
+                    this.GameClient.ReceivedDataEvent += GameClientOnReceivedDataEvent;
+                    this.GameClient.Receive();
                 }
                 else
                 {
@@ -148,6 +119,26 @@ namespace Arctos.View
             {
                 MessageBox.Show(ex.Message);
             }
+        }
+
+        private void GameClientOnReceivedDataEvent(object sender, ReceivedEventArgs args)
+        {
+            var gameEvent = args.Data as GameEvent;
+            var gameArea = (GameArea)gameEvent.Data;
+
+            if (gameArea != null)
+            {
+                this.GameConnected = true;
+
+                this.CurrentGameView = new GameView { DataContext = new GameViewModel(this.GameClient, gameArea) };
+                this.CurrentGameView.Show();
+            }
+            else
+            {
+                MessageBox.Show("Did not receive any new Games! Please try again.");
+            }
+
+            this.GameClient.ReceivedDataEvent -= GameClientOnReceivedDataEvent;
         }
     }
 }

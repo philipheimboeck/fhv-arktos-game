@@ -16,8 +16,6 @@ namespace Arctos.Game.GUIClient
         /// </summary>
         private string _areaId;
 
-        private bool isActive;
-
         public GuiArea()
         {
         }
@@ -36,12 +34,13 @@ namespace Arctos.Game.GUIClient
         public int Row { get; set; }
         public int Column { get; set; }
 
-        public bool IsActive
+        private Area.AreaStatus status;
+        public Area.AreaStatus Status
         {
-            get { return isActive; }
+            get { return status; }
             set
             {
-                isActive = value;
+                status = value;
                 OnPropertyChanged();
                 OnPropertyChanged("Color");
             }
@@ -49,7 +48,26 @@ namespace Arctos.Game.GUIClient
 
         public SolidColorBrush Color
         {
-            get { return new SolidColorBrush(IsActive ? Colors.Red : Colors.Gray); }
+            get
+            {
+                Color color;
+
+                switch (Status)
+                {
+                    case Area.AreaStatus.WronglyPassed:
+                        color = Colors.Red;
+                        break;
+                    case Area.AreaStatus.CorrectlyPassed:
+                        color = Colors.DarkGreen;
+                        break;
+                    case Area.AreaStatus.None:
+                    default:
+                        color = Colors.Gray;
+                        break;
+                }
+
+                return new SolidColorBrush(color);
+            }
         }
 
         public string AreaId

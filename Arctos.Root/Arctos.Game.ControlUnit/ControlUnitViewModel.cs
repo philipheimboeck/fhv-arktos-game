@@ -25,6 +25,8 @@ namespace Arctos.Game
 
         private Timer HeartbeatTimer;
 
+        private bool IsDriveAllowed { get; set; }
+
         private const string GAME_CONNECT = "Connect to Game";
         private const string GAME_DISCONNECT = "Disconnect Game";
         private const string ROBOT_WAIT = "Wait for Robot";
@@ -32,7 +34,9 @@ namespace Arctos.Game
         private const string DISCONNECTED = "Disconnected";
         private const string CONNECTED = "Connected";
 
-        private readonly BackgroundWorker controlUnitLoopWorker = new BackgroundWorker();
+        private readonly BackgroundWorker ControlUnitLoopWorker = new BackgroundWorker();
+        private readonly BackgroundWorker ReceiveEventsLoopWorker = new BackgroundWorker();
+
         private readonly GamepadController GamepadController;
         private readonly RobotController RobotController;
         private GameTcpClient _client;
@@ -179,9 +183,14 @@ namespace Arctos.Game
             RobotController.RfidEvent += RobotControllerOnRfidEvent;
 
             // Init ControlUnit Loop worker
-            controlUnitLoopWorker.DoWork += RunControlUnitLoop;
-            controlUnitLoopWorker.WorkerReportsProgress = true;
-            controlUnitLoopWorker.WorkerSupportsCancellation = true;
+            ControlUnitLoopWorker.DoWork += RunControlUnitLoop;
+            ControlUnitLoopWorker.WorkerReportsProgress = true;
+            ControlUnitLoopWorker.WorkerSupportsCancellation = true;
+
+            // Init Receive Events Loop worker
+            ReceiveEventsLoopWorker.DoWork += ReceiveEventsWaiterOnWork;
+            ControlUnitLoopWorker.WorkerReportsProgress = true;
+            ControlUnitLoopWorker.WorkerSupportsCancellation = true;
         }
 
         /// <summary>
@@ -199,7 +208,7 @@ namespace Arctos.Game
                 bgw.DoWork += delegate
                 {
                     this.RobotStatus = false;
-                    this.controlUnitLoopWorker.CancelAsync();
+                    this.ControlUnitLoopWorker.CancelAsync();
                     do
                     {
                         RobotController.ReadBluetoothData();
@@ -207,7 +216,11 @@ namespace Arctos.Game
                     } while (this.IsWaitingForRobot);
 
                     RobotStatusText = "Connected to Port " + comPort;
-                    this.controlUnitLoopWorker.RunWorkerAsync();
+                    IsDriveAllowed = true;
+                    if (this.ControlUnitLoopWorker.IsBusy)
+                        this.ControlUnitLoopWorker.CancelAsync();
+
+                    this.ControlUnitLoopWorker.RunWorkerAsync();
                 };
                 bgw.RunWorkerAsync();
             }
@@ -227,6 +240,12 @@ namespace Arctos.Game
             {
                 switch (parameter.ToString())
                 {
+                    case "SendCmd":
+                    {
+                        _client.Send(new GameEvent(GameEvent.Type.AreaUpdate, "420018DB3B"));
+                    }
+                    break;
+
                     case "WaitForRobot":
                     {
                         RobotStatusText = ROBOT_WAIT;
@@ -239,22 +258,12 @@ namespace Arctos.Game
                         if (GameStatus == false)
                         {
                             _client = new GameTcpClient(this.GameIP);
+                            _client.ReceivedDataEvent += ClientOnReceivedDataEvent;
 
                             if (_client.Connected)
                             {
                                 _client.Send(new GameEvent(GameEvent.Type.PlayerRequest, this.PlayerName));
-
-                                GameEvent gameEvent;
-                                do
-                                {
-                                    gameEvent = _client.Receive();
-                                } while (gameEvent != null && gameEvent.EventType != GameEvent.Type.PlayerJoined);
-                                if (gameEvent == null) return;
-
-                                var isAvailable = (GameEventTuple<bool, string>) gameEvent.Data;
-                                this.GameStatusText = isAvailable.Item1 ? CONNECTED : isAvailable.Item2;
-                                this.GameStatus = isAvailable.Item1;
-                                this.ButtonGameStatus = GAME_CONNECT;
+                                ReceiveEventsLoopWorker.RunWorkerAsync();
                             }
                         }
                         else
@@ -274,6 +283,76 @@ namespace Arctos.Game
         }
 
         /// <summary>
+        /// Received Data from Game Server
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void ClientOnReceivedDataEvent(object sender, ReceivedEventArgs args)
+        {
+            GameEvent gameEvent = args.Data as GameEvent;
+            if (args.Data != null)
+            {
+                switch (gameEvent.EventType)
+                {
+                    // Game Ready
+                    case GameEvent.Type.GameReady:
+                    {
+                        RobotController.Drive(0, 0);
+                        IsDriveAllowed = false;
+                    }
+                    break;
+
+                    // Game Start
+                    case GameEvent.Type.GameStart:
+                    {
+                        IsDriveAllowed = true;
+                    }
+                    break;
+
+                    // Player Joined
+                    case GameEvent.Type.PlayerJoined:
+                    {
+                        var isAvailable = (GameEventTuple<bool, string>)gameEvent.Data;
+                        this.GameStatusText = isAvailable.Item1 ? CONNECTED : isAvailable.Item2;
+                        this.GameStatus = isAvailable.Item1;
+                        this.ButtonGameStatus = GAME_CONNECT;
+                    }
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Wait for Incoming Events
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="doWorkEventArgs"></param>
+        private void ReceiveEventsWaiterOnWork(object sender, DoWorkEventArgs doWorkEventArgs)
+        {
+            // TODO: Refactor this!!
+            // there should be a better idea than actively waiting
+            while (true)
+            {
+                try
+                {
+                    _client.Receive();
+
+                    if (ReceiveEventsLoopWorker.CancellationPending)
+                    {
+                        doWorkEventArgs.Cancel = true;
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+            }
+        }
+
+        #region Robot Events
+
+        /// <summary>
         /// Start the Control Unit and Game Worker process
         /// </summary>
         /// <param name="sender"></param>
@@ -285,7 +364,7 @@ namespace Arctos.Game
             {
                 // Gamepad updates
                 GamepadController.Update();
-                if (_movementDirty)
+                if (IsDriveAllowed && _movementDirty)
                 {
                     var left = (int) GamepadController.GetValue(GamepadController.Wheels.WheelLeft);
                     var right = (int) GamepadController.GetValue(GamepadController.Wheels.WheelRight);
@@ -299,7 +378,7 @@ namespace Arctos.Game
                 RobotController.ReadBluetoothData();
 
                 // Exit Game Loop
-                if (this.controlUnitLoopWorker.CancellationPending)
+                if (this.ControlUnitLoopWorker.CancellationPending)
                 {
                     doWorkEventArgs.Cancel = true;
                     return;
@@ -357,12 +436,14 @@ namespace Arctos.Game
             var heartbeatDifference = System.Math.Abs((DateTime.Now - this.LastReceivedHeartbeat).TotalSeconds);
             if (heartbeatDifference > 3)
             {
-                this.RobotStatus = false;
+                //this.RobotStatus = false;
                 this.RobotStatusText = "Did not receive heartbeat within " + heartbeatDifference + " seconds.";
             }
         }
 
-        #region Events
+        #endregion
+
+        #region Gamepad Events
 
         public void OnCompleted()
         {

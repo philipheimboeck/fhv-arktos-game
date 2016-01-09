@@ -7,14 +7,14 @@
         xmlns:view="clr-namespace:Arctos.View"
         mc:Ignorable="d"
         Title="GUIGameInstanceView" Height="500" Width="500"
-        ResizeMode="NoResize"  
+         
         WindowStartupLocation="CenterScreen" WindowState="Maximized"
         d:DataContext="{d:DesignInstance view:GameViewModel, IsDesignTimeCreatable=True}">
     <!-- add windowstyle=none to hide close toolbar -->
     <!-- WindowStyle="None"-->
  
     
-    <StackPanel VerticalAlignment="Stretch">
+    <Grid VerticalAlignment="Stretch">
         
         <gameGui:GridAwareItemsControl  ItemsSource="{Binding Path=GUIGameInstance.AreaList, UpdateSourceTrigger=PropertyChanged}">
             <ItemsControl.ItemsPanel>
@@ -45,6 +45,6 @@
             </Grid>
         </Border>
         
-    </StackPanel>
+    </Grid>
 
 </Window>

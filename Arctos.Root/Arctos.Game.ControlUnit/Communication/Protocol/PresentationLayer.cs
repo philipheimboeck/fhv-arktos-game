@@ -70,7 +70,6 @@ namespace ArctosGameServer.Communication.Protocol
                 var commandValue = pduInput.Substring(8 + keyLength, dataLength);
 
                 pduDecomposed = new Tuple<string, string>(key, commandValue);
-                pdu.Key = key;
             }
 
             pdu.data = pduDecomposed;

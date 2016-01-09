@@ -6,6 +6,5 @@
     public class PDU<T>
     {
         public T data { get; set; }
-        public string Key { get; set; }
     }
 }

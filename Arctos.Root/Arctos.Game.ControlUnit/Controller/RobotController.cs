@@ -86,16 +86,18 @@ namespace Arctos.Game.ControlUnit.Controller
         public void ReadBluetoothData()
         {
             PDU<object> receivedPDU = this.protocol.receive();
-            if (receivedPDU == null || receivedPDU.Key == null) return;
+            if (receivedPDU == null || receivedPDU.data == null) return;
 
-            if (receivedPDU.Key.Equals("live"))
+            Tuple<string, string> tupleData = (Tuple<string, string>) receivedPDU.data;
+
+            if (tupleData.Item1.Equals("live"))
             {
                 this.OnHeartbeatEvent(new ReceivedDataEventArgs());
             }
 
-            if (receivedPDU.Key.Equals("rfid"))
+            if (tupleData.Item1.Equals("rfid"))
             {
-                this.OnRfidEvent(new ReceivedDataEventArgs { Data = receivedPDU.data.ToString() });
+                this.OnRfidEvent(new ReceivedDataEventArgs { Data = tupleData.Item2 });
             }
         }
     }
