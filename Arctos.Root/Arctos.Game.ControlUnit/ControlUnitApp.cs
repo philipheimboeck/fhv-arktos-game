@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Drawing;
 using System.Timers;
 using System.Windows;
 using Arctos.Game.ControlUnit.Input;
@@ -24,7 +25,11 @@ namespace Arctos.Game
             _gamepadController = new GamepadController();
             _gamepadController.Subscribe(this);
 
-            if (_gamepadController.IsConnected()) PlayerStatus = "Connected";
+            if (_gamepadController.IsConnected())
+            {
+                PlayerStatus = true;
+                PlayerStatusText = "Connected";
+            }
         }
 
         private void TimerOnElapsed(object sender, ElapsedEventArgs elapsedEventArgs)
@@ -50,17 +55,23 @@ namespace Arctos.Game
                 _robotController.HeartbeatEvent += RobotControllerOnHeartbeatEvent;
                 _robotController.RfidEvent += RobotControllerOnRfidEvent;
 
-                do
+                BackgroundWorker bgw = new BackgroundWorker();
+                bgw.DoWork += delegate(object sender, DoWorkEventArgs args)
                 {
-                    _robotController.ReadBluetoothData();
-                    // Wait until robot has connected
-                } while (IsWaitingForRobot);
+                    RobotStatus = false;
+                    do
+                    {
+                        _robotController.ReadBluetoothData();
+                        // Wait until robot has connected
+                    } while (IsWaitingForRobot);
 
-                RobotStatus = "Connected to Port " + comPort;
+                    RobotStatusText = "Connected to Port " + comPort;
+                };
+                bgw.RunWorkerAsync();
             }
             catch (Exception ex)
             {
-                RobotStatus = ex.Message;
+                RobotStatusText = ex.Message;
             }
         }
 
@@ -76,12 +87,15 @@ namespace Arctos.Game
                 {
                     case "WaitForRobot":
                     {
+                        RobotStatusText = "Waiting for robot connection";
                         this.WaitForRobot(RobotCOMPort);
                     }
                         break;
 
                     case "ConnectGame":
                     {
+                        if (IsWaitingForRobot) return;
+
                         _client = new GameTcpClient(this.GameIP);
 
                         if (_client.Connected)
@@ -96,16 +110,19 @@ namespace Arctos.Game
                             if (gameEvent == null) return;
 
                             var isAvailable = (bool) gameEvent.Data;
-                            this.GameStatus = isAvailable ? "Connected" : "Username already taken";
+                            this.GameStatusText = isAvailable ? "Connected" : "Username already taken";
+                            this.GameStatus = isAvailable;
                         }
                     }
                         break;
 
                     case "Start":
                     {
-                        if (!gameStarted)
+                        if (IsWaitingForRobot) return;
+
+                        if (!GameStatus)
                         {
-                            gameStarted = true;
+                            GameStatus = true;
                             worker.DoWork += StartGame;
                             worker.WorkerReportsProgress = true;
                             worker.WorkerSupportsCancellation = true;
@@ -156,15 +173,10 @@ namespace Arctos.Game
                 if (worker.CancellationPending)
                 {
                     doWorkEventArgs.Cancel = true;
-                    gameStarted = false;
+                    GameStatus = false;
                     return;
                 }
             }
-        }
-
-        private void checkHeartbeat(object sender, EventArgs elapsed)
-        {
-            
         }
 
         /// <summary>
@@ -189,21 +201,48 @@ namespace Arctos.Game
         }
 
         /// <summary>
-        /// Keep track of the robot heartbeat
+        /// Keep track of the robot heartbeat Event
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="receivedDataEventArgs"></param>
         private void RobotControllerOnHeartbeatEvent(object sender, ReceivedDataEventArgs receivedDataEventArgs)
         {
+            if (IsWaitingForRobot) { 
+                RobotStatus = true;
+                this.HeartbeatTimer = new Timer(1000);
+                this.HeartbeatTimer.Elapsed += CheckHeartbeat;
+                this.HeartbeatTimer.Start();
+            }
+
+            this.LastReceivedHeartbeat = DateTime.Now;
             IsWaitingForRobot = false;
-            //throw new NotImplementedException();
         }
+
+        /// <summary>
+        /// Check robot's heartbeat
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="elapsed"></param>
+        private void CheckHeartbeat(object sender, EventArgs elapsed)
+        {
+            var heartbeatDifference = System.Math.Abs((DateTime.Now - this.LastReceivedHeartbeat).TotalSeconds);
+            this.RobotStatusText = "Did not receive heartbeat within " + heartbeatDifference + " seconds.";
+
+            if (heartbeatDifference > 3)
+            {
+                //this.RobotStatus = false;
+                this.RobotStatusText = "Did not receive heartbeat within " + heartbeatDifference + " seconds.";
+            }
+        }
+
 
         #region Properties
 
+        private DateTime LastReceivedHeartbeat;
+
         private bool IsWaitingForRobot = true;
 
-        private Timer HeartbeatTimer = new Timer(1000);
+        private Timer HeartbeatTimer;
 
         private const string GAME_STATE_START = "Start Game";
         private const string GAME_STATE_STOP = "Stop Game";
@@ -214,11 +253,19 @@ namespace Arctos.Game
         private RobotController _robotController;
         private GameTcpClient _client;
         private bool _movementDirty = false;
-        private bool gameStarted = false;
 
-        private string _playerStatus = "Disconnected";
-
-        public string PlayerStatus
+        private string _playerStatusText = "Disconnected";
+        public string PlayerStatusText
+        {
+            get { return _playerStatusText; }
+            set
+            {
+                _playerStatusText = value;
+                OnPropertyChanged();
+            }
+        }
+        private bool _playerStatus;
+        public bool PlayerStatus
         {
             get { return _playerStatus; }
             set
@@ -228,9 +275,19 @@ namespace Arctos.Game
             }
         }
 
-        private string _gameStatus = "Disconnected";
+        private string _gameStatusText = "Disconnected";
+        public string GameStatusText
+        {
+            get { return _gameStatusText; }
+            set
+            {
+                _gameStatusText = value;
+                OnPropertyChanged();
+            }
+        }
 
-        public string GameStatus
+        private bool _gameStatus;
+        public bool GameStatus
         {
             get { return _gameStatus; }
             set
@@ -240,9 +297,11 @@ namespace Arctos.Game
             }
         }
 
-        private string _robotStatus = "Disconnected";
+        private string _robotStatusText = "Disconnected";
+        public string RobotStatusText { get { return _robotStatusText; } set { _robotStatusText = value; OnPropertyChanged(); } }
 
-        public string RobotStatus
+        private bool _robotStatus;
+        public bool RobotStatus
         {
             get { return _robotStatus; }
             set
@@ -253,7 +312,6 @@ namespace Arctos.Game
         }
 
         private string _robotRobotCOMPort = "COM33";
-
         public string RobotCOMPort
         {
             get { return _robotRobotCOMPort; }
@@ -265,7 +323,6 @@ namespace Arctos.Game
         }
 
         private string _gameIP = "172.22.25.74";
-
         public string GameIP
         {
             get { return _gameIP; }
@@ -277,7 +334,6 @@ namespace Arctos.Game
         }
 
         private string _currentGameStatus = GAME_STATE_START;
-
         public string CurrentGameStatus
         {
             get { return _currentGameStatus; }
@@ -312,12 +368,14 @@ namespace Arctos.Game
 
             if (value.Type.Equals(GamepadController.GamepadControllerEvent.EventType.ControllerConnected))
             {
-                PlayerStatus = "Connected";
+                PlayerStatus = true;
+                PlayerStatusText = "Connected";
             }
 
             if (value.Type.Equals(GamepadController.GamepadControllerEvent.EventType.ControllerDisconnected))
             {
-                PlayerStatus = "Disconnected";
+                PlayerStatus = false;
+                PlayerStatusText = "Disconnected";
             }
         }
 

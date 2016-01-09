@@ -73,8 +73,12 @@ namespace Arctos.View
                             AreaWidth = 1600,
                             AreaHeight = 850
                         };
-                    }
 
+                        foreach (Area area in gameArea.Path)
+                        {
+                            this.Game.AreaList.First(x => x.AreaId.Equals(area.AreaId)).IsActive = true;
+                        }
+                    }
 
                     this.GameConnected = true;
                     worker.RunWorkerAsync();
