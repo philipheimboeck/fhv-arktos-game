@@ -42,6 +42,10 @@
       <HintPath>..\packages\XBoxController.1.0.5.0\lib\net40\BrandonPotter.XBox.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="RandomNameGenerator, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RandomNameGenerator.1.0.4\lib\RandomNameGenerator.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="SharpDX, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpDX.3.0.0\lib\net45\SharpDX.dll</HintPath>
       <Private>True</Private>
@@ -73,7 +77,7 @@
     </ApplicationDefinition>
     <Compile Include="Controller\Events\ReceivedDataEvent.cs" />
     <Compile Include="Properties\Annotations.cs" />
-    <Page Include="MainWindow.xaml">
+    <Page Include="ControlUnitView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -87,12 +91,11 @@
     <Compile Include="Communication\Protocol\PresentationLayer.cs" />
     <Compile Include="Communication\Protocol\SessionLayer.cs" />
     <Compile Include="Communication\Protocol\TransportLayer.cs" />
-    <Compile Include="Controller\GameController.cs" />
     <Compile Include="Controller\RobotController.cs" />
     <Compile Include="Input\GamepadController.cs" />
-    <Compile Include="ControlUnitApp.cs" />
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
+    <Compile Include="ControlUnitViewModel.cs" />
+    <Compile Include="ControlUnitView.xaml.cs">
+      <DependentUpon>ControlUnitView.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
@@ -130,9 +133,7 @@
       <Name>Arctos.Game.Model</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="View\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
