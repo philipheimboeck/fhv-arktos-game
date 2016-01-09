@@ -346,17 +346,17 @@ namespace ArctosGameServer.Controller
 
         protected virtual void OnPlayerJoinedEvent(PlayerJoinedEventArgs e)
         {
-            PlayerJoinedEvent?.Invoke(this, e);
+            if (PlayerJoinedEvent != null) PlayerJoinedEvent.Invoke(this, e);
         }
 
         protected virtual void OnGuiJoinedEvent(GuidJoinedEventArgs e)
         {
-            GuiJoinedEvent?.Invoke(this, e);
+            if (GuiJoinedEvent != null) GuiJoinedEvent.Invoke(this, e);
         }
 
         protected virtual void OnGameReadyEvent(GameReadeEventArgs e)
         {
-            GameReadyEvent?.Invoke(this, e);
+            if (GameReadyEvent != null) GameReadyEvent.Invoke(this, e);
         }
 
         #region Events

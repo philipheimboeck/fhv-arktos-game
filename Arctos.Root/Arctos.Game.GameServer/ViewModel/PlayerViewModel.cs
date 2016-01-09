@@ -6,7 +6,7 @@ namespace ArctosGameServer.ViewModel
 {
     public class PlayerViewModel : PropertyChangedBase
     {
-        public Player Player { get; }
+        public Player Player { get; private set; }
 
         public PlayerViewModel(Player player)
         {

@@ -44,7 +44,7 @@ namespace ArctosGameServer.ViewModel
         private void GuiJoinedEvent(object sender, Controller.Events.GuidJoinedEventArgs e)
         {
             var playerViewModel = Players.FirstOrDefault(x => x.Player.Equals(e.Player));
-            playerViewModel?.ChangeProperty("GuiStatusImagePath");
+            if (playerViewModel != null) playerViewModel.ChangeProperty("GuiStatusImagePath");
         }
 
         private void PlayerJoinedEvent(object sender, Controller.Events.PlayerJoinedEventArgs e)

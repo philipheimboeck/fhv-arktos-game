@@ -10,7 +10,7 @@ namespace ArctosGameServer.Controller.Events
     /// </summary>
     public class PlayerJoinedEventArgs : EventArgs
     {
-        public Player Player { get; }
+        public Player Player { get; private set; }
 
         public PlayerJoinedEventArgs(Player player)
         {
