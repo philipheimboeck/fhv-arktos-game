@@ -77,17 +77,17 @@ namespace Arctos.Game.GUIClient
         public int AreaWidth { get; set; }
 
         /// <summary>
-        /// Game width
+        /// GUIGameInstance width
         /// </summary>
         public int GameWidth { get; set; }
 
         /// <summary>
-        /// Game height
+        /// GUIGameInstance height
         /// </summary>
         public int GameHeight { get; set; }
 
         /// <summary>
-        /// Game Map Name
+        /// GUIGameInstance Map Name
         /// </summary>
         public string Name { get; set; }
     }

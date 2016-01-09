@@ -1,11 +1,11 @@
-﻿<Window x:Class="Arctos.Game.MainWindow"
+﻿<Window x:Class="Arctos.Game.ControlUnitView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:game="clr-namespace:Arctos.Game"
         mc:Ignorable="d"
-        Title="Arctos ControlUnit" Height="350" Width="525" d:DataContext="{d:DesignInstance game:ControlUnitApp}">
+        Title="Arctos ControlUnit" Height="350" Width="525" d:DataContext="{d:DesignInstance game:ControlUnitViewModel, IsDesignTimeCreatable=True}">
     <Grid>
         <Label Content="Arctos ControlUnit" HorizontalAlignment="Left" Margin="23,29,0,0" VerticalAlignment="Top" FontSize="20"/>
 
@@ -97,15 +97,16 @@
                 <RowDefinition Height="30" />
             </Grid.RowDefinitions>
 
-            <Label Content="Robot Port:" Grid.Column="0" Grid.Row="0"/>
-            <TextBox Grid.Column="1" Grid.Row="0" Height="23" TextWrapping="Wrap" Text="{Binding Path=RobotCOMPort}" Width="120" HorizontalAlignment="Left" />
-            <Button Content="Wait for Robot" Grid.Column="2" Grid.Row="0" Width="118" Height="20" HorizontalAlignment="Left" Command="{Binding Path=UpdateCommand}" CommandParameter="WaitForRobot"/>
+            <Label Content="Player Name:" Grid.Column="0" Grid.Row="0"/>
+            <TextBox Grid.Column="1" Grid.Row="0" Text="{Binding Path=PlayerName}" Height="23" TextWrapping="Wrap" Width="120" HorizontalAlignment="Left"/>
+            
+            <Label Content="Robot Port:" Grid.Column="0" Grid.Row="1"/>
+            <TextBox Grid.Column="1" Grid.Row="1" Height="23" TextWrapping="Wrap" Text="{Binding Path=RobotCOMPort}" Width="120" HorizontalAlignment="Left" />
+            <Button Content="{Binding Path=ButtonRobotStatus}" Grid.Column="2" Grid.Row="1" Width="118" Height="20" HorizontalAlignment="Left" Command="{Binding Path=UpdateCommand}" CommandParameter="WaitForRobot"/>
 
-            <Label Content="Game Server:" Grid.Column="0" Grid.Row="1"/>
-            <TextBox Grid.Column="1" Grid.Row="1" Height="23" TextWrapping="Wrap" Text="{Binding Path=GameIP}" Width="120" HorizontalAlignment="Left" />
-            <Button x:Name="startButton" Grid.Row="1" Grid.Column="2" Content="Connect to Game" HorizontalAlignment="Left" VerticalAlignment="Center" Width="118" Command="{Binding Path=UpdateCommand}" CommandParameter="ConnectGame"/>
-
-            <Button Grid.Row="2" Grid.Column="2" Content="{Binding Path=CurrentGameStatus}" HorizontalAlignment="Left" VerticalAlignment="Center" Width="118" Command="{Binding Path=UpdateCommand}" CommandParameter="Start"/>
+            <Label Content="Game Server:" Grid.Column="0" Grid.Row="2"/>
+            <TextBox Grid.Column="1" Grid.Row="2" Height="23" TextWrapping="Wrap" Text="{Binding Path=GameIP}" Width="120" HorizontalAlignment="Left" />
+            <Button Grid.Row="2" Grid.Column="2" Content="{Binding Path=ButtonGameStatus}" HorizontalAlignment="Left" Height="20" VerticalAlignment="Center" Width="118" Command="{Binding Path=UpdateCommand}" CommandParameter="ConnectGame"/>
         </Grid>
 
     </Grid>

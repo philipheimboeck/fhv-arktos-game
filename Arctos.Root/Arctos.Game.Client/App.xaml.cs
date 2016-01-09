@@ -10,8 +10,8 @@ namespace Arctos.Game.GUIClient
     {
         private void App_OnStartup(object sender, StartupEventArgs e)
         {
-            var window = new MainWindow {DataContext = new GameViewModel()};
-            window.Show();
+            var connectWindow = new ConnectView {DataContext = new ConnectViewModel()};
+            connectWindow.Show();
         }
     }
 }

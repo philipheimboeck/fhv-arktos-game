@@ -9,7 +9,7 @@ namespace Arctos.Game
     {
         private void App_OnStartup(object sender, StartupEventArgs e)
         {
-            var window = new MainWindow();
+            var window = new ControlUnitView();
 
             var comPort = "COM1";
             for (var i = 0; i != e.Args.Length; ++i)
@@ -17,7 +17,7 @@ namespace Arctos.Game
                 comPort = e.Args[0];
             }
 
-            var controlUnitVM = new ControlUnitApp(comPort);
+            var controlUnitVM = new ControlUnitViewModel(comPort);
             window.DataContext = controlUnitVM;
 
             window.Show();

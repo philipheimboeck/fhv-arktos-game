@@ -1,23 +1,55 @@
 ﻿using System;
+using System.Windows.Forms;
 using ArctosGameServer.Communication;
+using ArctosGameServer.Communication.Protocol;
 using ArctosGameServer.Controller.Events;
 
-namespace ArctosGameServer.Controller
+namespace Arctos.Game.ControlUnit.Controller
 {
     public class RobotController
     {
+        #region Properties
+
         private IProtocolLayer<object, object> protocol;
 
         public event ReadDataEventHandler RfidEvent;
         public event ReadDataEventHandler HeartbeatEvent;
 
+        private string ComPort { get; set; }
+
+        #endregion
+
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="protocol"></param>
-        public RobotController(IProtocolLayer<object, object> protocol)
+        /// <param name="comPort"></param>
+        public RobotController(string comPort)
         {
-            this.protocol = protocol;
+            this.ComPort = comPort;
+        }
+
+        /// <summary>
+        /// Establish a serial connection to COM-Port
+        /// </summary>
+        public void ConnectSerial(string comPort)
+        {
+            if (!string.IsNullOrEmpty(comPort))
+                this.ComPort = comPort;
+
+            try
+            {
+                IProtocolLayer<object, object> protocolLayer = new PresentationLayer(
+                    new SessionLayer(
+                        new TransportLayer(this.ComPort)
+                        )
+                    );
+
+                this.protocol = protocolLayer;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         /// <summary>
@@ -37,12 +69,12 @@ namespace ArctosGameServer.Controller
             }
         }
 
-        protected virtual void OnRfidEvent(ReceivedDataEventArgs e)
+        private void OnRfidEvent(ReceivedDataEventArgs e)
         {
             if (this.RfidEvent != null) this.RfidEvent(this, e);
         }
 
-        protected virtual void OnHeartbeatEvent(ReceivedDataEventArgs e)
+        private void OnHeartbeatEvent(ReceivedDataEventArgs e)
         {
             if (this.HeartbeatEvent != null) this.HeartbeatEvent(this, e);
         }

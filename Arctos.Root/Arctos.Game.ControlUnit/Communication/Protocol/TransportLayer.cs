@@ -18,10 +18,6 @@ namespace ArctosGameServer.Communication.Protocol
         public TransportLayer(string portName) : base(null)
         {
             this.serialPort = new SerialPort(portName, 9600, Parity.None, 8, StopBits.One);
-
-            //this.serialPort.ReadTimeout = 500;
-            //this.serialPort.WriteTimeout = 500;
-
             this.serialPort.Open();
         }
 
