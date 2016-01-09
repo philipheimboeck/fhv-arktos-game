@@ -212,12 +212,13 @@ namespace ArctosGameServer.Controller
                     }
 
                     // Notify CUs and GUIs
-                    List<GameEventTuple> tuples = new List<GameEventTuple>();
+                    /*List<GameEventTuple> tuples = new List<GameEventTuple>();
                     foreach(var t in path)
                     {
                         tuples.Add(new GameEventTuple() { Item1 = t.Item1, Item2 = t.Item1 });
-                    }
-                    _server.Send(new GameEvent(GameEvent.Type.GameReady, tuples));
+                    }*/
+                    var sendPath = new Path() {Waypoints = path};
+                    _server.Send(new GameEvent(GameEvent.Type.GameReady, sendPath));
 
                     // Send Event
                     OnGameReadyEvent(new GameReadeEventArgs() { Ready = true });
