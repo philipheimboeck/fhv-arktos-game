@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Documents;
 using Arctos.Game.Middleware.Logic.Model.Model;
 using Arctos.Game.Model;
 using ArctosGameServer.Controller.Events;
@@ -211,7 +212,12 @@ namespace ArctosGameServer.Controller
                     }
 
                     // Notify CUs and GUIs
-                    _server.Send(new GameEvent(GameEvent.Type.GameReady, path));
+                    List<GameEventTuple> tuples = new List<GameEventTuple>();
+                    foreach(var t in path)
+                    {
+                        tuples.Add(new GameEventTuple() { Item1 = t.Item1, Item2 = t.Item1 });
+                    }
+                    _server.Send(new GameEvent(GameEvent.Type.GameReady, tuples));
 
                     // Send Event
                     OnGameReadyEvent(new GameReadeEventArgs() { Ready = true });
@@ -257,7 +263,11 @@ namespace ArctosGameServer.Controller
             {
                 // Send NOT OK
                 _server.Send(
-                    new GameEvent(GameEvent.Type.PlayerJoined, new Tuple<bool, string>(false, "Username already taken")),
+                    new GameEvent(GameEvent.Type.PlayerJoined, new GameEventTuple()
+                    {
+                        Item1 = false,
+                        Item2 = "Username already taken"
+                    }),
                     guid);
                 return;
             }
@@ -267,7 +277,12 @@ namespace ArctosGameServer.Controller
             if (map == null)
             {
                 _server.Send(
-                    new GameEvent(GameEvent.Type.PlayerJoined, new Tuple<bool, string>(false, "No map available")), guid);
+                    new GameEvent(GameEvent.Type.PlayerJoined, new GameEventTuple()
+                    {
+                        Item1 = false,
+                        Item2 = "No map available"
+                    }), 
+                    guid);
                 return;
             }
 
@@ -283,7 +298,12 @@ namespace ArctosGameServer.Controller
             _players.Add(playerName, player);
 
             // Send OK
-            _server.Send(new GameEvent(GameEvent.Type.PlayerJoined, new Tuple<bool, string>(true, "Player added")), guid);
+            _server.Send(new GameEvent(GameEvent.Type.PlayerJoined, new GameEventTuple()
+            {
+                Item1 = false,
+                Item2 = "Player added"
+            }),
+            guid);
 
             // Send Event
             OnPlayerJoinedEvent(new PlayerJoinedEventArgs(player));
