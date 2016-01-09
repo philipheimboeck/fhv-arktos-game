@@ -21,8 +21,6 @@ namespace ArctosGameServer.Controller
 
         private bool _gameReady;
         private bool _gameStart;
-        private int _height = 10;
-        private int _width = 10;
 
         private List<GameArea> _playableMaps = new List<GameArea>();
 
@@ -61,24 +59,76 @@ namespace ArctosGameServer.Controller
         public void GenerateGame()
         {
             // Todo: Make maps customable
-            // Generate path
-            var path = createPath(_width, _height);
-
+            
             // Generate Map
-            var areas = new List<Area>();
-            for (var i = 0; i < _width; i++)
+            #region Hardcoded Map
+
+            var areas = new List<Area>
             {
-                for (var j = 0; j < _height; j++)
+                new Area()
                 {
-                    areas.Add(new Area()
-                    {
-                        AreaId = i + ":" + j,
-                        Column = i,
-                        Row = j,
-                        Status = Area.AreaStatus.None
-                    });
-                }
-            }
+                    AreaId = "420018D63E",
+                    Column = 0,
+                    Row = 0,
+                    Status = Area.AreaStatus.None
+                },
+                new Area()
+                {
+                    AreaId = "420018DB3B",
+                    Column = 1,
+                    Row = 0,
+                    Status = Area.AreaStatus.None
+                },
+                new Area()
+                {
+                    AreaId = "420018DB50",
+                    Column = 2,
+                    Row = 0,
+                    Status = Area.AreaStatus.None
+                },
+                new Area()
+                {
+                    AreaId = "420013E5BA",
+                    Column = 0,
+                    Row = 1,
+                    Status = Area.AreaStatus.None
+                },
+                new Area()
+                {
+                    AreaId = "420018DB45",
+                    Column = 1,
+                    Row = 1,
+                    Status = Area.AreaStatus.None
+                },
+                new Area()
+                {
+                    AreaId = "420018D64D",
+                    Column = 2,
+                    Row = 1,
+                    Status = Area.AreaStatus.None
+                },
+                new Area()
+                {
+                    AreaId = "420018D773",
+                    Column = 0,
+                    Row = 2,
+                    Status = Area.AreaStatus.None
+                },
+                new Area()
+                {
+                    AreaId = "420014AA86",
+                    Column = 1,
+                    Row = 2,
+                    Status = Area.AreaStatus.None
+                },
+                new Area()
+                {
+                    AreaId = "3D00997CB7",
+                    Column = 2,
+                    Row = 2,
+                    Status = Area.AreaStatus.None
+                },
+            };
 
             var map = new GameArea()
             {
@@ -86,9 +136,10 @@ namespace ArctosGameServer.Controller
                 AreaList = areas,
                 StartField = new Area()
                 {
-                    AreaId = "420018DB3B"
+                    AreaId = "3D00997D02"
                 }
             };
+            #endregion
 
             _playableMaps.Add(map);
         }
@@ -207,7 +258,8 @@ namespace ArctosGameServer.Controller
                         _gameReady = true;
 
                         // Create the path
-                        var path = createPath(_width, _height);
+                        var map = _players.FirstOrDefault().Value.Map;
+                        var path = createPath(map.GameColumns, map.GameRows);
                         foreach (var player in _players.Values)
                         {
                             player.Map.setPath(path);
@@ -388,7 +440,7 @@ namespace ArctosGameServer.Controller
         public void StartGame()
         {
             // Check if all players are ready
-            if (PlayersReady())
+            if (!PlayersReady())
             {
                 return;
             }
@@ -403,7 +455,8 @@ namespace ArctosGameServer.Controller
             _gameStart = true;
             _gameReady = false;
 
-            // 
+            // Send event
+            OnGameStartEvent(new GameStartEventArgs() { Started = true });
         }
     
         /// <summary>
