@@ -10,6 +10,6 @@ namespace ArctosGameServer.Controller.Events
     /// </summary>
     public class GameStartEventArgs : EventArgs
     {
-        public bool Ready { get; set; }
+        public bool Started { get; set; }
     }
 }
