@@ -34,6 +34,12 @@ namespace ArctosGameServer.ViewModel
             _game.PlayerJoinedEvent += PlayerJoinedEvent;
             _game.GuiJoinedEvent += GuiJoinedEvent;
             _game.GameReadyEvent += GameReadyEvent;
+            _game.GameStartEvent += GameStartEvent;
+        }
+
+        private void GameStartEvent(object sender, Controller.Events.GameStartEventArgs e)
+        {
+            GameStartable = false;
         }
 
         private void GameReadyEvent(object sender, Controller.Events.GameReadeEventArgs e)

@@ -3,12 +3,12 @@ using ArctosGameServer.Domain;
 
 namespace ArctosGameServer.Controller.Events
 {
-    public delegate void GameReadyEventHandler(object sender, GameReadeEventArgs e);
+    public delegate void GameStartEventHandler(object sender, GameStartEventArgs e);
 
     /// <summary>
     /// Event Args
     /// </summary>
-    public class GameReadeEventArgs : EventArgs
+    public class GameStartEventArgs : EventArgs
     {
         public bool Ready { get; set; }
     }

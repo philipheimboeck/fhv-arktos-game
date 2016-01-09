@@ -9,9 +9,16 @@ namespace Arctos.Game.Model
     [Serializable]
     public class Area
     {
+        public enum AreaStatus
+        {
+            None,
+            WronglyPassed,
+            CorrectlyPassed
+        }
+
         public int Row { get; set; }
         public int Column { get; set; }
-        public bool IsActive { get; set; }
+        public AreaStatus Status { get; set; }
         public string AreaId { get; set; }
     }
 }

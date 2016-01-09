@@ -13,5 +13,6 @@ namespace ArctosGameServer.Domain
 
         public GameArea Map { get; set; }
         public Area Location { get; set; }
+        public Area LastVisited { get; set; }
     }
 }

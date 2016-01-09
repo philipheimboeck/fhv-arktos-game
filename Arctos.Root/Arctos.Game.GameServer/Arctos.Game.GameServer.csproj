@@ -61,6 +61,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Controller\Events\GameStartEvent.cs" />
     <Compile Include="Controller\Events\GuidJoinedEvent.cs" />
     <Compile Include="Controller\Events\GameReadyEvent.cs" />
     <Compile Include="Controller\GameController.cs" />
