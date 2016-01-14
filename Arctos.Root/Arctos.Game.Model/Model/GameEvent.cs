@@ -14,12 +14,14 @@ namespace Arctos.Game.Middleware.Logic.Model.Model
             PlayerJoined,
             PlayerLeft,
             PlayerLost,
+            PlayerFinish,
             GuiRequest,
             GuiJoined,
             GuiLeft,
             AreaUpdate,
             GameReady,
             GameStart,
+            GameFinish,
             ConnectionLost
         }
 

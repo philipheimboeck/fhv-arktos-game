@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Forms.VisualStyles;
 using Arctos.Game.Middleware.Logic.Model.Model;
 using Arctos.Game.Model;
 using ArctosGameServer.Controller.Events;
@@ -219,52 +220,9 @@ namespace ArctosGameServer.Controller
             while (!ShutdownRequested)
             {
                 // Process all received events
-                Tuple<Guid, GameEvent> e = null;
-                while (_receivedEvents.TryDequeue(out e))
-                {
-                    switch (e.Item2.EventType)
-                    {
-                        case GameEvent.Type.PlayerRequest:
-                        {
-                            var playerName = (string) e.Item2.Data;
-                            PlayerRequest(e.Item1, playerName);
-                        }
-                            break;
-                        case GameEvent.Type.PlayerJoined:
-                            break;
-                        case GameEvent.Type.PlayerLeft:
-                        {
-                            PlayerLeft(e.Item1);
-                        }
-                            break;
-                        case GameEvent.Type.ConnectionLost:
-                        {
-                            ConnectionLost(e.Item1, (string) e.Item2.Data);
-                        }
-                            break;
-                        case GameEvent.Type.GuiLeft:
-                        {
-                            GuiLeft(e.Item1);
-                        }
-                            break;
-                        case GameEvent.Type.GuiRequest:
-                        {
-                            var playerName = (string) e.Item2.Data;
-                            GuiRequest(e.Item1, playerName);
-                        }
-                            break;
-                        case GameEvent.Type.GuiJoined:
-                            // Should never occur
-                            break;
-                        case GameEvent.Type.AreaUpdate:
-                        {
-                            var area = (string) e.Item2.Data;
-                            UpdateArea(e.Item1, area);
-                        }
-                            break;
-                    }
-                }
+                ProcessEvents();
 
+                // Check for Game State
                 if (_gameStart == false)
                 {
                     // Check if game can be started
@@ -309,6 +267,78 @@ namespace ArctosGameServer.Controller
                         OnGameReadyEvent(new GameReadeEventArgs() {Ready = false});
                     }
                 }
+                else
+                {
+                    // Game is already running
+
+                    // Check for winner
+                    foreach (var player in _players.Values)
+                    {
+                        if (player.HasFinished())
+                        {
+                            LogLine("Player " + player.Name + " finished");
+                            player.StopGame = true;
+
+                            // Send GUI
+                            if (!player.GuiId.Equals(Guid.Empty))
+                            {
+                                // Todo Send Counter
+                                _server.Send(new GameEvent(GameEvent.Type.PlayerFinish, null), player.GuiId);
+                            }
+
+                            // Todo Send Event
+                        }
+                    }
+                }
+            }
+        }
+
+        private void ProcessEvents()
+        {
+            Tuple<Guid, GameEvent> e = null;
+            while (_receivedEvents.TryDequeue(out e))
+            {
+                switch (e.Item2.EventType)
+                {
+                    case GameEvent.Type.PlayerRequest:
+                    {
+                        var playerName = (string) e.Item2.Data;
+                        PlayerRequest(e.Item1, playerName);
+                    }
+                        break;
+                    case GameEvent.Type.PlayerJoined:
+                        break;
+                    case GameEvent.Type.PlayerLeft:
+                    {
+                        PlayerLeft(e.Item1);
+                    }
+                        break;
+                    case GameEvent.Type.ConnectionLost:
+                    {
+                        ConnectionLost(e.Item1, (string) e.Item2.Data);
+                    }
+                        break;
+                    case GameEvent.Type.GuiLeft:
+                    {
+                        GuiLeft(e.Item1);
+                    }
+                        break;
+                    case GameEvent.Type.GuiRequest:
+                    {
+                        var playerName = (string) e.Item2.Data;
+                        GuiRequest(e.Item1, playerName);
+                    }
+                        break;
+                    case GameEvent.Type.GuiJoined:
+                        // Should never occur
+                        break;
+                    case GameEvent.Type.AreaUpdate:
+                    {
+                        var area = (string) e.Item2.Data;
+                        UpdateArea(e.Item1, area);
+                    }
+                        break;
+                }
             }
         }
 
@@ -351,6 +381,9 @@ namespace ArctosGameServer.Controller
         private void RemovePlayer(Player player)
         {
             _players.Remove(player.Name);
+
+            // Add map
+            _playableMaps.Add(player.Map);
 
             // Notify GUI if existing
             if (!player.GuiId.Equals(Guid.Empty))
