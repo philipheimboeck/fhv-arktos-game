@@ -3,13 +3,13 @@ using ArctosGameServer.Domain;
 
 namespace ArctosGameServer.Controller.Events
 {
-    public delegate void GuiJoinedEventHandler(object sender, GuidJoinedEventArgs e);
+    public delegate void GuiChangedEventHandler(object sender, GuiChangedEventArgs e);
 
-    public class GuidJoinedEventArgs : EventArgs
+    public class GuiChangedEventArgs : EventArgs
     {
         public Player Player { get; private set; }
 
-        public GuidJoinedEventArgs(Player player)
+        public GuiChangedEventArgs(Player player)
         {
             Player = player;
         }

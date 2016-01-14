@@ -90,7 +90,8 @@ namespace ArctosGameServer.Service
             _networkStream.Close();
             _clientSocket.Close();
 
-            // Todo: Notify about the lost connection
+            // Notify about the lost connection
+            _tcpServer.OnClientClosed(_id);
         }
     }
 }

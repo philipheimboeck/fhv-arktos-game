@@ -11,18 +11,9 @@ namespace ArctosGameServer.ViewModel
     {
         private GameController _game;
 
-        public ObservableCollection<PlayerViewModel> Players { get; set; }
-
         private bool _gameStartable;
-        public bool GameStartable
-        {
-            get { return _gameStartable; }
-            set
-            {
-                _gameStartable = value;
-                OnPropertyChanged();
-            }
-        }
+
+        private string _log;
 
         public GameViewModel(GameController game)
         {
@@ -32,9 +23,46 @@ namespace ArctosGameServer.ViewModel
 
             // React on Events
             _game.PlayerJoinedEvent += PlayerJoinedEvent;
-            _game.GuiJoinedEvent += GuiJoinedEvent;
+            _game.PlayerLeftEvent += PlayerLeftEvent;
+            _game.GuiChangedEvent += GuiChangedEvent;
             _game.GameReadyEvent += GameReadyEvent;
             _game.GameStartEvent += GameStartEvent;
+            _game.LogEvent += LogEvent;
+
+        }
+
+        private void PlayerLeftEvent(object sender, Controller.Events.PlayerLeftEventArgs e)
+        {
+            Application.Current.Dispatcher.Invoke((Action) delegate
+            {
+                var playerViewModel = Players.FirstOrDefault(x => x.Player.Equals(e.Player));
+                if (playerViewModel != null)
+                {
+                    Players.Remove(playerViewModel);
+                }
+            });
+        }
+
+        public ObservableCollection<PlayerViewModel> Players { get; set; }
+
+        public string Log
+        {
+            get { return _log; }
+            set
+            {
+                _log = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool GameStartable
+        {
+            get { return _gameStartable; }
+            set
+            {
+                _gameStartable = value;
+                OnPropertyChanged();
+            }
         }
 
         private void GameStartEvent(object sender, Controller.Events.GameStartEventArgs e)
@@ -47,10 +75,15 @@ namespace ArctosGameServer.ViewModel
             GameStartable = true;
         }
 
-        private void GuiJoinedEvent(object sender, Controller.Events.GuidJoinedEventArgs e)
+        private void GuiChangedEvent(object sender, Controller.Events.GuiChangedEventArgs e)
         {
             var playerViewModel = Players.FirstOrDefault(x => x.Player.Equals(e.Player));
             if (playerViewModel != null) playerViewModel.ChangeProperty("GuiStatusImagePath");
+        }
+
+        private void LogEvent(object sender, Controller.Events.LogEventArgs e)
+        {
+            Log = Log + "[" + DateTime.Now.ToLongTimeString() + "] " + e.Log + "\r\n";
         }
 
         private void PlayerJoinedEvent(object sender, Controller.Events.PlayerJoinedEventArgs e)

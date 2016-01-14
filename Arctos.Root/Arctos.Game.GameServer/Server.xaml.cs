@@ -24,6 +24,12 @@ namespace ArctosGameServer
         public Server()
         {
             InitializeComponent();
+
+            LogBox.TextChanged += (sender, args) =>
+            {
+                LogBox.CaretIndex = LogBox.Text.Length;
+                LogBox.ScrollToEnd();
+            }; 
         }
     }
 }

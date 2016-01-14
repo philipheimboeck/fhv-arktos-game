@@ -152,6 +152,13 @@ namespace ArctosGameServer.Service
                 observer.OnNext(e);
             }
         }
+
+        public void OnClientClosed(Guid id)
+        {
+            _clients.Remove(id);
+
+            NotifyObservers(new Tuple<Guid, GameEvent>(id, new GameEvent(GameEvent.Type.ConnectionLost, "Connection Closed")));
+        }
     }
 
     public class Disposable : IDisposable

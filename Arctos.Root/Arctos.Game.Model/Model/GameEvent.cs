@@ -13,11 +13,14 @@ namespace Arctos.Game.Middleware.Logic.Model.Model
             PlayerRequest,
             PlayerJoined,
             PlayerLeft,
+            PlayerLost,
             GuiRequest,
             GuiJoined,
+            GuiLeft,
             AreaUpdate,
             GameReady,
-            GameStart
+            GameStart,
+            ConnectionLost
         }
 
         public GameEvent()
