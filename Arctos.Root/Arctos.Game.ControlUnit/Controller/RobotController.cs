@@ -48,7 +48,8 @@ namespace Arctos.Game.ControlUnit.Controller
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                //MessageBox.Show(ex.Message);
+                throw;
             }
         }
 

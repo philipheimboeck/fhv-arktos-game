@@ -242,7 +242,7 @@ namespace Arctos.Game
                 {
                     case "SendCmd":
                     {
-                        _client.Send(new GameEvent(GameEvent.Type.AreaUpdate, "420018DB3B"));
+                       // _client.Send(new GameEvent(GameEvent.Type.AreaUpdate, "420018DB3B"));
                     }
                     break;
 
@@ -262,7 +262,7 @@ namespace Arctos.Game
 
                             if (_client.Connected)
                             {
-                                _client.Send(new GameEvent(GameEvent.Type.PlayerRequest, this.PlayerName));
+                                this.SendEvent(GameEvent.Type.PlayerRequest, this.PlayerName);
                                 ReceiveEventsLoopWorker.RunWorkerAsync();
                             }
                         }
@@ -289,36 +289,43 @@ namespace Arctos.Game
         /// <param name="args"></param>
         private void ClientOnReceivedDataEvent(object sender, ReceivedEventArgs args)
         {
-            GameEvent gameEvent = args.Data as GameEvent;
-            if (args.Data != null)
+            try
             {
-                switch (gameEvent.EventType)
+                GameEvent gameEvent = args.Data as GameEvent;
+                if (args.Data != null)
                 {
-                    // Game Ready
-                    case GameEvent.Type.GameReady:
+                    switch (gameEvent.EventType)
                     {
-                        RobotController.Drive(0, 0);
-                        IsDriveAllowed = false;
-                    }
-                    break;
+                        // Game Ready
+                        case GameEvent.Type.GameReady:
+                        {
+                            RobotController.Drive(0, 0);
+                            IsDriveAllowed = false;
+                        }
+                            break;
 
-                    // Game Start
-                    case GameEvent.Type.GameStart:
-                    {
-                        IsDriveAllowed = true;
-                    }
-                    break;
+                        // Game Start
+                        case GameEvent.Type.GameStart:
+                        {
+                            IsDriveAllowed = true;
+                        }
+                            break;
 
-                    // Player Joined
-                    case GameEvent.Type.PlayerJoined:
-                    {
-                        var isAvailable = (GameEventTuple<bool, string>)gameEvent.Data;
-                        this.GameStatusText = isAvailable.Item1 ? CONNECTED : isAvailable.Item2;
-                        this.GameStatus = isAvailable.Item1;
-                        this.ButtonGameStatus = GAME_CONNECT;
+                        // Player Joined
+                        case GameEvent.Type.PlayerJoined:
+                        {
+                            var isAvailable = (GameEventTuple<bool, string>) gameEvent.Data;
+                            this.GameStatusText = isAvailable.Item1 ? CONNECTED : isAvailable.Item2;
+                            this.GameStatus = isAvailable.Item1;
+                            this.ButtonGameStatus = GAME_CONNECT;
+                        }
+                            break;
                     }
-                    break;
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
             }
         }
 
@@ -349,6 +356,46 @@ namespace Arctos.Game
                 }
             }
         }
+
+        #region Game Events
+
+        /// <summary>
+        /// Send player left if we lost connection to the robot
+        /// </summary>
+        private void SendPlayerLeft()
+        {
+            this.SendEvent(GameEvent.Type.PlayerLeft, null);
+        }
+
+        /// <summary>
+        /// Got connection to robot back (when there was already a connection joined)
+        /// </summary>
+        private void SendPlayerRejoined()
+        {
+            //this.SendEvent(GameEvent.Type.PlayerRejoined, null);
+        }
+
+        /// <summary>
+        /// Send event to game Helper Utility
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="data"></param>
+        private void SendEvent(GameEvent.Type type, object data)
+        {
+            try
+            {
+                if (_client.Connected)
+                {
+                    _client.Send(new GameEvent(type, data));
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        #endregion
 
         #region Robot Events
 
@@ -393,13 +440,13 @@ namespace Arctos.Game
         /// <param name="receivedDataEventArgs"></param>
         private void RobotControllerOnRfidEvent(object sender, ReceivedDataEventArgs receivedDataEventArgs)
         {
-            if (_client == null || !_client.Connected) return;
-
             try
             {
                 string rfidTag = receivedDataEventArgs.Data as string;
-                if(rfidTag != null)
-                    _client.Send(new GameEvent(GameEvent.Type.AreaUpdate, rfidTag));
+                if (rfidTag != null)
+                {
+                    this.SendEvent(GameEvent.Type.AreaUpdate, rfidTag);
+                }
             }
             catch (Exception ex)
             {
@@ -433,11 +480,21 @@ namespace Arctos.Game
         /// <param name="elapsed"></param>
         private void CheckHeartbeat(object sender, EventArgs elapsed)
         {
-            var heartbeatDifference = System.Math.Abs((DateTime.Now - this.LastReceivedHeartbeat).TotalSeconds);
+            var heartbeatDifference = Math.Abs((DateTime.Now - this.LastReceivedHeartbeat).TotalSeconds);
             if (heartbeatDifference > 3)
             {
-                //this.RobotStatus = false;
+                this.RobotStatus = false;
                 this.RobotStatusText = "Did not receive heartbeat within " + heartbeatDifference + " seconds.";
+                
+                this.SendPlayerLeft();
+            }
+            else
+            {
+                this.RobotStatusText = "Connected to Robot";
+
+                if (this.RobotStatus) return;
+                this.SendPlayerRejoined();
+                this.RobotStatus = true;
             }
         }
 

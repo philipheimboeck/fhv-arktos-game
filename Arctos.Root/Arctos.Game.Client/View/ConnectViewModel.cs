@@ -12,6 +12,17 @@ namespace Arctos.View
     {
         #region Properties
 
+        private bool _closeTrigger;
+        public bool CloseTrigger
+        {
+            get { return this._closeTrigger; }
+            set
+            {
+                _closeTrigger = value;
+                OnPropertyChanged();
+            }
+        }
+
         private const string CONNECT = "Connect";
         private const string DISCONNECT = "Disconnect";
 
@@ -124,21 +135,24 @@ namespace Arctos.View
         private void GameClientOnReceivedDataEvent(object sender, ReceivedEventArgs args)
         {
             var gameEvent = args.Data as GameEvent;
-            var gameArea = (GameArea)gameEvent.Data;
+            if (gameEvent != null && gameEvent.EventType == GameEvent.Type.GuiJoined) 
+            { 
+                var gameArea = (GameArea)gameEvent.Data;
 
-            if (gameArea != null)
-            {
-                this.GameConnected = true;
+                if (gameArea != null)
+                {
+                    this.GameConnected = true;
 
-                this.CurrentGameView = new GameView { DataContext = new GameViewModel(this.GameClient, gameArea) };
-                this.CurrentGameView.Show();
+                    this.CurrentGameView = new GameView { DataContext = new GameViewModel(this.GameClient, gameArea) };
+                    this.CurrentGameView.Show();
+                }
+                else
+                {
+                    MessageBox.Show("Did not receive any new Games! Please try again.");
+                }
+
+                this.GameClient.ReceivedDataEvent -= GameClientOnReceivedDataEvent;
             }
-            else
-            {
-                MessageBox.Show("Did not receive any new Games! Please try again.");
-            }
-
-            this.GameClient.ReceivedDataEvent -= GameClientOnReceivedDataEvent;
         }
     }
 }

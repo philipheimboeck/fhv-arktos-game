@@ -5,6 +5,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:view="clr-namespace:Arctos.View"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         mc:Ignorable="d"
         Title="GUIGameInstanceView" Height="500" Width="500"
          
@@ -12,7 +13,10 @@
         d:DataContext="{d:DesignInstance view:GameViewModel, IsDesignTimeCreatable=True}">
     <!-- add windowstyle=none to hide close toolbar -->
     <!-- WindowStyle="None"-->
- 
+
+    <i:Interaction.Behaviors>
+        <gameGui:CloseWindowBehavior CloseTrigger="{Binding CloseTrigger}" />
+    </i:Interaction.Behaviors>
     
     <Grid VerticalAlignment="Stretch">
         

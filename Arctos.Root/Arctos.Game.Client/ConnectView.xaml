@@ -4,10 +4,17 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:view="clr-namespace:Arctos.View"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:client="clr-namespace:Arctos.Game.Client"
         mc:Ignorable="d"
         Title="ARCTOS - Connect to GUIGameInstance" Height="331.51" Width="500"
         WindowStartupLocation="CenterScreen"
         d:DataContext="{d:DesignInstance view:ConnectViewModel, IsDesignTimeCreatable=True}">
+    
+    <i:Interaction.Behaviors>
+        <client:CloseWindowBehavior CloseTrigger="{Binding CloseTrigger}" />
+    </i:Interaction.Behaviors>
+    
     <Grid>
         <Label Content="Arctos GUI" HorizontalAlignment="Left" Margin="23,29,0,0" VerticalAlignment="Top" FontSize="20"/>
 

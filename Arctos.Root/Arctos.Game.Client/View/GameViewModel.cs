@@ -19,6 +19,17 @@ namespace Arctos.View
     {
         #region Properties
 
+        private bool closeTrigger;
+        public bool CloseTrigger
+        {
+            get { return this.closeTrigger; }
+            set
+            {
+                this.closeTrigger = value;
+                OnPropertyChanged();
+            }
+        }
+
         private bool _showGameInformation = false;
         public bool ShowGameInformation
         {
@@ -115,6 +126,8 @@ namespace Arctos.View
             }
         }
 
+        private List<Area> drivenPath { get; set; } 
+
         /// <summary>
         /// Received a new GameEvent
         /// </summary>
@@ -122,60 +135,114 @@ namespace Arctos.View
         /// <param name="receivedEventArgs"></param>
         private void GameClientOnReceivedEvent(object sender, ReceivedEventArgs receivedEventArgs)
         {
-            var receivedEvent = receivedEventArgs.Data as GameEvent;
-            if (receivedEvent == null) return;
-            switch (receivedEvent.EventType)
+            try
             {
-                // Area Update
-                case GameEvent.Type.AreaUpdate:
+                var receivedEvent = receivedEventArgs.Data as GameEvent;
+                if (receivedEvent == null) return;
+                switch (receivedEvent.EventType)
                 {
-                    var receivedAreaUpdate = receivedEvent.Data as Area;
-                    if (receivedAreaUpdate != null)
+                    // Area Update
+                    case GameEvent.Type.AreaUpdate:
                     {
-                        GuiArea foundArea =
-                            this.GUIGameInstance.AreaList.FirstOrDefault(
-                                x => x.AreaId.Equals(receivedAreaUpdate.AreaId));
-                        if (foundArea != null)
-                            foundArea.Status = receivedAreaUpdate.Status;
-                    }
-                }
-                break;
-
-                // Game Ready, show the path
-                case GameEvent.Type.GameReady:
-                {
-                    var receivedAreaUpdate = receivedEvent.Data as Path;
-                    if (receivedAreaUpdate == null)
-                    {
-                        // game not ready, show as message
-                        this.ShowInformationOverlay("Game is not ready. Please Wait.");
-                    }
-                    else
-                    {
-                        this.ShowInformationOverlay("READY ....");
-
-                        this.GameArea.setPath(receivedAreaUpdate.Waypoints.Select(x => new Tuple<int, int>(x.Item1, x.Item2)).ToList());
-
-                        // Show Path step by step
-                        foreach (Area areaPath in this.GameArea.Path)
+                        var receivedAreaUpdate = receivedEvent.Data as Area;
+                        if (receivedAreaUpdate != null)
                         {
-                            this.GUIGameInstance.AreaList.FirstOrDefault(area => area.AreaId.Equals(areaPath.AreaId)).Status = Area.AreaStatus.CorrectlyPassed;
-                            Wait(1);
+                            GuiArea foundArea =
+                                this.GUIGameInstance.AreaList.FirstOrDefault(
+                                    x => x.AreaId.Equals(receivedAreaUpdate.AreaId));
+
+                            if (foundArea != null) 
+                            {
+                                /*var lastArea = drivenPath.LastOrDefault();
+                                if (lastArea != null &&
+                                    (lastArea.Status == Area.AreaStatus.WronglyPassed) && receivedAreaUpdate.Status == Area.AreaStatus.CorrectlyPassed)
+                                {
+                                    foreach (Area area in drivenPath)
+                                    {
+                                        if (area.Status == Area.AreaStatus.WronglyPassed)
+                                        {
+                                            break;
+                                        }
+                                        this.GUIGameInstance.AreaList.FirstOrDefault(x => x.AreaId.Equals(receivedAreaUpdate.AreaId)).Status = Area.AreaStatus.CorrectlyPassed;
+                                    }
+                                }*/
+
+                                drivenPath.Add(receivedAreaUpdate);
+                                foundArea.Status = receivedAreaUpdate.Status;
+                            }
                         }
                     }
-                }
-                break;
+                        break;
 
-                // Set all Areas back
-                case GameEvent.Type.GameStart:
-                {
-                    this.GUIGameInstance.AreaList.Select(i =>
+                    // Player left, close the View
+                    case GameEvent.Type.PlayerLeft:
                     {
-                        i.Status = Area.AreaStatus.None;
-                        return i;
-                    }).ToList();
+                        // View is invalid now, close it
+                        this.ShowInformationOverlay("Player has left the game.. closing now");
+                        Wait(3);
+                        this.SendEvent(GameEvent.Type.GuiLeft, null);
+                        this.CloseTrigger = true;
+                    }
+                        break;
+
+                    // Game Ready, show the path
+                    case GameEvent.Type.GameReady:
+                    {
+                        var receivedAreaUpdate = receivedEvent.Data as Path;
+                        if (receivedAreaUpdate == null)
+                        {
+                            // game not ready, show as message
+                            this.ShowInformationOverlay("Game is not ready. Please Wait.");
+                        }
+                        else
+                        {
+                            this.ShowInformationOverlay("READY ....");
+
+                            this.GameArea.setPath(
+                                receivedAreaUpdate.Waypoints.Select(x => new Tuple<int, int>(x.Item1, x.Item2)).ToList());
+
+                            // Show Path step by step
+                            foreach (Area areaPath in this.GameArea.Path)
+                            {
+                                var guiArea = this.GUIGameInstance.AreaList.FirstOrDefault(area => area.AreaId.Equals(areaPath.AreaId));
+                                if (guiArea != null)
+                                    guiArea.Status = Area.AreaStatus.CorrectlyPassed;
+
+                                Wait(1);
+                            }
+                        }
+                    }
+                        break;
+
+                    // Set all Areas back
+                    case GameEvent.Type.GameStart:
+                    {
+                        this.GUIGameInstance.AreaList.Select(i =>
+                        {
+                            i.Status = Area.AreaStatus.None;
+                            return i;
+                        }).ToList();
+                    }
+                        break;
                 }
-                break;
+            }
+            catch (Exception ex)
+            {
+                this.ShowInformationOverlay("ERROR: " + ex.Message);
+            }
+        }
+
+
+        /// <summary>
+        /// Send event to game Helper Utility
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="data"></param>
+        private void SendEvent(GameEvent.Type type, object data)
+        {
+            if (GameClient.Connected)
+            {
+                GameClient.Send(new GameEvent(type, data));
             }
         }
 
