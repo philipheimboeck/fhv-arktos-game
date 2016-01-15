@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Forms.VisualStyles;
 using Arctos.Game.Middleware.Logic.Model.Model;
 using Arctos.Game.Model;
 using ArctosGameServer.Controller.Events;
@@ -271,22 +270,52 @@ namespace ArctosGameServer.Controller
                 {
                     // Game is already running
 
-                    // Check for winner
+                    // Check for finished players
                     foreach (var player in _players.Values)
                     {
-                        if (player.HasFinished())
+                        if (player.HasRecentlyFinished())
                         {
-                            LogLine("Player " + player.Name + " finished");
-                            player.StopGame = true;
+                            player.FinishedGame = true;
+                            player.EndCounter();
+
+                            // Send log
+                            LogLine("Player " + player.Name + " finished with " + player.Duration);
 
                             // Send GUI
                             if (!player.GuiId.Equals(Guid.Empty))
                             {
-                                // Todo Send Counter
-                                _server.Send(new GameEvent(GameEvent.Type.PlayerFinish, null), player.GuiId);
+                                // Send Counter
+                                _server.Send(new GameEvent(GameEvent.Type.PlayerFinish, player.Duration), player.GuiId);
                             }
 
-                            // Todo Send Event
+                            // Send Event
+                            OnPlayerFinishedEvent(new PlayerFinishedEventArgs() {Player = player});
+                        }
+                    }
+
+                    // Check if all player have finished
+                    if (_players.Values.Count > 0 && _players.Values.Count(x => x.FinishedGame == false) == 0)
+                    {
+                        // All players are finished
+                        LogLine("All players finished the game");
+
+                        // Get winner
+                        var winner = _players.Values.OrderBy(x => x.Duration).First();
+
+                        // Only tell the winner if there is more than just one player
+                        foreach (var player in _players.Values)
+                        {
+                            // Send game event
+                            var gameEvent = new GameEvent(GameEvent.Type.GameFinish,
+                                _players.Count > 0 && player.Equals(winner));
+
+                            if (!player.GuiId.Equals(Guid.Empty))
+                            {
+                                _server.Send(gameEvent, player.GuiId);
+                            }
+
+                            // Send event
+                            OnGameFinishedEvent(new GameFinishEventArgs() { Finished = true });
                         }
                     }
                 }
@@ -617,7 +646,11 @@ namespace ArctosGameServer.Controller
             _server.Send(new GameEvent(GameEvent.Type.GameStart, true));
 
             // Start timers
-            // Todo
+            var startTime = DateTime.Now;
+            foreach (var player in _players.Values)
+            {
+                player.StartTime = startTime;
+            }
 
             // Start game
             _gameStart = true;
@@ -675,6 +708,16 @@ namespace ArctosGameServer.Controller
             if (PlayerLeftEvent != null) PlayerLeftEvent.Invoke(this, e);
         }
 
+        protected virtual void OnGameFinishedEvent(GameFinishEventArgs e)
+        {
+            if (GameFinishedEvent != null) GameFinishedEvent.Invoke(this, e);
+        }
+
+        protected virtual void OnPlayerFinishedEvent(PlayerFinishedEventArgs e)
+        {
+            if (PlayerFinishedEvent != null) PlayerFinishedEvent.Invoke(this, e);
+        }
+
         #endregion
 
         #region Events
@@ -685,6 +728,8 @@ namespace ArctosGameServer.Controller
         public event GameReadyEventHandler GameReadyEvent;
         public event GameStartEventHandler GameStartEvent;
         public event LogEventHandler LogEvent;
+        public event GameFinishedEventHandler GameFinishedEvent;
+        public event PlayerFinishedEventHandler PlayerFinishedEvent;
 
         #endregion
     }

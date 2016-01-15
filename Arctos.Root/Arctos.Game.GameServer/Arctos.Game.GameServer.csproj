@@ -61,10 +61,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Controller\Events\GameFinishedEvent.cs" />
     <Compile Include="Controller\Events\GameStartEvent.cs" />
     <Compile Include="Controller\Events\GuidJoinedEvent.cs" />
     <Compile Include="Controller\Events\GameReadyEvent.cs" />
     <Compile Include="Controller\Events\LogEvent.cs" />
+    <Compile Include="Controller\Events\PlayerFinishedEvent.cs" />
     <Compile Include="Controller\Events\PlayerLeftEvent.cs" />
     <Compile Include="Controller\GameController.cs" />
     <Compile Include="Domain\Player.cs" />
