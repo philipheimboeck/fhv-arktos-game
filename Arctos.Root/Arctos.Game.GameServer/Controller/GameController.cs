@@ -116,7 +116,7 @@ namespace ArctosGameServer.Controller
                             if (!player.GuiId.Equals(Guid.Empty))
                             {
                                 // Send Counter
-                                _server.Send(new GameEvent(GameEvent.Type.PlayerFinish, player.Duration), player.GuiId);
+                                _server.Send(new GameEvent(GameEvent.Type.PlayerFinish, player.Duration.TotalMilliseconds), player.GuiId);
                             }
 
                             // Send Event
