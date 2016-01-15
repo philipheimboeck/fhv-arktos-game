@@ -4,23 +4,24 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Xml.Serialization;
+using Arctos.Game.Middleware.Logic.Model.Client;
 using Arctos.Game.Middleware.Logic.Model.Model;
+using ArctosGameServer.Communication;
+using ArctosGameServer.Communication.ServerProtocol;
 
 namespace ArctosGameServer.Service
 {
     public class GameTcpServer : IObserver<GameEvent>, IObservable<Tuple<Guid, GameEvent>>
     {
-        private Dictionary<Guid, TcpClient> _clients = new Dictionary<Guid, TcpClient>();
+        private Dictionary<Guid, Client> _clients = new Dictionary<Guid, Client>();
         private List<IObserver<Tuple<Guid, GameEvent>>> _observers = new List<IObserver<Tuple<Guid, GameEvent>>>();
         private TcpListener _tcpListener;
 
-        public GameTcpServer()
+        public GameTcpServer() : this(IPAddress.Any, 13000)
         {
-            this._tcpListener = new TcpListener(IPAddress.Any, 13000);
-            this._tcpListener.Start();
         }
 
-        public GameTcpServer(IPAddress ip, Int32 port)
+        public GameTcpServer(IPAddress ip, int port)
         {
             this._tcpListener = new TcpListener(ip, port);
             this._tcpListener.Start();
@@ -65,10 +66,11 @@ namespace ArctosGameServer.Service
             // Create a new client
             var clientSocket = default(TcpClient);
             clientSocket = _tcpListener.EndAcceptTcpClient(result);
+            var client = new Client(clientSocket);
 
             // Create a new Unique ID
             var id = System.Guid.NewGuid();
-            _clients.Add(id, clientSocket);
+            _clients.Add(id, client);
 
             // Start the client handler
             var handler = new ClientRequestHandler(id, clientSocket, this);
@@ -86,10 +88,15 @@ namespace ArctosGameServer.Service
             // Send event to all clients
             foreach (var client in _clients.Values)
             {
-                SendData(client, gameEvent);
+                client.Send(gameEvent);
             }
         }
 
+        /// <summary>
+        /// Send a GameEvent to the client
+        /// </summary>
+        /// <param name="gameEvent"></param>
+        /// <param name="clientId"></param>
         public void Send(GameEvent gameEvent, Guid clientId)
         {
             // Remove disconnected clients
@@ -100,18 +107,7 @@ namespace ArctosGameServer.Service
                 throw new Exception("Client is disconnected!");
             }
 
-            SendData(_clients[clientId], gameEvent);
-        }
-
-        protected void SendData(TcpClient client, GameEvent gameEvent)
-        {
-            // Serialize and send event
-            var xmlSerializer = new XmlSerializer(typeof (GameEvent));
-            var stream = client.GetStream();
-            if (stream.CanWrite)
-            {
-                xmlSerializer.Serialize(stream, gameEvent);
-            }
+            _clients[clientId].Send(gameEvent);
         }
 
         /// <summary>
@@ -158,6 +154,34 @@ namespace ArctosGameServer.Service
             _clients.Remove(id);
 
             NotifyObservers(new Tuple<Guid, GameEvent>(id, new GameEvent(GameEvent.Type.ConnectionLost, "Connection Closed")));
+        }
+
+
+        private class Client
+        {
+            private TcpClient _client;
+            private ProtocolLayer _protocol;
+
+            public Client(TcpClient client)
+            {
+                _client = client;
+                _protocol = new PresentationLayer(
+                    new SessionLayer(
+                        new TransportLayer(
+                            new TcpCommunicator(_client))));
+            }
+
+            public void Send(GameEvent gameEvent)
+            {
+                _protocol.send(new PDU<object>() {data = gameEvent});
+            }
+
+            public bool Connected { get { return _client.Connected;  } }
+
+            public void Close()
+            {
+                _client.Close();
+            }
         }
     }
 

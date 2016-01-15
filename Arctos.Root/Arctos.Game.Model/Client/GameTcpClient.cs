@@ -3,28 +3,33 @@ using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using System.Xml.Serialization;
 using Arctos.Game.Middleware.Logic.Model.Model;
+using ArctosGameServer.Communication;
+using ArctosGameServer.Communication.ServerProtocol;
 
 namespace Arctos.Game.Middleware.Logic.Model.Client
 {
     public class GameTcpClient
     {
-        private TcpClient _client;
+        private ProtocolLayer _protocol;
+        private TcpCommunicator _client;
         public event ReceivedEvent ReceivedDataEvent;
 
-        public GameTcpClient(String host, Int32 port)
+        public GameTcpClient(string host, int port)
         {
-            _client = new TcpClient();
-            _client.Connect(host, port);
+            _client = new TcpCommunicator(host, port);
+
+            _protocol = new PresentationLayer(
+               new SessionLayer(
+                   new TransportLayer(_client))
+               );
         }
 
-        public GameTcpClient(String host)
+        public GameTcpClient(string host) : this(host, 13000)
         {
-            _client = new TcpClient();
-            _client.Connect(host, 13000);
         }
 
+  
         public bool Connected
         {
             get { return this._client.Connected; }
@@ -32,68 +37,18 @@ namespace Arctos.Game.Middleware.Logic.Model.Client
 
         public void Send(GameEvent gameEvent)
         {
-            var serverStream = _client.GetStream();
-            var serializer = new XmlSerializer(typeof (GameEvent));
-
-            serializer.Serialize(serverStream, gameEvent);
-
-            serverStream.Flush();
+            _protocol.send(new PDU<object>() {data = gameEvent});
         }
 
         public void Receive()
         {
-            var message = new StringBuilder();
-            var serverStream = _client.GetStream();
-
-            int sleepRetries = 0;
-            while (true)
+            var received = _protocol.receive();
+            if (received != null)
             {
-                if (serverStream.DataAvailable)
+                var data = received.data as GameEvent;
+                if (data != null)
                 {
-                    var read = serverStream.ReadByte();
-                    if (read > 0)
-                    {
-                        message.Append((char)read);
-                    }
-                    else
-                    {
-                        // Nothing to read
-                        break;
-                    }
-                }
-                else if (message.ToString().Length > 0)
-                {
-                    // Completed reading
-                    if (message.ToString().EndsWith("</GameEvent>") || sleepRetries > 5)
-                    {
-                        break;
-                    }
-
-                    // TODO: improve XML protocol in order to avoid incomplete data packets!
-                    Thread.Sleep(1000);
-                    sleepRetries++;
-                }
-            }
-
-            var xml = message.ToString();
-            if (!xml.EndsWith("</GameEvent>"))
-            {
-                throw new Exception("Did receive a invalid packet!", new Exception(xml));
-            }
-
-            // Start of Presentation Layer
-            var receivedPdus = xml.Split(new string[] { "<?xml" }, StringSplitOptions.RemoveEmptyEntries);
-            var serializer = new XmlSerializer(typeof(GameEvent));
-
-            foreach (var pdu in receivedPdus)
-            {
-                // Add removed separator
-                var xmlString = "<?xml" + pdu;
-
-                using (TextReader tr = new StringReader(xmlString))
-                {
-                    var gameEvent = (GameEvent)serializer.Deserialize(tr);
-                    this.OnReceivedEvent(new ReceivedEventArgs { Data = gameEvent });
+                    this.OnReceivedEvent(new ReceivedEventArgs { Data = data });
                 }
             }
         }
