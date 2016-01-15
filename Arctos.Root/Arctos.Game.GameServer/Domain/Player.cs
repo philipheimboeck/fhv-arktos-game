@@ -26,7 +26,7 @@ namespace ArctosGameServer.Domain
 
         public bool HasRecentlyFinished()
         {
-            return FinishedGame != false && LastVisited != null && Map.Path[Map.Path.Count - 1].Equals(LastVisited);
+            return FinishedGame == false && LastVisited != null && Map.Path[Map.Path.Count - 1].Equals(LastVisited);
         }
 
         public TimeSpan EndCounter()

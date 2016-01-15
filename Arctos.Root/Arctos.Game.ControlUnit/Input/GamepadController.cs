@@ -119,16 +119,14 @@ namespace Arctos.Game.ControlUnit.Input
                     if (!_movementValues[Wheels.WheelRight].Equals(leftTrigger))
                     {
                         _movementValues[Wheels.WheelRight] = leftTrigger;
-
-                        notification = true;
                     }
 
                     if (!_movementValues[Wheels.WheelLeft].Equals(rightTrigger))
                     {
                         _movementValues[Wheels.WheelLeft] = rightTrigger;
-
-                        notification = true;
                     }
+                    
+                    notification = true;
                 }
 
                 if (notification)
