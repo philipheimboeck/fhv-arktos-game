@@ -47,7 +47,7 @@
         </gameGui:GridAwareItemsControl>
 
 
-        <Border BorderThickness="1" Visibility="{Binding Path=ShowGameInformation, Converter={StaticResource BoolToVisibilityConverter}}" Grid.RowSpan="3" Background="#7F6B8E23">
+        <Border BorderThickness="1" Visibility="{Binding Path=ShowGameInformation, Converter={StaticResource BoolToVisibilityConverter}}" Grid.RowSpan="3" Background="#7F530000">
             <Grid>
                 <TextBlock Margin="0" TextWrapping="Wrap" Text="{Binding Path=GameInformation}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24" FontWeight="Bold" Foreground="#7EFFFFFF"/>
             </Grid>
