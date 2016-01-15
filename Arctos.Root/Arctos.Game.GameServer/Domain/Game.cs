@@ -32,22 +32,22 @@ namespace ArctosGameServer.Domain
             var r = new Random();
 
             // Add start field
-            var current = new Tuple<int, int>(r.Next(0, width - 1), height - 1);
+            var current = new Tuple<int, int>(0, r.Next(0, height - 1));
             path.Add(current);
 
-            var direction = 0; // 0 -> Top, 1 -> Left, 2 -> Right
+            var direction = 0; // 0 -> Right, 1 -> Top, 2 -> Bottom
 
-            // Create new fields until the top is reached
-            while (current.Item2 > 0)
+            // Create new fields until the right side is reached
+            while (current.Item1 < height - 1)
             {
                 // Check for possible directions
-                bool[] possibleDirections = {true, true, true};
+                bool[] possibleDirections = { true, true, true };
 
-                // Left is not possible when there is no left field or when the player went right last time
-                possibleDirections[1] = current.Item1 > 0 && direction != 2;
+                // Top is not possible when there is no top field or when the player went bottom last time
+                possibleDirections[1] = current.Item2 > 0 && direction != 2;
 
-                // Right is not possible when there is no right field or when the player went left last time
-                possibleDirections[2] = current.Item1 < width - 1 && direction != 1;
+                // Bottom is not possible when there is no bottom field or when the player went top last time
+                possibleDirections[2] = current.Item2 < height - 1 && direction != 1;
 
                 if (possibleDirections.Count(x => x == true) == 0)
                 {
@@ -68,13 +68,13 @@ namespace ArctosGameServer.Domain
                 switch (direction)
                 {
                     case 0:
-                        posY--;
+                        posX++;
                         break;
                     case 1:
-                        posX--;
+                        posY--;
                         break;
                     case 2:
-                        posX++;
+                        posY++;
                         break;
                 }
                 current = new Tuple<int, int>(posX, posY);
