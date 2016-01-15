@@ -93,7 +93,7 @@
     <Compile Include="Communication\Protocol\TransportLayer.cs" />
     <Compile Include="Controller\RobotController.cs" />
     <Compile Include="Input\GamepadController.cs" />
-    <Compile Include="ControlUnitViewModel.cs" />
+    <Compile Include="ViewModel\ControlUnitViewModel.cs" />
     <Compile Include="ControlUnitView.xaml.cs">
       <DependentUpon>ControlUnitView.xaml</DependentUpon>
       <SubType>Code</SubType>

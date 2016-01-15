@@ -38,8 +38,8 @@ namespace Arctos.Game
 
         private readonly GamepadController GamepadController;
         private readonly RobotController RobotController;
-        private GameTcpClient _client;
-        private bool _movementDirty = false;
+        private GameTcpClient GameClient;
+        private bool _movementDirty;
 
         private string _log;
         public string Log
@@ -211,6 +211,45 @@ namespace Arctos.Game
         }
 
         /// <summary>
+        /// Connect to Game Server
+        /// </summary>
+        private void ConnectToGame()
+        {
+            try
+            {
+                BackgroundWorker bgw = new BackgroundWorker();
+                bgw.DoWork += delegate
+                {
+                    if (GameStatus == false)
+                    {
+                        LogWrite(LogLevel.Info, "Connect to Server on " + this.GameIP);
+                        GameClient = new GameTcpClient(this.GameIP);
+                        GameClient.ReceivedDataEvent += GameClientOnReceivedDataEvent;
+
+                        if (GameClient.Connected)
+                        {
+                            this.SendEvent(GameEvent.Type.PlayerRequest, this.PlayerName);
+                            LogWrite(LogLevel.Info, "Ask for Game with Playername = " + this.PlayerName);
+                            ReceiveEventsLoopWorker.RunWorkerAsync();
+                        }
+                    }
+                    else
+                    {
+                        ButtonGameStatus = GAME_DISCONNECT;
+                        GameStatus = false;
+                        GameClient = null;
+                        ReceiveEventsLoopWorker.CancelAsync();
+                    }
+                };
+                bgw.RunWorkerAsync();
+            }
+            catch (Exception ex)
+            {
+                LogWrite(LogLevel.Error, ex.Message);
+            }
+        }
+
+        /// <summary>
         /// Try to esablish a connection to the robot
         /// </summary>
         /// <param name="comPort"></param>
@@ -233,7 +272,7 @@ namespace Arctos.Game
                     } while (this.IsWaitingForRobot);
 
                     RobotStatusText = "Connected to Port " + comPort;
-                    LogWrite(LogLevel.Information, RobotStatusText);
+                    LogWrite(LogLevel.Info, RobotStatusText);
 
                     IsDriveAllowed = true;
                     if (this.ControlUnitLoopWorker.IsBusy)
@@ -260,12 +299,6 @@ namespace Arctos.Game
             {
                 switch (parameter.ToString())
                 {
-                    case "SendCmd":
-                    {
-                       // _client.Send(new GameEvent(GameEvent.Type.AreaUpdate, "420018DB3B"));
-                    }
-                    break;
-
                     case "WaitForRobot":
                     {
                         RobotStatusText = ROBOT_WAIT;
@@ -275,23 +308,7 @@ namespace Arctos.Game
 
                     case "ConnectGame":
                     {
-                        if (GameStatus == false)
-                        {
-                            _client = new GameTcpClient(this.GameIP);
-                            _client.ReceivedDataEvent += ClientOnReceivedDataEvent;
-
-                            if (_client.Connected)
-                            {
-                                this.SendEvent(GameEvent.Type.PlayerRequest, this.PlayerName);
-                                ReceiveEventsLoopWorker.RunWorkerAsync();
-                            }
-                        }
-                        else
-                        {
-                            ButtonGameStatus = GAME_DISCONNECT;
-                            GameStatus = false;
-                            _client = null;
-                        }
+                        ConnectToGame();
                     }
                         break;
                 }
@@ -307,7 +324,7 @@ namespace Arctos.Game
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private void ClientOnReceivedDataEvent(object sender, ReceivedEventArgs args)
+        private void GameClientOnReceivedDataEvent(object sender, ReceivedEventArgs args)
         {
             try
             {
@@ -364,7 +381,7 @@ namespace Arctos.Game
             {
                 while (true)
                 {
-                    _client.Receive();
+                    GameClient.Receive();
 
                     if (ReceiveEventsLoopWorker.CancellationPending)
                     {
@@ -386,6 +403,7 @@ namespace Arctos.Game
         /// </summary>
         private void SendPlayerLeft()
         {
+            this.LogWrite(LogLevel.Info, "Lost connection to Robot, say goodbye to GameServer");
             this.SendEvent(GameEvent.Type.PlayerLeft, null);
         }
 
@@ -406,9 +424,9 @@ namespace Arctos.Game
         {
             try
             {
-                if (_client != null && _client.Connected)
+                if (GameClient != null && GameClient.Connected)
                 {
-                    _client.Send(new GameEvent(type, data));
+                    GameClient.Send(new GameEvent(type, data));
                 }
             }
             catch (Exception ex)
@@ -473,7 +491,7 @@ namespace Arctos.Game
             catch (Exception ex)
             {
                 LogWrite(LogLevel.Error, ex.Message);
-                _client = null;
+                GameClient = null;
             }
         }
 
@@ -517,7 +535,7 @@ namespace Arctos.Game
                 this.RobotStatusText = "Connected to Robot";
                 if (this.RobotStatus) return;
 
-                LogWrite(LogLevel.Information, this.RobotStatusText);
+                LogWrite(LogLevel.Info, this.RobotStatusText);
                 this.SendPlayerRejoined();
                 this.RobotStatus = true;
             }
@@ -530,6 +548,7 @@ namespace Arctos.Game
         /// <summary>
         /// Write a log message to debug window
         /// </summary>
+        /// <param name="level"></param>
         /// <param name="Message"></param>
         private void LogWrite(LogLevel level, string Message)
         {
@@ -544,7 +563,7 @@ namespace Arctos.Game
             Events,
             Error,
             Warning,
-            Information
+            Info
         }
 
         #endregion

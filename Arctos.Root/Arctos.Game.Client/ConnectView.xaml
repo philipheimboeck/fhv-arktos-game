@@ -7,7 +7,7 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:client="clr-namespace:Arctos.Game.Client"
         mc:Ignorable="d"
-        Title="ARCTOS - Connect to GUIGameInstance" Height="331.51" Width="500"
+        Title="Arctos View" Height="331.51" Width="500"
         WindowStartupLocation="CenterScreen"
         d:DataContext="{d:DesignInstance view:ConnectViewModel, IsDesignTimeCreatable=True}">
     

@@ -52,6 +52,8 @@ namespace Arctos.Controller
                 eventBackgroundWorker.WorkerSupportsCancellation = true;
                 eventBackgroundWorker.DoWork += WaitForReceivingData;
                 eventBackgroundWorker.RunWorkerAsync();
+
+                WrongPath = new List<Tuple<GuiArea, Area.AreaStatus>>();
             }
             catch (Exception ex)
             {

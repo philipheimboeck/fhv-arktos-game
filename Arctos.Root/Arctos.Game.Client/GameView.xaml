@@ -7,23 +7,26 @@
         xmlns:view="clr-namespace:Arctos.View"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         mc:Ignorable="d"
-        Title="GUIGameInstanceView" Height="500" Width="500"
+        Title="Arctos View" Height="500" Width="500"
         WindowStyle="None"
         WindowStartupLocation="CenterScreen" WindowState="Maximized"
         d:DataContext="{d:DesignInstance view:GameViewModel, IsDesignTimeCreatable=True}">
     <!-- add windowstyle=none to hide close toolbar -->
     <!-- WindowStyle="None"-->
 
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Window.Resources>
     <i:Interaction.Behaviors>
         <gameGui:CloseWindowBehavior CloseTrigger="{Binding CloseTrigger}" />
     </i:Interaction.Behaviors>
-    
+
     <Grid VerticalAlignment="Stretch">
-        
+
         <gameGui:GridAwareItemsControl  ItemsSource="{Binding Path=GUIGameInstance.AreaList, UpdateSourceTrigger=PropertyChanged}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                        <Grid gameGui:GridAutoLayout.NumberOfRows="{Binding GUIGameInstance.GameColumns}"
+                    <Grid gameGui:GridAutoLayout.NumberOfRows="{Binding GUIGameInstance.GameColumns}"
                             gameGui:GridAutoLayout.NumberOfColumns="{Binding GUIGameInstance.GameRows}" VerticalAlignment="Stretch" Background="White"
                             Width="{Binding GUIGameInstance.AreaWidth}"
                             Height="{Binding GUIGameInstance.AreaHeight}" />
@@ -31,9 +34,10 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
+                    <!--<Polygon Fill="{Binding Color}" Points="0,100, 100,0, 200,100, 100,200" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></Polygon>-->
                     <Label
-                        Grid.Column="{Binding Row}"
-                        Grid.Row="{Binding Column}"
+                        Grid.Column="{Binding Column}"
+                        Grid.Row="{Binding Row}"
                         Background="{Binding Color}"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
@@ -43,12 +47,12 @@
         </gameGui:GridAwareItemsControl>
 
 
-        <Border BorderBrush="Black" BorderThickness="1" Background="#80000000" Visibility="{Binding Path=ShowGameInformation}" Grid.RowSpan="3">
+        <Border BorderThickness="1" Visibility="{Binding Path=ShowGameInformation, Converter={StaticResource BoolToVisibilityConverter}}" Grid.RowSpan="3" Background="#80000000">
             <Grid>
                 <TextBlock Margin="0" TextWrapping="Wrap" Text="{Binding Path=GameInformation}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24" FontWeight="Bold" Foreground="#7EFFFFFF"/>
             </Grid>
         </Border>
-        
+
     </Grid>
 
 </Window>

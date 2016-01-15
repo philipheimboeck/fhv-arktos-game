@@ -5,14 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:game="clr-namespace:Arctos.Game"
         mc:Ignorable="d"
-        Title="Arctos ControlUnit" Height="352.4" Width="884.2" d:DataContext="{d:DesignInstance game:ControlUnitViewModel, IsDesignTimeCreatable=True}">
+        Title="Arctos ControlUnit" Height="352.4" Width="1069.6" d:DataContext="{d:DesignInstance game:ControlUnitViewModel, IsDesignTimeCreatable=True}">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="440"></ColumnDefinition>
             <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
 
-        <TextBox Name="LogBox" Text="{Binding Log}" VerticalScrollBarVisibility="Visible" IsReadOnly="True" Grid.Column="1" Background="White" Foreground="Black" TextWrapping="Wrap" AcceptsReturn="True" Margin="20,71,19.6,29.4"/>
+        <TextBox Name="LogBox" Text="{Binding Log}" VerticalScrollBarVisibility="Visible" IsReadOnly="True" Grid.Column="1" Background="White" Foreground="Black" TextWrapping="Wrap" AcceptsReturn="True" Margin="20,71,19.2,29.4"/>
 
         <Label Content="Arctos ControlUnit" HorizontalAlignment="Left" Margin="23,29,0,0" VerticalAlignment="Top" FontSize="20"/>
 
@@ -92,7 +92,7 @@
             <Label Content="{Binding GameStatusText}" Grid.Column="2" Grid.Row="2" VerticalAlignment="Center" />
         </Grid>
 
-        <Grid HorizontalAlignment="Left" Height="145" Margin="23,176,0,-0.2" VerticalAlignment="Top" Width="400">
+        <Grid HorizontalAlignment="Left" Height="117" Margin="23,176,0,0" VerticalAlignment="Top" Width="400">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="120" />
                 <ColumnDefinition Width="150" />
@@ -115,8 +115,6 @@
             <Label Content="Game Server:" Grid.Column="0" Grid.Row="2"/>
             <TextBox Grid.Column="1" Grid.Row="2" Height="23" TextWrapping="Wrap" Text="{Binding Path=GameIP}" Width="120" HorizontalAlignment="Left" />
             <Button Grid.Row="2" Grid.Column="2" Content="{Binding Path=ButtonGameStatus}" HorizontalAlignment="Left" Height="20" VerticalAlignment="Center" Width="118" Command="{Binding Path=UpdateCommand}" CommandParameter="ConnectGame"/>
-
-            <Button Grid.Row="3" Grid.Column="1" Height="20" Content="Send cmd" Command="{Binding Path=UpdateCommand}" CommandParameter="SendCmd"/>
         </Grid>
 
     </Grid>
