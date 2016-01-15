@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Xml.Serialization;
 using Arctos.Game.Model;
 
@@ -37,13 +36,13 @@ namespace Arctos.Game.Middleware.Logic.Model.Model
 
         public Type EventType { get; set; }
 
-        [XmlElement("gameArea", Type = typeof(GameArea))]
-        [XmlElement("area", Type = typeof(Area))]
-        [XmlElement("string", Type = typeof(string))]
-        [XmlElement("bool", Type = typeof(bool))]
-        [XmlElement("boolStringTuple", Type = typeof(GameEventTuple<bool, string>))]
-        [XmlElement("path", Type = typeof(Path))]
-        [XmlElement("duration", Type = typeof(TimeSpan))]
+        [XmlElement("gameArea", Type = typeof (GameArea))]
+        [XmlElement("area", Type = typeof (Area))]
+        [XmlElement("string", Type = typeof (string))]
+        [XmlElement("bool", Type = typeof (bool))]
+        [XmlElement("boolStringTuple", Type = typeof (GameEventTuple<bool, string>))]
+        [XmlElement("path", Type = typeof (Path))]
+        [XmlElement("duration", Type = typeof (TimeSpan))]
         public object Data { get; set; }
     }
 }

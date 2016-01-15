@@ -72,7 +72,7 @@ namespace ArctosGameServer.ViewModel
 
         private void GameReadyEvent(object sender, Controller.Events.GameReadeEventArgs e)
         {
-            GameStartable = true;
+            GameStartable = e.Ready;
         }
 
         private void GuiChangedEvent(object sender, Controller.Events.GuiChangedEventArgs e)

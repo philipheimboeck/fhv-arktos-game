@@ -18,196 +18,27 @@ namespace ArctosGameServer.Controller
         private readonly ConcurrentQueue<Tuple<Guid, GameEvent>> _receivedEvents =
             new ConcurrentQueue<Tuple<Guid, GameEvent>>();
 
-        private bool _gameReady;
-        private bool _gameStart;
-
-        private List<GameArea> _playableMaps = new List<GameArea>();
-
+        private Game _game = new Game();
+        private MapGenerator _mapGenerator = new MapGenerator();
         private Dictionary<string, Player> _players = new Dictionary<string, Player>();
 
         private GameTcpServer _server;
 
+        /// <summary>
+        /// Constructor of the Game Controller
+        /// </summary>
+        /// <param name="server"></param>
         public GameController(GameTcpServer server)
         {
             _server = server;
 
-            GenerateGame();
+            _game.PlayableMaps.Add(_mapGenerator.GenerateMap());
         }
 
+        /// <summary>
+        /// When true the GameController will exit from the loop
+        /// </summary>
         public bool ShutdownRequested { get; set; }
-
-        public void OnCompleted()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void OnError(Exception error)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void OnNext(Tuple<Guid, GameEvent> value)
-        {
-            // Receive GameEvent
-            _receivedEvents.Enqueue(value);
-        }
-
-        /// <summary>
-        /// Generates a new map
-        /// </summary>
-        public void GenerateGame()
-        {
-            // Todo: Make maps customable
-
-            // Generate Map
-
-            #region Hardcoded Map
-
-            var areas = new List<Area>
-            {
-                new Area()
-                {
-                    AreaId = "420018D63E",
-                    Column = 0,
-                    Row = 0,
-                    Status = Area.AreaStatus.None
-                },
-                new Area()
-                {
-                    AreaId = "420018DB3B",
-                    Column = 1,
-                    Row = 0,
-                    Status = Area.AreaStatus.None
-                },
-                new Area()
-                {
-                    AreaId = "420018DB50",
-                    Column = 2,
-                    Row = 0,
-                    Status = Area.AreaStatus.None
-                },
-                new Area()
-                {
-                    AreaId = "420013E5BA",
-                    Column = 0,
-                    Row = 1,
-                    Status = Area.AreaStatus.None
-                },
-                new Area()
-                {
-                    AreaId = "420018DB45",
-                    Column = 1,
-                    Row = 1,
-                    Status = Area.AreaStatus.None
-                },
-                new Area()
-                {
-                    AreaId = "420018D64D",
-                    Column = 2,
-                    Row = 1,
-                    Status = Area.AreaStatus.None
-                },
-                new Area()
-                {
-                    AreaId = "420018D773",
-                    Column = 0,
-                    Row = 2,
-                    Status = Area.AreaStatus.None
-                },
-                new Area()
-                {
-                    AreaId = "420014AA86",
-                    Column = 1,
-                    Row = 2,
-                    Status = Area.AreaStatus.None
-                },
-                new Area()
-                {
-                    AreaId = "3D00997CB7",
-                    Column = 2,
-                    Row = 2,
-                    Status = Area.AreaStatus.None
-                },
-            };
-
-            var map = new GameArea()
-            {
-                Name = "Map 1",
-                AreaList = areas,
-                StartField = new Area()
-                {
-                    AreaId = "3D00997D02"
-                }
-            };
-
-            #endregion
-
-            _playableMaps.Add(map);
-        }
-
-        /// <summary>
-        /// Creates a random path through the fields
-        /// </summary>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
-        /// <returns></returns>
-        private List<Tuple<int, int>> CreatePath(int width, int height)
-        {
-            var path = new List<Tuple<int, int>>();
-            var r = new Random();
-
-            // Add start field
-            var current = new Tuple<int, int>(r.Next(0, width - 1), height - 1);
-            path.Add(current);
-
-            var direction = 0; // 0 -> Top, 1 -> Left, 2 -> Right
-
-            // Create new fields until the top is reached
-            while (current.Item2 > 0)
-            {
-                // Check for possible directions
-                bool[] possibleDirections = {true, true, true};
-
-                // Left is not possible when there is no left field or when the player went right last time
-                possibleDirections[1] = current.Item1 > 0 && direction != 2;
-
-                // Right is not possible when there is no right field or when the player went left last time
-                possibleDirections[2] = current.Item1 < width - 1 && direction != 1;
-
-                if (possibleDirections.Count(x => x == true) == 0)
-                {
-                    // No way found! Aborting!
-                    throw new Exception("No way found!");
-                }
-
-                // Retrieve one possible direction
-                do
-                {
-                    direction = r.Next(0, 3);
-                } while (!possibleDirections[direction]);
-
-                // Add new tuple
-                var posX = current.Item1;
-                var posY = current.Item2;
-
-                switch (direction)
-                {
-                    case 0:
-                        posY--;
-                        break;
-                    case 1:
-                        posX--;
-                        break;
-                    case 2:
-                        posX++;
-                        break;
-                }
-                current = new Tuple<int, int>(posX, posY);
-                path.Add(current);
-            }
-
-            return path;
-        }
 
         /// <summary>
         /// Game Loop
@@ -222,19 +53,19 @@ namespace ArctosGameServer.Controller
                 ProcessEvents();
 
                 // Check for Game State
-                if (_gameStart == false)
+                if (_game.Started == false)
                 {
                     // Check if game can be started
-                    if (_gameReady == false && PlayersReady())
+                    if (_game.Ready == false && PlayersReady())
                     {
                         LogLine("Game is ready to start");
 
                         // Game changed to ready
-                        _gameReady = true;
+                        _game.Ready = true;
 
                         // Create the path
                         var map = _players.FirstOrDefault().Value.Map;
-                        var path = CreatePath(map.GameColumns, map.GameRows);
+                        var path = _game.CreatePath(map.GameColumns, map.GameRows);
                         foreach (var player in _players.Values)
                         {
                             player.Map.setPath(path);
@@ -252,12 +83,12 @@ namespace ArctosGameServer.Controller
                         // Send Event
                         OnGameReadyEvent(new GameReadeEventArgs() {Ready = true});
                     }
-                    else if (_gameReady == true && !PlayersReady())
+                    else if (_game.Ready == true && !PlayersReady())
                     {
                         LogLine("Game is not ready to start anymore");
 
                         // Game changed from ready to not ready
-                        _gameReady = false;
+                        _game.Ready = false;
 
                         // Notify CUs and GUIs
                         _server.Send(new GameEvent(GameEvent.Type.GameReady, null));
@@ -266,7 +97,7 @@ namespace ArctosGameServer.Controller
                         OnGameReadyEvent(new GameReadeEventArgs() {Ready = false});
                     }
                 }
-                else
+                else if (_game.Finished == false)
                 {
                     // Game is already running
 
@@ -299,6 +130,8 @@ namespace ArctosGameServer.Controller
                         // All players are finished
                         LogLine("All players finished the game");
 
+                        _game.Finished = true;
+
                         // Get winner
                         var winner = _players.Values.OrderBy(x => x.Duration).First();
 
@@ -306,8 +139,7 @@ namespace ArctosGameServer.Controller
                         foreach (var player in _players.Values)
                         {
                             // Send game event
-                            var gameEvent = new GameEvent(GameEvent.Type.GameFinish,
-                                _players.Count > 0 && player.Equals(winner));
+                            var gameEvent = new GameEvent(GameEvent.Type.GameFinish, player.Equals(winner));
 
                             if (!player.GuiId.Equals(Guid.Empty))
                             {
@@ -315,13 +147,16 @@ namespace ArctosGameServer.Controller
                             }
 
                             // Send event
-                            OnGameFinishedEvent(new GameFinishEventArgs() { Finished = true });
+                            OnGameFinishedEvent(new GameFinishEventArgs() {Finished = true});
                         }
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// Process All Events
+        /// </summary>
         private void ProcessEvents()
         {
             Tuple<Guid, GameEvent> e = null;
@@ -412,7 +247,7 @@ namespace ArctosGameServer.Controller
             _players.Remove(player.Name);
 
             // Add map
-            _playableMaps.Add(player.Map);
+            _game.PlayableMaps.Add(player.Map);
 
             // Notify GUI if existing
             if (!player.GuiId.Equals(Guid.Empty))
@@ -510,7 +345,7 @@ namespace ArctosGameServer.Controller
             }
 
             // Is a map available
-            var map = GetAvailableMap();
+            var map = _game.GetAvailableMap();
             if (map == null)
             {
                 LogLine("No map available");
@@ -543,22 +378,10 @@ namespace ArctosGameServer.Controller
             {
                 Item1 = true,
                 Item2 = "Player added"
-            }),
-                guid);
+            }), guid);
 
             // Send Event
             OnPlayerJoinedEvent(new PlayerJoinedEventArgs(player));
-        }
-
-        private GameArea GetAvailableMap()
-        {
-            if (_playableMaps.Count > 0)
-            {
-                var map = _playableMaps[0];
-                _playableMaps.Remove(map);
-                return map;
-            }
-            return null;
         }
 
         private void UpdateArea(Guid controlUnitGuid, string areaId)
@@ -571,56 +394,29 @@ namespace ArctosGameServer.Controller
             {
                 LogLine("Received area update from " + player.Name + " at field " + areaId);
 
-                player.Location = player.Map.StartField.AreaId.Equals(areaId)
-                    ? player.Map.StartField
-                    : player.Map.AreaList.FirstOrDefault(x => x.AreaId.Equals(areaId));
-                if (player.Location == null)
-                {
-                    return;
-                }
+                player.UpdatePosition(areaId);
 
                 // Game started?
-                if (_gameStart)
+                if (player.Location != null && _game.Started)
                 {
-                    var lastVisitedIndex = player.LastVisited != null
-                        ? player.Map.Path.IndexOf(player.Map.Path.FirstOrDefault(x => x.Equals(player.LastVisited)))
-                        : -1;
+                    var position = player.UpdatePosition(areaId);
 
-                    // Is passed field the next one in the path?
-                    var pathArea = player.Map.Path.FirstOrDefault(x => x.AreaId.Equals(areaId));
-                    if (pathArea != null)
+                    if (position.Status.Equals(Area.AreaStatus.CorrectlyPassed))
                     {
-                        if (player.Map.Path.IndexOf(pathArea) == lastVisitedIndex + 1)
-                        {
-                            LogLine("Player has correctly passed the next field in the queue");
-
-                            // Field is correctly passed
-                            // Set last visited
-                            player.LastVisited = pathArea;
-                            pathArea.Status = Area.AreaStatus.CorrectlyPassed;
-                        }
-                        else
-                        {
-                            LogLine("Player has correctly wrongly passed that field");
-
-                            // Field is in path, but not in that order
-                            pathArea.Status = Area.AreaStatus.WronglyPassed;
-                        }
-
-                        // Send Update to GUI
-                        // GUI connected?
-                        if (!player.GuiId.Equals(Guid.Empty))
-                        {
-                            _server.Send(new GameEvent(GameEvent.Type.AreaUpdate, pathArea), player.GuiId);
-                        }
+                        LogLine("Player has correctly passed the next field in the queue");
                     }
-                    else if (!player.GuiId.Equals(Guid.Empty))
+                    else
                     {
                         LogLine("Player has correctly wrongly passed that field");
 
-                        // Field not in path and therefore wrongly passed!
-                        player.Location.Status = Area.AreaStatus.WronglyPassed;
-                        _server.Send(new GameEvent(GameEvent.Type.AreaUpdate, player.Location), player.GuiId);
+                        // Add a penalty second
+                        player.Duration = player.Duration.Add(new TimeSpan(0, 0, 0, 1));
+                    }
+
+                    // Send Update to GUI when connected
+                    if (!player.GuiId.Equals(Guid.Empty))
+                    {
+                        _server.Send(new GameEvent(GameEvent.Type.AreaUpdate, position), player.GuiId);
                     }
                 }
             }
@@ -653,8 +449,8 @@ namespace ArctosGameServer.Controller
             }
 
             // Start game
-            _gameStart = true;
-            _gameReady = false;
+            _game.Started = true;
+            _game.Ready = false;
 
             // Send event
             OnGameStartEvent(new GameStartEventArgs() {Started = true});
@@ -675,6 +471,26 @@ namespace ArctosGameServer.Controller
         {
             OnLogEventHandler(new LogEventArgs() {Log = log});
         }
+
+        #region EventHandling
+
+        public void OnCompleted()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnError(Exception error)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnNext(Tuple<Guid, GameEvent> value)
+        {
+            // Receive GameEvent
+            _receivedEvents.Enqueue(value);
+        }
+
+        #endregion
 
         #region EventHandlers
 
