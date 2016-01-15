@@ -2,6 +2,8 @@
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Arctos.Game.Middleware.Logic.Model.Client;
 using Arctos.Game.Middleware.Logic.Model.Model;
@@ -15,62 +17,59 @@ namespace ArctosGameServer.Service
         protected ProtocolLayer _protocol;
         protected TcpClient _clientSocket;
         protected Guid _id;
-        protected NetworkStream _networkStream = null;
         protected GameTcpServer _tcpServer = null;
+        private TcpCommunicator _communicator;
+        protected bool Closed { get; set; }
 
         public ClientRequestHandler(Guid id, TcpClient clientConnected, GameTcpServer server)
         {
             this._id = id;
             this._clientSocket = clientConnected;
             this._tcpServer = server;
+            this._communicator = new TcpCommunicator(_clientSocket);
 
             _protocol = new PresentationLayer(
                 new SessionLayer(
-                    new TransportLayer(new TcpCommunicator(_clientSocket))));
+                    new TransportLayer(_communicator)));
         }
 
         public void StartClient()
         {
-            _networkStream = _clientSocket.GetStream();
-
-            WaitForRequest();
+            var thread = new Thread(WaitForRequest);
+            thread.Start();
         }
 
         private void WaitForRequest()
         {
-            var buffer = new byte[_clientSocket.ReceiveBufferSize];
-
-            _networkStream.BeginRead(buffer, 0, buffer.Length, ReadCallback, buffer);
-        }
-
-        private void ReadCallback(IAsyncResult result)
-        {
-            try
+            while (!Closed)
             {
-                var received = _protocol.receive();
-                if (received != null)
+                try
                 {
-                    var data = received.data as GameEvent;
-                    _tcpServer.OnReceived(_id, data);
+                    if (_communicator.Connected)
+                    {
+                        var data = _protocol.receive();
+                        if (data != null)
+                        {
+                            var gameEvent = data.data as GameEvent;
+                            _tcpServer.OnReceived(_id, gameEvent);
+                        }
+                        else
+                        {
+                            Close();
+                        }
+                    }
+                    Thread.Sleep(100);
                 }
-                else
+                catch (Exception ex)
                 {
                     Close();
                 }
             }
-            catch (IOException ex)
-            {
-                Close();
-                return;
-            }
-           
-
-            this.WaitForRequest();
         }
-
+        
         private void Close()
         {
-            _networkStream.Close();
+            Closed = true;
             _clientSocket.Close();
 
             // Notify about the lost connection

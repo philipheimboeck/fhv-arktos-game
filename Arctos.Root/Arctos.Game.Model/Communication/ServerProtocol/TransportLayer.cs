@@ -50,6 +50,10 @@ namespace ArctosGameServer.Communication.ServerProtocol
                     Thread.Sleep(1000);
                     sleepRetries++;
                 }
+                else
+                {
+                    Thread.Sleep(1000);
+                }
             }
 
             var xml = message.ToString();
