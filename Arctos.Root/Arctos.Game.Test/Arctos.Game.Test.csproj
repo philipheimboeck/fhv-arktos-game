@@ -84,6 +84,10 @@
       <Project>{ad988769-bd9f-475c-885e-923798578e08}</Project>
       <Name>Arctos.Game.GameServer</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Arctos.Game.Model\Arctos.Game.Model.csproj">
+      <Project>{5B8AFFE5-0348-437B-AC95-4175CF0B1059}</Project>
+      <Name>Arctos.Game.Model</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

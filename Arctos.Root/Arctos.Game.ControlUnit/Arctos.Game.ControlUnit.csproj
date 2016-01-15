@@ -85,9 +85,6 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Communication\IProtocolLayer.cs" />
-    <Compile Include="Communication\PDU.cs" />
-    <Compile Include="Communication\ProtocolLayer.cs" />
     <Compile Include="Communication\Protocol\PresentationLayer.cs" />
     <Compile Include="Communication\Protocol\SessionLayer.cs" />
     <Compile Include="Communication\Protocol\TransportLayer.cs" />
