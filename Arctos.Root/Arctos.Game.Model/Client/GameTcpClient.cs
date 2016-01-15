@@ -12,12 +12,12 @@ namespace Arctos.Game.Middleware.Logic.Model.Client
     public class GameTcpClient
     {
         private ProtocolLayer _protocol;
-        private TcpCommunicatorClient _client;
+        private TcpCommunicator _client;
         public event ReceivedEvent ReceivedDataEvent;
 
         public GameTcpClient(string host, int port)
         {
-            _client = new TcpCommunicatorClient(host, port);
+            _client = new TcpCommunicator(host, port);
 
             _protocol = new PresentationLayer(
                new SessionLayer(
@@ -65,60 +65,6 @@ namespace Arctos.Game.Middleware.Logic.Model.Client
         public void Close()
         {
             _client.Close();
-        }
-
-        /// <summary>
-        /// Actual implementation of the tcp client
-        /// </summary>
-        private class TcpCommunicatorClient : ITcpCommunicator
-        {
-            private TcpClient _client;
-
-            public TcpCommunicatorClient(string host, int port)
-            {
-                _client = new TcpClient();
-                _client.Connect(host, port);
-            }
-
-            public char? Read()
-            {
-                var serverStream = _client.GetStream();
-
-                if (serverStream.DataAvailable)
-                {
-                    var read = serverStream.ReadByte();
-                    if (read > 0)
-                    {
-                        return (char)read;
-                    }
-                    
-                }
-                
-                return null;
-            }
-
-            public bool Write(string data)
-            {
-                var serverStream = _client.GetStream();
-                using (var writer = new StreamWriter(serverStream))
-                {
-                    writer.Write(data);
-                }
-
-                serverStream.Flush();
-
-                return true;
-            }
-
-            public bool Connected
-            {
-                get { return _client.Connected; }
-            }
-
-            public void Close()
-            {
-                _client.Close();
-            }
         }
     }
 }

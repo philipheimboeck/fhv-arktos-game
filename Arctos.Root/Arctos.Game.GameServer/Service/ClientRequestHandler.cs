@@ -3,12 +3,16 @@ using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Xml.Serialization;
+using Arctos.Game.Middleware.Logic.Model.Client;
 using Arctos.Game.Middleware.Logic.Model.Model;
+using ArctosGameServer.Communication;
+using ArctosGameServer.Communication.ServerProtocol;
 
 namespace ArctosGameServer.Service
 {
     internal class ClientRequestHandler
     {
+        protected ProtocolLayer _protocol;
         protected TcpClient _clientSocket;
         protected Guid _id;
         protected NetworkStream _networkStream = null;
@@ -19,6 +23,10 @@ namespace ArctosGameServer.Service
             this._id = id;
             this._clientSocket = clientConnected;
             this._tcpServer = server;
+
+            _protocol = new PresentationLayer(
+                new SessionLayer(
+                    new TransportLayer(new TcpCommunicator(_clientSocket))));
         }
 
         public void StartClient()
@@ -39,40 +47,15 @@ namespace ArctosGameServer.Service
         {
             try
             {
-                // Start of Transport Layer
-                var networkStream = _clientSocket.GetStream();
-
-                var read = networkStream.EndRead(result);
-                if (read == 0)
+                var received = _protocol.receive();
+                if (received != null)
+                {
+                    var data = received.data as GameEvent;
+                    _tcpServer.OnReceived(_id, data);
+                }
+                else
                 {
                     Close();
-                    return;
-                }
-
-                var buffer = result.AsyncState as byte[];
-                var data = Encoding.Default.GetString(buffer, 0, read);
-
-                // Start of Session layer
-
-                // Start of Presentation Layer
-                var receivedPdus = data.Split(new string[] {"<?xml"}, StringSplitOptions.RemoveEmptyEntries);
-                var serializer = new XmlSerializer(typeof (GameEvent));
-
-                foreach (var pdu in receivedPdus)
-                {
-                    // Add removed separator
-                    var xmlString = "<?xml" + pdu;
-
-                    using (TextReader tr = new StringReader(xmlString))
-                    {
-                        // Start of Application Layer
-
-                        // Deserialize entity
-                        var gameEvent = (GameEvent) serializer.Deserialize(tr);
-
-                        // Notify Server about the event
-                        _tcpServer.OnReceived(_id, gameEvent);
-                    }
                 }
             }
             catch (IOException ex)

@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="Client\GameTcpClient.cs" />
     <Compile Include="Client\ReceivedEvent.cs" />
+    <Compile Include="Client\TcpCommunicator.cs" />
     <Compile Include="Communication\IProtocolLayer.cs" />
     <Compile Include="Communication\ITcpCommunicator.cs" />
     <Compile Include="Communication\PDU.cs" />
