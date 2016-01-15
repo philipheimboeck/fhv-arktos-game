@@ -1,5 +1,4 @@
 ﻿using System;
-using ArctosGameServer.Domain;
 
 namespace ArctosGameServer.Controller.Events
 {

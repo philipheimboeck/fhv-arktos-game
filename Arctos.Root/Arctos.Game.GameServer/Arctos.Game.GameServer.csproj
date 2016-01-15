@@ -69,6 +69,8 @@
     <Compile Include="Controller\Events\PlayerFinishedEvent.cs" />
     <Compile Include="Controller\Events\PlayerLeftEvent.cs" />
     <Compile Include="Controller\GameController.cs" />
+    <Compile Include="Controller\MapGenerator.cs" />
+    <Compile Include="Domain\Game.cs" />
     <Compile Include="Domain\Player.cs" />
     <Compile Include="Controller\Events\PlayerJoinedEvent.cs" />
     <Compile Include="Server.xaml.cs">
