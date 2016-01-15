@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
-using System.Windows;
 using System.Windows.Threading;
+using Arctos.Controller;
+using Arctos.Controller.Events;
 using Arctos.Game.GUIClient;
 using Arctos.Game.Middleware.Logic.Model.Client;
 using Arctos.Game.Middleware.Logic.Model.Model;
@@ -18,6 +19,8 @@ namespace Arctos.View
     public class GameViewModel : PropertyChangedBase
     {
         #region Properties
+
+        private ViewController _controller;
 
         private bool closeTrigger;
         public bool CloseTrigger
@@ -63,10 +66,6 @@ namespace Arctos.View
             }
         }
 
-        private GameArea GameArea { get; set; }
-
-        private GameTcpClient GameClient { get; set; }
-        private readonly BackgroundWorker eventBackgroundWorker = new BackgroundWorker();
 
         #endregion
 
@@ -77,174 +76,155 @@ namespace Arctos.View
         /// <param name="area"></param>
         public GameViewModel(GameTcpClient client, GameArea area)
         {
-            this.GUIGameInstance = new GuiGameArea(area)
+            try
             {
-                AreaWidth = 800,
-                AreaHeight = 600
-            };
+                _controller = new ViewController(client, area);
+                _controller.AreaUpdateEvent += OnAreaUpdateEvent;
+                _controller.PlayerLeftEvent += OnPlayerLeftEvent;
+                _controller.GameReadyEvent += OnGameReadyEvent;
+                _controller.GameStartEvent += OnGameStartEvent;
+                _controller.GameFinishEvent += OnGameFinishEvent;
+                _controller.PlayerFinishEvent += OnPlayerFinishEvent;
 
-            this.GameArea = area;
-            this.GameClient = client;
-            this.GameClient.ReceivedDataEvent += GameClientOnReceivedEvent;
+                this.GUIGameInstance = new GuiGameArea(area)
+                {
+                    AreaWidth = 800,
+                    AreaHeight = 600
+                };
 
-            InitializeGameViewModel();
+                InitializeGameViewModel();
+            }
+            catch (Exception ex)
+            {
+                this.ShowInformationOverlay(ex.Message);
+            }
         }
-
+    
         /// <summary>
         /// Initialize GameView Model
         /// </summary>
         private void InitializeGameViewModel()
         {
-            eventBackgroundWorker.WorkerSupportsCancellation = true;
-            eventBackgroundWorker.DoWork += WaitForReceivingData;
-            eventBackgroundWorker.RunWorkerAsync();
         }
 
+        #region Events
+
         /// <summary>
-        /// Wait for incoming events
+        /// PlayerFinish Event
         /// </summary>
         /// <param name="sender"></param>
-        /// <param name="doWorkEventArgs"></param>
-        private void WaitForReceivingData(object sender, DoWorkEventArgs doWorkEventArgs)
+        /// <param name="playerFinishEventArgs"></param>
+        private void OnPlayerFinishEvent(object sender, PlayerFinishEventArgs playerFinishEventArgs)
         {
-            while (true)
-            {
-                try
-                {
-                    this.GameClient.Receive();
-
-                    if (eventBackgroundWorker.CancellationPending)
-                    {
-                        doWorkEventArgs.Cancel = true;
-                        return;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
-                }
-            }
+            this.ShowInformationOverlay("You finished this Game in " + playerFinishEventArgs.Duration.TotalSeconds + " seconds.");
         }
-
-        private List<Area> drivenPath { get; set; } 
-
+        
         /// <summary>
-        /// Received a new GameEvent
+        /// GameFinish Event
         /// </summary>
         /// <param name="sender"></param>
-        /// <param name="receivedEventArgs"></param>
-        private void GameClientOnReceivedEvent(object sender, ReceivedEventArgs receivedEventArgs)
+        /// <param name="gameFinishEventArgs"></param>
+        private void OnGameFinishEvent(object sender, GameFinishEventArgs gameFinishEventArgs)
         {
-            try
-            {
-                var receivedEvent = receivedEventArgs.Data as GameEvent;
-                if (receivedEvent == null) return;
-                switch (receivedEvent.EventType)
-                {
-                    // Area Update
-                    case GameEvent.Type.AreaUpdate:
-                    {
-                        var receivedAreaUpdate = receivedEvent.Data as Area;
-                        if (receivedAreaUpdate != null)
-                        {
-                            GuiArea foundArea =
-                                this.GUIGameInstance.AreaList.FirstOrDefault(
-                                    x => x.AreaId.Equals(receivedAreaUpdate.AreaId));
+            this.ShowInformationOverlay(gameFinishEventArgs.Won
+                ? "CONGRATULATION - you won"
+                : "SORRY - you lost this game");
 
-                            if (foundArea != null) 
-                            {
-                                /*var lastArea = drivenPath.LastOrDefault();
-                                if (lastArea != null &&
-                                    (lastArea.Status == Area.AreaStatus.WronglyPassed) && receivedAreaUpdate.Status == Area.AreaStatus.CorrectlyPassed)
-                                {
-                                    foreach (Area area in drivenPath)
-                                    {
-                                        if (area.Status == Area.AreaStatus.WronglyPassed)
-                                        {
-                                            break;
-                                        }
-                                        this.GUIGameInstance.AreaList.FirstOrDefault(x => x.AreaId.Equals(receivedAreaUpdate.AreaId)).Status = Area.AreaStatus.CorrectlyPassed;
-                                    }
-                                }*/
+            Wait(4);
 
-                                drivenPath.Add(receivedAreaUpdate);
-                                foundArea.Status = receivedAreaUpdate.Status;
-                            }
-                        }
-                    }
-                        break;
-
-                    // Player left, close the View
-                    case GameEvent.Type.PlayerLeft:
-                    {
-                        // View is invalid now, close it
-                        this.ShowInformationOverlay("Player has left the game.. closing now");
-                        Wait(3);
-                        this.SendEvent(GameEvent.Type.GuiLeft, null);
-                        this.CloseTrigger = true;
-                    }
-                        break;
-
-                    // Game Ready, show the path
-                    case GameEvent.Type.GameReady:
-                    {
-                        var receivedAreaUpdate = receivedEvent.Data as Path;
-                        if (receivedAreaUpdate == null)
-                        {
-                            // game not ready, show as message
-                            this.ShowInformationOverlay("Game is not ready. Please Wait.");
-                        }
-                        else
-                        {
-                            this.ShowInformationOverlay("READY ....");
-
-                            this.GameArea.setPath(
-                                receivedAreaUpdate.Waypoints.Select(x => new Tuple<int, int>(x.Item1, x.Item2)).ToList());
-
-                            // Show Path step by step
-                            foreach (Area areaPath in this.GameArea.Path)
-                            {
-                                var guiArea = this.GUIGameInstance.AreaList.FirstOrDefault(area => area.AreaId.Equals(areaPath.AreaId));
-                                if (guiArea != null)
-                                    guiArea.Status = Area.AreaStatus.CorrectlyPassed;
-
-                                Wait(1);
-                            }
-                        }
-                    }
-                        break;
-
-                    // Set all Areas back
-                    case GameEvent.Type.GameStart:
-                    {
-                        this.GUIGameInstance.AreaList.Select(i =>
-                        {
-                            i.Status = Area.AreaStatus.None;
-                            return i;
-                        }).ToList();
-                    }
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                this.ShowInformationOverlay("ERROR: " + ex.Message);
-            }
+            this.CloseTrigger = true;
         }
-
 
         /// <summary>
-        /// Send event to game Helper Utility
+        /// GameReady Event
         /// </summary>
-        /// <param name="type"></param>
-        /// <param name="data"></param>
-        private void SendEvent(GameEvent.Type type, object data)
+        /// <param name="sender"></param>
+        /// <param name="gameReadyEventArgs"></param>
+        private void OnGameReadyEvent(object sender, GameReadyEventArgs gameReadyEventArgs)
         {
-            if (GameClient.Connected)
+            var receivedAreaUpdate = gameReadyEventArgs.Path;
+            if (receivedAreaUpdate == null)
             {
-                GameClient.Send(new GameEvent(type, data));
+                // game not ready, show as message
+                this.ShowInformationOverlay("Game is not ready. Please Wait.");
+            }
+            else
+            {
+                this.ShowInformationOverlay("READY ....");
+
+                _controller.GameArea.setPath(
+                    receivedAreaUpdate.Waypoints.Select(x => new Tuple<int, int>(x.Item1, x.Item2)).ToList());
+
+                // Show Path step by step
+                foreach (Area areaPath in _controller.GameArea.Path)
+                {
+                    var guiArea = this.GUIGameInstance.AreaList.FirstOrDefault(area => area.AreaId.Equals(areaPath.AreaId));
+                    if (guiArea != null)
+                        guiArea.Status = Area.AreaStatus.CorrectlyPassed;
+
+                    Wait(1);
+                }
             }
         }
+
+        /// <summary>
+        /// GameStart Event
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="gameStartEventArgs"></param>
+        private void OnGameStartEvent(object sender, GameStartEventArgs gameStartEventArgs)
+        {
+            this.GUIGameInstance.AreaList.Select(i =>
+            {
+                i.Status = Area.AreaStatus.None;
+                return i;
+            }).ToList();
+        }
+
+        /// <summary>
+        /// PlayerLeft Event
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="playerLeftEventArgs"></param>
+        private void OnPlayerLeftEvent(object sender, PlayerLeftEventArgs playerLeftEventArgs)
+        {
+            // View is invalid now, close it
+            this.ShowInformationOverlay("Player has left the game.. closing now");
+            Wait(3);
+            _controller.SendEvent(GameEvent.Type.GuiLeft, null);
+            this.CloseTrigger = true;
+        }
+
+        /// <summary>
+        /// AreaUpdate Event
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="areaUpdateEventArgs"></param>
+        private void OnAreaUpdateEvent(object sender, AreaUpdateEventArgs areaUpdateEventArgs)
+        {
+            var receivedAreaUpdate = areaUpdateEventArgs.Area;
+            if (receivedAreaUpdate == null) return;
+
+            GuiArea foundArea = this.GUIGameInstance.AreaList.FirstOrDefault(x => x.AreaId.Equals(receivedAreaUpdate.AreaId));
+            if (foundArea == null) return;
+
+            if (receivedAreaUpdate.Status == Area.AreaStatus.WronglyPassed)
+            {
+                _controller.WrongPath.Add(new Tuple<GuiArea, Area.AreaStatus>(foundArea, foundArea.Status));
+            }
+            else
+            {
+                foreach (var area in _controller.WrongPath)
+                {
+                    area.Item1.Status = area.Item2;
+                }
+                _controller.WrongPath.Clear();
+            }
+
+            foundArea.Status = receivedAreaUpdate.Status;
+        }
+
+        #endregion
 
         #region View Helper
 

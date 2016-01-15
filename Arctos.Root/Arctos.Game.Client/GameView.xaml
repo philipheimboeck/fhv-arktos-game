@@ -8,7 +8,7 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         mc:Ignorable="d"
         Title="GUIGameInstanceView" Height="500" Width="500"
-         
+        WindowStyle="None"
         WindowStartupLocation="CenterScreen" WindowState="Maximized"
         d:DataContext="{d:DesignInstance view:GameViewModel, IsDesignTimeCreatable=True}">
     <!-- add windowstyle=none to hide close toolbar -->

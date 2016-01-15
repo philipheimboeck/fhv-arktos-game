@@ -65,6 +65,13 @@
     <Compile Include="ConnectView.xaml.cs">
       <DependentUpon>ConnectView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controller\Events\GameStartEvent.cs" />
+    <Compile Include="Controller\Events\GameReadyEvent.cs" />
+    <Compile Include="Controller\Events\GameFinishEvent.cs" />
+    <Compile Include="Controller\Events\PlayerFinishEventArgs.cs" />
+    <Compile Include="Controller\Events\PlayerLeftEvent.cs" />
+    <Compile Include="Controller\Events\AreaUpdateEvent.cs" />
+    <Compile Include="Controller\ViewController.cs" />
     <Compile Include="View\ConnectViewModel.cs" />
     <Compile Include="View\Controls\CloseWindowsBehavior.cs" />
     <Compile Include="View\Controls\GridAutoLayout.cs" />

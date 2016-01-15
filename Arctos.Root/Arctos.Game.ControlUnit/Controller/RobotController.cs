@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Windows.Forms;
 using ArctosGameServer.Communication;
 using ArctosGameServer.Communication.Protocol;
 using ArctosGameServer.Controller.Events;
@@ -35,22 +34,14 @@ namespace Arctos.Game.ControlUnit.Controller
         {
             if (!string.IsNullOrEmpty(comPort))
                 this.ComPort = comPort;
+            
+            IProtocolLayer<object, object> protocolLayer = new PresentationLayer(
+                new SessionLayer(
+                    new TransportLayer(this.ComPort)
+                    )
+                );
 
-            try
-            {
-                IProtocolLayer<object, object> protocolLayer = new PresentationLayer(
-                    new SessionLayer(
-                        new TransportLayer(this.ComPort)
-                        )
-                    );
-
-                this.protocol = protocolLayer;
-            }
-            catch (Exception ex)
-            {
-                //MessageBox.Show(ex.Message);
-                throw;
-            }
+            this.protocol = protocolLayer;
         }
 
         /// <summary>
@@ -60,7 +51,6 @@ namespace Arctos.Game.ControlUnit.Controller
         /// <param name="right"></param>
         public void Drive(int left, int right)
         {
-            // TODO generate proper values and check if they are correct!
             var keyValue = new Tuple<string, string>("drive", left + "," + right);
             var pduObj = new PDU<object> {data = keyValue};
 

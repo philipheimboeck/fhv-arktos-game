@@ -10,6 +10,12 @@ namespace Arctos.Game
         public ControlUnitView()
         {
             InitializeComponent();
+
+            LogBox.TextChanged += (sender, args) =>
+            {
+                LogBox.CaretIndex = LogBox.Text.Length;
+                LogBox.ScrollToEnd();
+            }; 
         }
     }
 }

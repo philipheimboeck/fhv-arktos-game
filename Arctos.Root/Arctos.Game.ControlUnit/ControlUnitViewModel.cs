@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Timers;
-using System.Windows;
 using Arctos.Game.ControlUnit.Controller;
 using Arctos.Game.ControlUnit.Input;
 using Arctos.Game.Middleware.Logic.Model.Client;
@@ -41,6 +40,17 @@ namespace Arctos.Game
         private readonly RobotController RobotController;
         private GameTcpClient _client;
         private bool _movementDirty = false;
+
+        private string _log;
+        public string Log
+        {
+            get { return _log; }
+            set
+            {
+                _log = value;
+                OnPropertyChanged();
+            }
+        }
 
         private string _buttonRobotStatus = ROBOT_WAIT;
         public string ButtonRobotStatus
@@ -167,30 +177,37 @@ namespace Arctos.Game
         /// <param name="comPort"></param>
         public ControlUnitViewModel(string comPort)
         {
-            // Init Gamepad Controller
-            GamepadController = new GamepadController();
-            GamepadController.Subscribe(this);
-
-            if (GamepadController.IsConnected())
+            try
             {
-                PlayerStatus = true;
-                PlayerStatusText = CONNECTED;
+                // Init Gamepad Controller
+                GamepadController = new GamepadController();
+                GamepadController.Subscribe(this);
+
+                if (GamepadController.IsConnected())
+                {
+                    PlayerStatus = true;
+                    PlayerStatusText = CONNECTED;
+                }
+
+                // Init Robot controller
+                RobotController = new RobotController(comPort);
+                RobotController.HeartbeatEvent += RobotControllerOnHeartbeatEvent;
+                RobotController.RfidEvent += RobotControllerOnRfidEvent;
+
+                // Init ControlUnit Loop worker
+                ControlUnitLoopWorker.DoWork += RunControlUnitLoop;
+                ControlUnitLoopWorker.WorkerReportsProgress = true;
+                ControlUnitLoopWorker.WorkerSupportsCancellation = true;
+
+                // Init Receive Events Loop worker
+                ReceiveEventsLoopWorker.DoWork += ReceiveEventsWaiterOnWork;
+                ControlUnitLoopWorker.WorkerReportsProgress = true;
+                ControlUnitLoopWorker.WorkerSupportsCancellation = true;
             }
-
-            // Init Robot controller
-            RobotController = new RobotController(comPort);
-            RobotController.HeartbeatEvent += RobotControllerOnHeartbeatEvent;
-            RobotController.RfidEvent += RobotControllerOnRfidEvent;
-
-            // Init ControlUnit Loop worker
-            ControlUnitLoopWorker.DoWork += RunControlUnitLoop;
-            ControlUnitLoopWorker.WorkerReportsProgress = true;
-            ControlUnitLoopWorker.WorkerSupportsCancellation = true;
-
-            // Init Receive Events Loop worker
-            ReceiveEventsLoopWorker.DoWork += ReceiveEventsWaiterOnWork;
-            ControlUnitLoopWorker.WorkerReportsProgress = true;
-            ControlUnitLoopWorker.WorkerSupportsCancellation = true;
+            catch (Exception ex)
+            {
+                LogWrite(LogLevel.Error, ex.Message);
+            }
         }
 
         /// <summary>
@@ -216,6 +233,8 @@ namespace Arctos.Game
                     } while (this.IsWaitingForRobot);
 
                     RobotStatusText = "Connected to Port " + comPort;
+                    LogWrite(LogLevel.Information, RobotStatusText);
+
                     IsDriveAllowed = true;
                     if (this.ControlUnitLoopWorker.IsBusy)
                         this.ControlUnitLoopWorker.CancelAsync();
@@ -227,6 +246,7 @@ namespace Arctos.Game
             catch (Exception ex)
             {
                 RobotStatusText = ex.Message;
+                LogWrite(LogLevel.Error, ex.Message);
             }
         }
 
@@ -278,7 +298,7 @@ namespace Arctos.Game
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                LogWrite(LogLevel.Error, ex.Message);
             }
         }
 
@@ -292,40 +312,42 @@ namespace Arctos.Game
             try
             {
                 GameEvent gameEvent = args.Data as GameEvent;
-                if (args.Data != null)
+                if (gameEvent == null) return;
+
+                switch (gameEvent.EventType)
                 {
-                    switch (gameEvent.EventType)
+                    // Game Ready
+                    case GameEvent.Type.GameReady:
                     {
-                        // Game Ready
-                        case GameEvent.Type.GameReady:
-                        {
-                            RobotController.Drive(0, 0);
-                            IsDriveAllowed = false;
-                        }
-                            break;
-
-                        // Game Start
-                        case GameEvent.Type.GameStart:
-                        {
-                            IsDriveAllowed = true;
-                        }
-                            break;
-
-                        // Player Joined
-                        case GameEvent.Type.PlayerJoined:
-                        {
-                            var isAvailable = (GameEventTuple<bool, string>) gameEvent.Data;
-                            this.GameStatusText = isAvailable.Item1 ? CONNECTED : isAvailable.Item2;
-                            this.GameStatus = isAvailable.Item1;
-                            this.ButtonGameStatus = GAME_CONNECT;
-                        }
-                            break;
+                        RobotController.Drive(0, 0);
+                        IsDriveAllowed = false;
+                        LogWrite(LogLevel.Events, "Received GameReady");
                     }
+                        break;
+
+                    // Game Start
+                    case GameEvent.Type.GameStart:
+                    {
+                        IsDriveAllowed = true;
+                        LogWrite(LogLevel.Events, "Received GameStart");
+                    }
+                        break;
+
+                    // Player Joined
+                    case GameEvent.Type.PlayerJoined:
+                    {
+                        var isAvailable = (GameEventTuple<bool, string>) gameEvent.Data;
+                        this.GameStatusText = isAvailable.Item1 ? CONNECTED : isAvailable.Item2;
+                        this.GameStatus = isAvailable.Item1;
+                        this.ButtonGameStatus = GAME_CONNECT;
+                        LogWrite(LogLevel.Events, "Received PlayerJoined - " + GameStatusText);
+                    }
+                        break;
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                LogWrite(LogLevel.Error, ex.Message);
             }
         }
 
@@ -338,9 +360,9 @@ namespace Arctos.Game
         {
             // TODO: Refactor this!!
             // there should be a better idea than actively waiting
-            while (true)
+            try
             {
-                try
+                while (true)
                 {
                     _client.Receive();
 
@@ -350,10 +372,10 @@ namespace Arctos.Game
                         return;
                     }
                 }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
-                }
+            }
+            catch (Exception ex)
+            {
+                LogWrite(LogLevel.Error, ex.Message);
             }
         }
 
@@ -384,14 +406,14 @@ namespace Arctos.Game
         {
             try
             {
-                if (_client.Connected)
+                if (_client != null && _client.Connected)
                 {
                     _client.Send(new GameEvent(type, data));
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                LogWrite(LogLevel.Error, ex.Message);
             }
         }
 
@@ -415,7 +437,7 @@ namespace Arctos.Game
                 {
                     var left = (int) GamepadController.GetValue(GamepadController.Wheels.WheelLeft);
                     var right = (int) GamepadController.GetValue(GamepadController.Wheels.WheelRight);
-
+                    
                     // Drive
                     RobotController.Drive(left, right);
                     _movementDirty = false;
@@ -450,6 +472,7 @@ namespace Arctos.Game
             }
             catch (Exception ex)
             {
+                LogWrite(LogLevel.Error, ex.Message);
                 _client = null;
             }
         }
@@ -485,17 +508,43 @@ namespace Arctos.Game
             {
                 this.RobotStatus = false;
                 this.RobotStatusText = "Did not receive heartbeat within " + heartbeatDifference + " seconds.";
+                LogWrite(LogLevel.Warning, this.RobotStatusText);
                 
                 this.SendPlayerLeft();
             }
             else
             {
                 this.RobotStatusText = "Connected to Robot";
-
                 if (this.RobotStatus) return;
+
+                LogWrite(LogLevel.Information, this.RobotStatusText);
                 this.SendPlayerRejoined();
                 this.RobotStatus = true;
             }
+        }
+
+        #endregion
+
+        #region Logging
+
+        /// <summary>
+        /// Write a log message to debug window
+        /// </summary>
+        /// <param name="Message"></param>
+        private void LogWrite(LogLevel level, string Message)
+        {
+            Log = Log + level + " [" + DateTime.Now.ToLongTimeString() + "] " + Message + "\r\n";
+        }
+
+        /// <summary>
+        /// Log Levels
+        /// </summary>
+        enum LogLevel
+        {
+            Events,
+            Error,
+            Warning,
+            Information
         }
 
         #endregion
