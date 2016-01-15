@@ -399,7 +399,7 @@ namespace ArctosGameServer.Controller
                 // Game started?
                 if (player.Location != null && _game.Started)
                 {
-                    var position = player.UpdatePosition(areaId);
+                    var position = player.ChangePositionStatus(areaId);
 
                     if (position.Status.Equals(Area.AreaStatus.CorrectlyPassed))
                     {
@@ -407,7 +407,7 @@ namespace ArctosGameServer.Controller
                     }
                     else
                     {
-                        LogLine("Player has correctly wrongly passed that field");
+                        LogLine("Player has wrongly passed that field");
 
                         // Add a penalty second
                         player.Duration = player.Duration.Add(new TimeSpan(0, 0, 0, 1));
