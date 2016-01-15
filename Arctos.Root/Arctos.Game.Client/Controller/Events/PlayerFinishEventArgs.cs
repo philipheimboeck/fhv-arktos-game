@@ -6,9 +6,9 @@ namespace Arctos.Controller.Events
 
     public class PlayerFinishEventArgs : EventArgs
     {
-        public TimeSpan Duration { get; set; }
+        public double Duration { get; set; }
 
-        public PlayerFinishEventArgs(TimeSpan duration)
+        public PlayerFinishEventArgs(double duration)
         {
             this.Duration = duration;
         }

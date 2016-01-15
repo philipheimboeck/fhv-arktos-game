@@ -110,7 +110,7 @@ namespace Arctos.Controller
                 // Set all Areas back
                 case GameEvent.Type.PlayerFinish:
                     {
-                        OnPlayerFinishEvent(new PlayerFinishEventArgs((TimeSpan)receivedEvent.Data));
+                        OnPlayerFinishEvent(new PlayerFinishEventArgs((double)receivedEvent.Data));
                     }
                     break;
             }

@@ -30,25 +30,18 @@ namespace ArctosGameServer.Communication.ServerProtocol
         {
             var message = new StringBuilder();
 
-            int sleepRetries = 0;
             while (true)
             {
                 var data = _client.Read();
                 if (data != null)
                 {
                     message.Append(data);
-                }
-                else if (message.Length > 0)
-                {
+
                     // Completed reading
-                    if (message.ToString().EndsWith("</GameEvent>") || sleepRetries > 5)
+                    if (message.ToString().EndsWith("</GameEvent>"))
                     {
                         break;
                     }
-
-                    // TODO: improve XML protocol in order to avoid incomplete data packets!
-                    Thread.Sleep(1000);
-                    sleepRetries++;
                 }
                 else
                 {
@@ -57,11 +50,6 @@ namespace ArctosGameServer.Communication.ServerProtocol
             }
 
             var xml = message.ToString();
-            if (!xml.EndsWith("</GameEvent>"))
-            {
-                throw new Exception("Did receive a invalid packet!", new Exception(xml));
-            }
-
             return new PDU<object>() {data = xml};
         }
 

@@ -116,7 +116,7 @@ namespace Arctos.View
         /// <param name="playerFinishEventArgs"></param>
         private void OnPlayerFinishEvent(object sender, PlayerFinishEventArgs playerFinishEventArgs)
         {
-            this.ShowInformationOverlay("You finished this Game in " + playerFinishEventArgs.Duration.TotalSeconds + " seconds.");
+            this.ShowInformationOverlay("You finished this Game in " + playerFinishEventArgs.Duration / 1000 + " seconds.");
         }
         
         /// <summary>
