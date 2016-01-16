@@ -527,7 +527,8 @@ namespace Arctos.Game
                 this.RobotStatus = false;
                 this.RobotStatusText = "Did not receive heartbeat within " + heartbeatDifference + " seconds.";
                 LogWrite(LogLevel.Warning, this.RobotStatusText);
-                
+
+                // Todo: send only once
                 this.SendPlayerLeft();
             }
             else
