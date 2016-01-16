@@ -21,7 +21,7 @@ namespace Arctos.Game.Middleware.Logic.Model.Client
 
             _protocol = new PresentationLayer(
                new SessionLayer(
-                   new TransportLayer(_client))
+                   new SlipTransportLayer(_client))
                );
         }
 

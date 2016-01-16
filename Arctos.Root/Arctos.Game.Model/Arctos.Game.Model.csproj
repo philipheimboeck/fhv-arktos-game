@@ -47,7 +47,7 @@
     <Compile Include="Communication\ITcpCommunicator.cs" />
     <Compile Include="Communication\PDU.cs" />
     <Compile Include="Communication\ProtocolLayer.cs" />
-    <Compile Include="Communication\ServerProtocol\TransportLayer.cs" />
+    <Compile Include="Communication\ServerProtocol\SlipTransportLayer.cs" />
     <Compile Include="Communication\ServerProtocol\PresentationLayer.cs" />
     <Compile Include="Communication\ServerProtocol\SessionLayer.cs" />
     <Compile Include="Model\Area.cs" />

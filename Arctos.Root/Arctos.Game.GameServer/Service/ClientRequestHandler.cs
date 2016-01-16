@@ -30,7 +30,7 @@ namespace ArctosGameServer.Service
 
             _protocol = new PresentationLayer(
                 new SessionLayer(
-                    new TransportLayer(_communicator)));
+                    new SlipTransportLayer(_communicator)));
         }
 
         public void StartClient()

@@ -5,8 +5,8 @@ namespace ArctosGameServer.Communication
 {
     public interface ITcpCommunicator
     {
-        char? Read();
+        int? Read();
 
-        bool Write(string data);
+        bool Write(byte[] data);
     }
 }

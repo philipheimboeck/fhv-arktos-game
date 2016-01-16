@@ -25,7 +25,7 @@ namespace Arctos.Game.Middleware.Logic.Model.Client
             _client = client;
         }
 
-        public char? Read()
+        public int? Read()
         {
             if (!Connected)
             {
@@ -37,9 +37,9 @@ namespace Arctos.Game.Middleware.Logic.Model.Client
             if (serverStream.DataAvailable)
             {
                 var read = serverStream.ReadByte();
-                if (read > 0)
+                if (read >= 0)
                 {
-                    return (char)read;
+                    return read;
                 }
 
             }
@@ -47,7 +47,7 @@ namespace Arctos.Game.Middleware.Logic.Model.Client
             return null;
         }
 
-        public bool Write(string data)
+        public bool Write(byte[] data)
         {
             if (!Connected)
             {
@@ -55,10 +55,7 @@ namespace Arctos.Game.Middleware.Logic.Model.Client
             }
 
             var serverStream = _client.GetStream();
-            var writer = new StreamWriter(serverStream);
-            writer.Write(data);
-            writer.Flush();
-        
+            serverStream.Write(data, 0, data.Length);
             serverStream.Flush();
 
             return true;

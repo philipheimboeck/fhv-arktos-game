@@ -167,7 +167,7 @@ namespace ArctosGameServer.Service
                 _client = client;
                 _protocol = new PresentationLayer(
                     new SessionLayer(
-                        new TransportLayer(
+                        new SlipTransportLayer(
                             new TcpCommunicator(_client))));
             }
 
