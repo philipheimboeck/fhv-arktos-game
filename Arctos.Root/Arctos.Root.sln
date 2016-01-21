@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arctos.Game.Model", "Arctos
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arctos.Game.Test", "Arctos.Game.Test\Arctos.Game.Test.csproj", "{D1D42791-ECA1-4E5F-A719-3699D8F7D61E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arctos.Game.MapGenerator", "Arctos.Game.MapGenerator\Arctos.Game.MapGenerator.csproj", "{A97A7509-F1DA-4537-AB3E-13B09EC2766D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{D1D42791-ECA1-4E5F-A719-3699D8F7D61E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1D42791-ECA1-4E5F-A719-3699D8F7D61E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D1D42791-ECA1-4E5F-A719-3699D8F7D61E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A97A7509-F1DA-4537-AB3E-13B09EC2766D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A97A7509-F1DA-4537-AB3E-13B09EC2766D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A97A7509-F1DA-4537-AB3E-13B09EC2766D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A97A7509-F1DA-4537-AB3E-13B09EC2766D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
