@@ -53,6 +53,7 @@
     <Compile Include="Model\Area.cs" />
     <Compile Include="Model\Game.cs" />
     <Compile Include="Model\GameArea.cs" />
+    <Compile Include="Model\GameConfiguration.cs" />
     <Compile Include="Model\GameEvent.cs" />
     <Compile Include="Model\GameEventTuple.cs" />
     <Compile Include="Model\GameState.cs" />
