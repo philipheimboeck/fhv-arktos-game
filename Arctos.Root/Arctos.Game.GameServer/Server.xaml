@@ -6,6 +6,10 @@
         xmlns:viewModel="clr-namespace:ArctosGameServer.ViewModel"
         mc:Ignorable="d"
         Title="Server" MinHeight="640" Height="640" Width="640" d:DataContext="{d:DesignInstance viewModel:GameViewModel}">
+    
+    <Window.Resources>
+        <viewModel:BooleanToColorConverter x:Key="BooleanToColorConverter"></viewModel:BooleanToColorConverter>
+    </Window.Resources>
     <Grid>
         <Label Content="Arctos Game Server" HorizontalAlignment="Left" Margin="23,29,0,0" VerticalAlignment="Top" FontSize="20"/>
         
@@ -27,9 +31,11 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="160" />
                                 <ColumnDefinition Width="20" />
+                                <ColumnDefinition Width="118"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="{Binding Name}" Grid.Row="0" Grid.Column="0"></TextBlock>
+                            <TextBlock Text="{Binding Name}" Grid.Row="0" Grid.Column="0" Foreground="{Binding Connected, Converter={StaticResource BooleanToColorConverter}}"></TextBlock>
                             <Image Source="{Binding GuiStatusImagePath}" Width="20" Height="20" Grid.Row="0" Grid.Column="1" Stretch="Fill"></Image>
+                            <Button Content="Kick" Grid.Row="0" Grid.Column="2"  Height="20" Command="{Binding Path=KickCommand}"/>
                         </Grid>
                         
                     </DataTemplate>

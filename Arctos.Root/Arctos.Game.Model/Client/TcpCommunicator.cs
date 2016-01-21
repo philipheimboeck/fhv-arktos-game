@@ -33,15 +33,10 @@ namespace Arctos.Game.Middleware.Logic.Model.Client
             }
 
             var serverStream = _client.GetStream();
-
-            if (serverStream.DataAvailable)
+            var read = serverStream.ReadByte();
+            if (read >= 0)
             {
-                var read = serverStream.ReadByte();
-                if (read >= 0)
-                {
-                    return read;
-                }
-
+                return read;
             }
 
             return null;

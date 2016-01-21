@@ -2,8 +2,11 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
+using System.Windows.Input;
 using Arctos.Game.Model;
 using ArctosGameServer.Controller;
+using ArctosGameServer.Controller.Events;
+using ArctosGameServer.ViewModel.Command;
 
 namespace ArctosGameServer.ViewModel
 {
@@ -14,6 +17,8 @@ namespace ArctosGameServer.ViewModel
         private bool _gameStartable;
 
         private string _log;
+
+       
 
         public GameViewModel(GameController game)
         {
@@ -28,7 +33,16 @@ namespace ArctosGameServer.ViewModel
             _game.GameReadyEvent += GameReadyEvent;
             _game.GameStartEvent += GameStartEvent;
             _game.LogEvent += LogEvent;
+            _game.PlayerLostEvent += PlayerLostEvent;
+        }
 
+        private void PlayerLostEvent(object sender, PlayerLostEventArgs e)
+        {
+            Application.Current.Dispatcher.Invoke((Action)delegate
+            {
+                var playerViewModel = Players.FirstOrDefault(x => x.Player.Equals(e.Player));
+                playerViewModel.Connected = !e.Lost;
+            });
         }
 
         private void PlayerLeftEvent(object sender, Controller.Events.PlayerLeftEventArgs e)
@@ -88,7 +102,7 @@ namespace ArctosGameServer.ViewModel
 
         private void PlayerJoinedEvent(object sender, Controller.Events.PlayerJoinedEventArgs e)
         {
-            Application.Current.Dispatcher.Invoke((Action) delegate { Players.Add(new PlayerViewModel(e.Player)); });
+            Application.Current.Dispatcher.Invoke((Action) delegate { Players.Add(new PlayerViewModel(e.Player, _game)); });
         }
 
         public override void Execute(object parameter)

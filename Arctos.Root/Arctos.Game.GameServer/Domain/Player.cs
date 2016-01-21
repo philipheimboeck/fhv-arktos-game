@@ -24,9 +24,33 @@ namespace ArctosGameServer.Domain
         public DateTime StartTime { get; set; }
         public TimeSpan Duration { get; set; }
 
+        private bool _pause;
+        public bool Pause
+        {
+            get { return _pause; }
+            set
+            {
+                _pause = value;
+
+                if (_pause)
+                {
+                    // Start the pause by stopping the counter
+                    EndCounter();
+                }
+                else
+                {
+                    // Stop the pause
+                    StartTime = DateTime.Now;
+                }
+               
+                
+
+            }
+        }
+
         public bool HasRecentlyFinished()
         {
-            return FinishedGame == false && LastVisited != null && Map.Path[Map.Path.Count - 1].Equals(LastVisited);
+            return Pause == false && FinishedGame == false && LastVisited != null && Map.Path[Map.Path.Count - 1].Equals(LastVisited);
         }
 
         public TimeSpan EndCounter()
@@ -43,6 +67,12 @@ namespace ArctosGameServer.Domain
         /// <returns></returns>
         public Area UpdatePosition(string areaId)
         {
+            // Return the same location when paused
+            if (Pause)
+            {
+                return Location;
+            }
+
             // Update location
             Location = Map.StartField.AreaId.Equals(areaId)
                 ? Map.StartField
@@ -58,6 +88,12 @@ namespace ArctosGameServer.Domain
         /// <returns>The Area with its new status</returns>
         public Area ChangePositionStatus(string areaId)
         {
+            // Return the same location when paused
+            if (Pause)
+            {
+                return Location;
+            }
+
             // Check if location was passed correctly
             var lastVisitedIndex = LastVisited != null
                 ? Map.Path.IndexOf(Map.Path.FirstOrDefault(x => x.Equals(LastVisited)))

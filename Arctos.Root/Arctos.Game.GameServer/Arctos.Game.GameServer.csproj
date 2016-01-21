@@ -67,6 +67,7 @@
     <Compile Include="Controller\Events\GameReadyEvent.cs" />
     <Compile Include="Controller\Events\LogEvent.cs" />
     <Compile Include="Controller\Events\PlayerFinishedEvent.cs" />
+    <Compile Include="Controller\Events\PlayerLostEvent.cs" />
     <Compile Include="Controller\Events\PlayerLeftEvent.cs" />
     <Compile Include="Controller\GameController.cs" />
     <Compile Include="Controller\MapGenerator.cs" />
@@ -82,6 +83,8 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ViewModel\BooleanToColorConverter.cs" />
+    <Compile Include="ViewModel\Command\KickCommand.cs" />
     <Compile Include="ViewModel\PlayerViewModel.cs" />
     <Compile Include="ViewModel\GameViewModel.cs" />
     <Page Include="Server.xaml">

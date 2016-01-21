@@ -132,10 +132,6 @@ namespace ArctosGameServer.Communication.ServerProtocol
                         break;
                     }
                 }
-                else
-                {
-                    Thread.Sleep(1000);
-                }
             }
 
             var pdu = new PDU<object>() {data = receivedData};

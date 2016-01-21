@@ -14,6 +14,7 @@ namespace Arctos.Game.Middleware.Logic.Model.Model
             PlayerLeft,
             PlayerLost,
             PlayerFinish,
+            PlayerKicked,
             GuiRequest,
             GuiJoined,
             GuiLeft,

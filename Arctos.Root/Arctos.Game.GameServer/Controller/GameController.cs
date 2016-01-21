@@ -58,43 +58,11 @@ namespace ArctosGameServer.Controller
                     // Check if game can be started
                     if (_game.Ready == false && PlayersReady())
                     {
-                        LogLine("Game is ready to start");
-
-                        // Game changed to ready
-                        _game.Ready = true;
-
-                        // Create the path
-                        var map = _players.FirstOrDefault().Value.Map;
-                        var path = _game.CreatePath(map.GameColumns, map.GameRows);
-                        foreach (var player in _players.Values)
-                        {
-                            player.Map.setPath(path);
-                        }
-
-                        // Notify CUs and GUIs
-                        var tuples = new List<GameEventTuple<int, int>>();
-                        foreach (var t in path)
-                        {
-                            tuples.Add(new GameEventTuple<int, int>() {Item1 = t.Item1, Item2 = t.Item2});
-                        }
-                        var sendPath = new Path() {Waypoints = tuples};
-                        _server.Send(new GameEvent(GameEvent.Type.GameReady, sendPath));
-
-                        // Send Event
-                        OnGameReadyEvent(new GameReadeEventArgs() {Ready = true});
+                        GameReady();
                     }
                     else if (_game.Ready == true && !PlayersReady())
                     {
-                        LogLine("Game is not ready to start anymore");
-
-                        // Game changed from ready to not ready
-                        _game.Ready = false;
-
-                        // Notify CUs and GUIs
-                        _server.Send(new GameEvent(GameEvent.Type.GameReady, null));
-
-                        // Send Event
-                        OnGameReadyEvent(new GameReadeEventArgs() {Ready = false});
+                        GameNotReady();
                     }
                 }
                 else if (_game.Finished == false)
@@ -106,52 +74,125 @@ namespace ArctosGameServer.Controller
                     {
                         if (player.HasRecentlyFinished())
                         {
-                            player.FinishedGame = true;
-                            player.EndCounter();
-
-                            // Send log
-                            LogLine("Player " + player.Name + " finished with " + player.Duration);
-
-                            // Send GUI
-                            if (!player.GuiId.Equals(Guid.Empty))
-                            {
-                                // Send Counter
-                                _server.Send(new GameEvent(GameEvent.Type.PlayerFinish, player.Duration.TotalMilliseconds), player.GuiId);
-                            }
-
-                            // Send Event
-                            OnPlayerFinishedEvent(new PlayerFinishedEventArgs() {Player = player});
+                            FinishPlayer(player);
                         }
                     }
 
                     // Check if all player have finished
                     if (_players.Values.Count > 0 && _players.Values.Count(x => x.FinishedGame == false) == 0)
                     {
-                        // All players are finished
-                        LogLine("All players finished the game");
-
-                        _game.Finished = true;
-
-                        // Get winner
-                        var winner = _players.Values.OrderBy(x => x.Duration).First();
-
-                        // Only tell the winner if there is more than just one player
-                        foreach (var player in _players.Values)
-                        {
-                            // Send game event
-                            var gameEvent = new GameEvent(GameEvent.Type.GameFinish, player.Equals(winner));
-
-                            if (!player.GuiId.Equals(Guid.Empty))
-                            {
-                                _server.Send(gameEvent, player.GuiId);
-                            }
-
-                            // Send event
-                            OnGameFinishedEvent(new GameFinishEventArgs() {Finished = true});
-                        }
+                        FinishGame();
                     }
                 }
             }
+        }
+
+        private void GameNotReady()
+        {
+            LogLine("Game is not ready to start anymore");
+
+            // Game changed from ready to not ready
+            _game.Ready = false;
+
+            // Notify CUs and GUIs
+            _server.Send(new GameEvent(GameEvent.Type.GameReady, null));
+
+            // Send Event
+            OnGameReadyEvent(new GameReadeEventArgs() {Ready = false});
+        }
+
+        private void GameReady()
+        {
+            LogLine("Game is ready to start");
+
+            // Game changed to ready
+            _game.Ready = true;
+
+            // Create the path
+            var map = _players.FirstOrDefault().Value.Map;
+            var path = _game.CreatePath(map.GameColumns, map.GameRows);
+            foreach (var player in _players.Values)
+            {
+                player.Map.setPath(path);
+            }
+
+            // Notify CUs and GUIs
+            var tuples = new List<GameEventTuple<int, int>>();
+            foreach (var t in path)
+            {
+                tuples.Add(new GameEventTuple<int, int>() {Item1 = t.Item1, Item2 = t.Item2});
+            }
+            var sendPath = new Path() {Waypoints = tuples};
+            _server.Send(new GameEvent(GameEvent.Type.GameReady, sendPath));
+
+            // Send Event
+            OnGameReadyEvent(new GameReadeEventArgs() {Ready = true});
+        }
+
+        private void FinishGame()
+        {
+            // All players are finished
+            LogLine("All players finished the game");
+
+            _game.Finished = true;
+
+            // Get winner
+            var winner = _players.Values.OrderBy(x => x.Duration).First();
+
+            // Only tell the winner if there is more than just one player
+            foreach (var player in _players.Values)
+            {
+                // Send game event
+                var gameEvent = new GameEvent(GameEvent.Type.GameFinish, player.Equals(winner));
+
+                if (!player.GuiId.Equals(Guid.Empty))
+                {
+                    _server.Send(gameEvent, player.GuiId);
+                }
+
+                // Send event
+                OnGameFinishedEvent(new GameFinishEventArgs() {Finished = true});
+            }
+        }
+
+        private void FinishPlayer(Player player)
+        {
+            player.FinishedGame = true;
+            player.EndCounter();
+
+            // Send log
+            LogLine("Player " + player.Name + " finished with " + player.Duration);
+
+            // Send GUI
+            if (!player.GuiId.Equals(Guid.Empty))
+            {
+                // Send Counter
+                _server.Send(new GameEvent(GameEvent.Type.PlayerFinish, player.Duration.TotalMilliseconds), player.GuiId);
+            }
+
+            // Send Event
+            OnPlayerFinishedEvent(new PlayerFinishedEventArgs() {Player = player});
+        }
+
+        /// <summary>
+        /// Kicks the player from the game
+        /// </summary>
+        /// <param name="player"></param>
+        public void KickPlayer(Player player)
+        {
+            // Notify GUI and Player that they will be kicked
+            if (!player.ControlUnitId.Equals(Guid.Empty))
+            {
+                _server.Send(new GameEvent(GameEvent.Type.PlayerKicked, null));
+            }
+            if (!player.GuiId.Equals(Guid.Empty))
+            {
+                _server.Send(new GameEvent(GameEvent.Type.PlayerKicked, null));
+            }
+
+            // Remove them from the game
+            RemovePlayer(player);
+            RemoveGUI(player);
         }
 
         /// <summary>
@@ -247,7 +288,10 @@ namespace ArctosGameServer.Controller
             _players.Remove(player.Name);
 
             // Add map
-            _game.PlayableMaps.Add(player.Map);
+            if (player.Map != null)
+            {
+                _game.PlayableMaps.Add(player.Map);
+            }
 
             // Notify GUI if existing
             if (!player.GuiId.Equals(Guid.Empty))
@@ -274,6 +318,42 @@ namespace ArctosGameServer.Controller
         }
 
         /// <summary>
+        /// Pauses the player, meaning that the player won't be able to update its status. A paused player can continue when reconnected
+        /// </summary>
+        /// <param name="player"></param>
+        private void PausePlayer(Player player)
+        {
+            player.Pause = true;
+
+            // Notify GUI if existing
+            if (!player.GuiId.Equals(Guid.Empty))
+            {
+                _server.Send(new GameEvent(GameEvent.Type.PlayerLost, true), player.GuiId);
+            }
+
+            // Send event
+            OnPlayerLostEvent(new PlayerLostEventArgs() { Player = player, Lost = true });
+        }
+
+        /// <summary>
+        /// Let the player resume his game
+        /// </summary>
+        /// <param name="player"></param>
+        private void ResumePlayer(Player player)
+        {
+            player.Pause = false;
+
+            // Notify GUI if existing
+            if (!player.GuiId.Equals(Guid.Empty))
+            {
+                _server.Send(new GameEvent(GameEvent.Type.PlayerLost, false), player.GuiId);
+            }
+
+            // Send event
+            OnPlayerLostEvent(new PlayerLostEventArgs() { Player = player, Lost = false });
+        }
+
+        /// <summary>
         /// Will be called if a connection to either a CU or GUI is closed
         /// </summary>
         /// <param name="id"></param>
@@ -285,7 +365,8 @@ namespace ArctosGameServer.Controller
             if (player != null)
             {
                 LogLine("Connetion lost of CU for player " + player.Name);
-                RemovePlayer(player);
+                player.ControlUnitId = Guid.Empty;
+                PausePlayer(player);
             }
             else if ((player = _players.Values.FirstOrDefault(x => x.GuiId.Equals(id))) != null)
             {
@@ -333,14 +414,24 @@ namespace ArctosGameServer.Controller
             {
                 LogLine("Player is already registered");
 
-                // Send NOT OK
-                _server.Send(
-                    new GameEvent(GameEvent.Type.PlayerJoined, new GameEventTuple<bool, string>()
-                    {
-                        Item1 = false,
-                        Item2 = "Username already taken"
-                    }),
-                    guid);
+                // Is the player paused?
+                if (!_players[playerName].Pause)
+                {
+                    LogLine("Player cannot connect because of duplicate usernames");
+                    // Send NOT OK
+                    _server.Send(
+                        new GameEvent(GameEvent.Type.PlayerJoined, new GameEventTuple<bool, string>()
+                        {
+                            Item1 = false,
+                            Item2 = "Username already taken"
+                        }),
+                        guid);
+                    return;
+                }
+
+                // Resume the player
+                LogLine("Player can now resume");
+                ResumePlayer(_players[playerName]);
                 return;
             }
 
@@ -534,6 +625,11 @@ namespace ArctosGameServer.Controller
             if (PlayerFinishedEvent != null) PlayerFinishedEvent.Invoke(this, e);
         }
 
+        protected virtual void OnPlayerLostEvent(PlayerLostEventArgs e)
+        {
+            if (PlayerLostEvent != null) PlayerLostEvent.Invoke(this, e);
+        }
+
         #endregion
 
         #region Events
@@ -546,7 +642,9 @@ namespace ArctosGameServer.Controller
         public event LogEventHandler LogEvent;
         public event GameFinishedEventHandler GameFinishedEvent;
         public event PlayerFinishedEventHandler PlayerFinishedEvent;
+        public event PlayerLostEventHandler PlayerLostEvent;
 
         #endregion
+
     }
 }
