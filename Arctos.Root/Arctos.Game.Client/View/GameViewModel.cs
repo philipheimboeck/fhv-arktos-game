@@ -297,33 +297,18 @@ namespace Arctos.View
 
                     foreach (var area in GUIGameInstance.Path)
                     {
+                        GuiArea foundPathArea = this.GUIGameInstance.AreaList.FirstOrDefault(x => x.AreaId.Equals(area.AreaId));
                         if (area.Equals(foundArea))
                         {
                             break;
                         }
 
-                        area.Status = Area.AreaStatus.CorrectlyPassed;
+                        if (foundPathArea != null)
+                            foundPathArea.Status = Area.AreaStatus.CorrectlyPassed;
                     }
                 }
 
                 foundArea.Status = receivedAreaUpdate.Status;
-
-                /*
-
-                if (receivedAreaUpdate.Status == Area.AreaStatus.WronglyPassed)
-                {
-                    _controller.WrongPath.Add(new Tuple<GuiArea, Area.AreaStatus>(foundArea, foundArea.Status));
-                }
-                else
-                {
-                    foreach (var area in _controller.WrongPath)
-                    {
-                        area.Item1.Status = area.Item2;
-                    }
-                    _controller.WrongPath.Clear();
-                }
-
-                foundArea.Status = receivedAreaUpdate.Status;*/
             }
             catch (Exception ex)
             {

@@ -25,7 +25,9 @@ namespace Arctos.Game.GUIClient
         /// <param name="gameArea"></param>
         public GuiGameArea(GameArea gameArea)
         {
-            AreaList = new ObservableCollection<GuiArea>();
+            this.AreaList = new ObservableCollection<GuiArea>();
+            this.Path = new List<GuiArea>();
+
             foreach (var area in gameArea.AreaList)
             {
                 GuiArea guiArea = new GuiArea(area);
