@@ -87,7 +87,7 @@ namespace ArctosGameServer.Domain
             // Return the same location when paused
             if (Pause)
             {
-                return Location;
+                return null;
             }
 
             // Check if location was passed correctly
@@ -101,11 +101,27 @@ namespace ArctosGameServer.Domain
             {
                 if (Map.Path.IndexOf(pathArea) == lastVisitedIndex + 1)
                 {
+                    // When correctly passing a field, reset all wrongly passed field
+                    foreach (var area in Map.AreaList)
+                    {
+                        area.Status = Area.AreaStatus.None;
+                    }
+                    foreach (var area in Map.Path)
+                    {
+                        if (area.Equals(Location))
+                        {
+                            break;
+                        }
+
+                        area.Status = Area.AreaStatus.CorrectlyPassed;
+                    }
+
                     // Field is correctly passed
                     // Set last visited
                     LastVisited = pathArea;
                     pathArea.Status = Area.AreaStatus.CorrectlyPassed;
 
+                    // Return the field
                     return pathArea;
                 }
 

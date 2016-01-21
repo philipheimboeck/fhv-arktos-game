@@ -273,7 +273,7 @@ namespace ArctosGameServer.Controller
                     _server.Send(new GameEvent(GameEvent.Type.PlayerLeft, null), player.GuiId);
                 }
 
-                RemovePlayer(player);
+                PausePlayer(player);
             }
             else
             {
@@ -424,9 +424,9 @@ namespace ArctosGameServer.Controller
             {
                 State = _game.State,
                 GameArea = player.Map,
-                Path = new Path(_game.Path),
+                Path = _game.Path != null ? new Path(_game.Path) : null
             };
-            _server.Send(new GameEvent(GameEvent.Type.GuiJoined, _players[playerName].Map), guid);
+            _server.Send(new GameEvent(GameEvent.Type.GuiJoined, game), guid);
 
             // Send Event
             OnGuiChangedEvent(new GuiChangedEventArgs(_players[playerName]));
@@ -525,6 +525,11 @@ namespace ArctosGameServer.Controller
                 if (_game.State == GameState.Started && player.Location != null)
                 {
                     var position = player.ChangePositionStatus(areaId);
+                    if (position == null)
+                    {
+                        // Paused
+                        return;
+                    }
 
                     if (position.Status.Equals(Area.AreaStatus.CorrectlyPassed))
                     {
