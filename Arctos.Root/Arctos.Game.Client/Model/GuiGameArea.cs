@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Xml.Serialization;
@@ -15,6 +16,7 @@ namespace Arctos.Game.GUIClient
         public GuiGameArea()
         {
             this.AreaList = new ObservableCollection<GuiArea>();
+            this.Path = new List<GuiArea>();
         }
 
         /// <summary>
@@ -26,9 +28,20 @@ namespace Arctos.Game.GUIClient
             AreaList = new ObservableCollection<GuiArea>();
             foreach (var area in gameArea.AreaList)
             {
-                AreaList.Add(new GuiArea(area));
+                GuiArea guiArea = new GuiArea(area);
+                AreaList.Add(guiArea);
+            }
+
+            foreach (var pathArea in gameArea.Path)
+            {
+                Path.Add(new GuiArea(pathArea));
             }
         }
+
+        /// <summary>
+        /// Path to walk
+        /// </summary>
+        public List<GuiArea> Path { get; set; }
 
         /// <summary>
         /// All available areas on this game field

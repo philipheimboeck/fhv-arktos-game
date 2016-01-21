@@ -15,7 +15,7 @@ namespace Arctos.Controller
     {
         #region Properties
 
-        private GameTcpClient GameClient { get; set; }
+        public GameTcpClient GameClient { get; set; }
 
         public GameArea GameArea { get; set; }
 

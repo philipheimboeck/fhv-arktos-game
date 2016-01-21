@@ -37,6 +37,9 @@
   <PropertyGroup>
     <StartupObject>Arctos.Game.ControlUnit.App</StartupObject>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Resources\appbar.people.sensor.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="BrandonPotter.XBox, Version=1.0.5.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\XBoxController.1.0.5.0\lib\net40\BrandonPotter.XBox.dll</HintPath>
@@ -130,7 +133,9 @@
       <Name>Arctos.Game.Model</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Resources\appbar.people.sensor.ico" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

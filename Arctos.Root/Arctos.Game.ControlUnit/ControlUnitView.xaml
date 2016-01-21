@@ -6,6 +6,7 @@
         xmlns:game="clr-namespace:Arctos.Game"
         xmlns:viewModel="clr-namespace:Arctos.Game.ControlUnit.ViewModel"
         mc:Ignorable="d"
+        Icon="Resources/appbar.people.sensor.ico"
         Title="Arctos ControlUnit" Height="352.4" Width="1069.6" d:DataContext="{d:DesignInstance viewModel:ControlUnitViewModel, IsDesignTimeCreatable=True}">
     <Grid>
         <Grid.ColumnDefinitions>

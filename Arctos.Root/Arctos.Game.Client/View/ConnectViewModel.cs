@@ -19,6 +19,7 @@ namespace Arctos.View
             set
             {
                 _closeTrigger = value;
+                this.CurrentGameView = null;
                 OnPropertyChanged();
             }
         }
@@ -167,7 +168,7 @@ namespace Arctos.View
                 var gameEvent = args.Data as GameEvent;
                 if (gameEvent != null && gameEvent.EventType == GameEvent.Type.GuiJoined)
                 {
-                    var gameArea = (GameArea) gameEvent.Data;
+                    var gameArea = (Game.Middleware.Logic.Model.Model.Game) gameEvent.Data;
 
                     if (gameArea != null)
                     {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using Arctos.Controller;
 using Arctos.Controller.Events;
@@ -63,6 +64,7 @@ namespace Arctos.View
             }
         }
 
+        private BackgroundWorker ReinitGameStateWorker { get; set; }
 
         #endregion
 
@@ -70,12 +72,12 @@ namespace Arctos.View
         /// Constructor
         /// </summary>
         /// <param name="client"></param>
-        /// <param name="area"></param>
-        public GameViewModel(GameTcpClient client, GameArea area)
+        /// <param name="game"></param>
+        public GameViewModel(GameTcpClient client, Game.Middleware.Logic.Model.Model.Game game)
         {
             try
             {
-                _controller = new ViewController(client, area);
+                _controller = new ViewController(client, game.GameArea);
                 _controller.AreaUpdateEvent += OnAreaUpdateEvent;
                 _controller.PlayerLeftEvent += OnPlayerLeftEvent;
                 _controller.GameReadyEvent += OnGameReadyEvent;
@@ -85,14 +87,16 @@ namespace Arctos.View
                 _controller.PlayerKickedEvent += ControllerOnPlayerKickedEvent;
                 _controller.PlayerLostEvent += ControllerOnPlayerLostEvent;
                 _controller.ErrorEvent += ControllerOnErrorEvent;
-
-                this.GUIGameInstance = new GuiGameArea(area)
+                
+                this.GUIGameInstance = new GuiGameArea(game.GameArea)
                 {
                     AreaWidth = 800,
                     AreaHeight = 600
                 };
 
-                InitializeGameViewModel();
+                ReinitGameStateWorker = new BackgroundWorker { WorkerSupportsCancellation = true };
+                ReinitGameStateWorker.DoWork += ReinitGameStateWorkerOnDoWork;
+                ReinitGameStateWorker.RunWorkerAsync(game);
             }
             catch (Exception ex)
             {
@@ -105,8 +109,27 @@ namespace Arctos.View
         /// <summary>
         /// Initialize GameView Model
         /// </summary>
-        private void InitializeGameViewModel()
+        private void ReinitGameStateWorkerOnDoWork(object sender, DoWorkEventArgs e)
         {
+            Game.Middleware.Logic.Model.Model.Game game = e.Argument as Game.Middleware.Logic.Model.Model.Game;
+            if (game != null)
+            {
+                if (game.State == GameState.Ready)
+                {
+                    // show game ready info, each game
+                    this.ShowEachStepOnStartup(game.Path);
+                }
+                else if (game.State == GameState.Started)
+                {
+
+                }
+                else if (game.State == GameState.Waiting)
+                {
+                    // ignore and wait
+                }
+            }
+
+            ReinitGameStateWorker.CancelAsync();
         }
 
         #region Events
@@ -118,6 +141,8 @@ namespace Arctos.View
         /// <param name="errorEventArgs"></param>
         private void ControllerOnErrorEvent(object sender, ErrorEventArgs errorEventArgs)
         {
+            this._controller.GameClient = null;
+
             this.ShowInformationOverlay(errorEventArgs.Message);
 
             ViewHelper.Wait(4);
@@ -168,26 +193,34 @@ namespace Arctos.View
                 }
                 else
                 {
-                    this.ShowInformationOverlay("READY ....");
-
-                    _controller.GameArea.setPath(
-                        receivedAreaUpdate.Waypoints.Select(x => new Tuple<int, int>(x.Item1, x.Item2)).ToList());
-
-                    // Show Path step by step
-                    foreach (Area areaPath in _controller.GameArea.Path)
-                    {
-                        var guiArea =
-                            this.GUIGameInstance.AreaList.FirstOrDefault(area => area.AreaId.Equals(areaPath.AreaId));
-                        if (guiArea != null)
-                            guiArea.Status = Area.AreaStatus.CorrectlyPassed;
-
-                        ViewHelper.Wait(1);
-                    }
+                    this.ShowEachStepOnStartup(receivedAreaUpdate);
                 }
             }
             catch (Exception ex)
             {
                 this.ShowInformationOverlay(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Show each Area step by step on Startup
+        /// </summary>
+        /// <param name="receivedAreaUpdate"></param>
+        private void ShowEachStepOnStartup(Path receivedAreaUpdate)
+        {
+            this.ShowInformationOverlay("READY ....");
+
+            _controller.GameArea.setPath(receivedAreaUpdate.Waypoints.Select(x => new Tuple<int, int>(x.Item1, x.Item2)).ToList());
+
+            // Show Path step by step
+            foreach (Area areaPath in _controller.GameArea.Path)
+            {
+                var guiArea =
+                    this.GUIGameInstance.AreaList.FirstOrDefault(area => area.AreaId.Equals(areaPath.AreaId));
+                if (guiArea != null)
+                    guiArea.Status = Area.AreaStatus.CorrectlyPassed;
+
+                ViewHelper.Wait(1);
             }
         }
 
@@ -212,7 +245,6 @@ namespace Arctos.View
         {
             // View is invalid now, close it
             this.ShowInformationOverlay("You got kicked from the Game.. closing now");
-            ViewHelper.Wait(3);
             _controller.SendEvent(GameEvent.Type.GuiLeft, null);
             this.CloseTrigger = true;
         }
@@ -252,9 +284,31 @@ namespace Arctos.View
                 var receivedAreaUpdate = areaUpdateEventArgs.Area;
                 if (receivedAreaUpdate == null) return;
 
-                GuiArea foundArea =
-                    this.GUIGameInstance.AreaList.FirstOrDefault(x => x.AreaId.Equals(receivedAreaUpdate.AreaId));
+                GuiArea foundArea = this.GUIGameInstance.AreaList.FirstOrDefault(x => x.AreaId.Equals(receivedAreaUpdate.AreaId));
                 if (foundArea == null) return;
+
+                if (receivedAreaUpdate.Status == Area.AreaStatus.CorrectlyPassed)
+                {
+                    // When correctly passing a field, reset all wrongly passed field
+                    foreach (var area in GUIGameInstance.AreaList)
+                    {
+                        area.Status = Area.AreaStatus.None;
+                    }
+
+                    foreach (var area in GUIGameInstance.Path)
+                    {
+                        if (area.Equals(foundArea))
+                        {
+                            break;
+                        }
+
+                        area.Status = Area.AreaStatus.CorrectlyPassed;
+                    }
+                }
+
+                foundArea.Status = receivedAreaUpdate.Status;
+
+                /*
 
                 if (receivedAreaUpdate.Status == Area.AreaStatus.WronglyPassed)
                 {
@@ -269,7 +323,7 @@ namespace Arctos.View
                     _controller.WrongPath.Clear();
                 }
 
-                foundArea.Status = receivedAreaUpdate.Status;
+                foundArea.Status = receivedAreaUpdate.Status;*/
             }
             catch (Exception ex)
             {

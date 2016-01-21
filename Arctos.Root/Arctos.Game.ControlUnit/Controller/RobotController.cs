@@ -51,12 +51,21 @@ namespace Arctos.Game.ControlUnit.Controller
         /// <param name="right"></param>
         public void Drive(int left, int right)
         {
-            var keyValue = new Tuple<string, string>("drive", left + "," + right);
-            var pduObj = new PDU<object> {data = keyValue};
-
-            if (!this.protocol.send(pduObj))
+            if (this.protocol != null) 
             {
-                // error - could not send data
+                try
+                {
+                    var keyValue = new Tuple<string, string>("drive", left + "," + right);
+                    var pduObj = new PDU<object> {data = keyValue};
+
+                    if (!this.protocol.send(pduObj))
+                    {
+                        // error - could not send data
+                    }
+                }
+                catch (Exception ex)
+                {
+                }
             }
         }
 

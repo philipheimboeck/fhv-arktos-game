@@ -215,7 +215,8 @@ namespace Arctos.Game.ControlUnit.ViewModel
         /// </summary>
         private void ConnectToGame()
         {
-           
+            if (this.GameStatus) return;
+
             BackgroundWorker bgw = new BackgroundWorker();
             bgw.DoWork += delegate
             {
@@ -232,12 +233,12 @@ namespace Arctos.Game.ControlUnit.ViewModel
                             this.SendEvent(GameEvent.Type.PlayerRequest, this.PlayerName);
                             LogWrite(LogLevel.Info, "Ask for Game with Playername = " + this.PlayerName);
                             ReceiveEventsLoopWorker.RunWorkerAsync();
-                            ButtonGameStatus = GAME_DISCONNECT;
+                            //ButtonGameStatus = GAME_DISCONNECT;
                         }
                     }
                     else
                     {
-                        this.ClosedGameserverConnection();
+                        //this.ClosedGameserverConnection();
                         ReceiveEventsLoopWorker.CancelAsync();
                     }
                 }
@@ -259,6 +260,8 @@ namespace Arctos.Game.ControlUnit.ViewModel
             GameStatusText = DISCONNECTED;
             GameStatus = false;
             GameClient = null;
+
+            this.ControlUnitLoopWorker.CancelAsync();
         }
 
         /// <summary>
@@ -413,7 +416,7 @@ namespace Arctos.Game.ControlUnit.ViewModel
             {
                 while (true)
                 {
-                    if (ReceiveEventsLoopWorker.CancellationPending)
+                    if (ReceiveEventsLoopWorker.CancellationPending || GameClient == null)
                     {
                         doWorkEventArgs.Cancel = true;
                         return;
@@ -559,13 +562,14 @@ namespace Arctos.Game.ControlUnit.ViewModel
             {
                 if (this.RobotStatus)
                 {
+                    this.RobotStatusText = "Did not receive heartbeat within " + heartbeatDifference + " seconds.";
                     this.RobotStatus = false;
                     LogWrite(LogLevel.Warning, this.RobotStatusText);
 
                     this.SendPlayerLeft();
                 }
 
-                this.RobotStatusText = "Did not receive heartbeat within " + heartbeatDifference + " seconds.";
+                LogWrite(LogLevel.Warning, this.RobotStatusText);
             }
             else
             {

@@ -29,6 +29,7 @@ namespace Arctos.Game.GUIClient
             AreaId = area.AreaId;
             Column = area.Column;
             Row = area.Row;
+            Status = area.Status;
         }
 
         public int Row { get; set; }
@@ -40,6 +41,8 @@ namespace Arctos.Game.GUIClient
             get { return status; }
             set
             {
+                if (status == value) return;
+
                 status = value;
                 OnPropertyChanged();
                 OnPropertyChanged("Color");
