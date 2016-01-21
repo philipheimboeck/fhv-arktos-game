@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Text;
+using ArctosGameServer.Communication;
 
-namespace ArctosGameServer.Communication.Protocol
+namespace Arctos.Game.ControlUnit.Communication.Protocol
 {
     /// <summary>
     /// Presentation Layer

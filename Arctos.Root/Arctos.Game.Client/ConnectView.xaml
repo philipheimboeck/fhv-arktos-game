@@ -14,6 +14,9 @@
     <i:Interaction.Behaviors>
         <client:CloseWindowBehavior CloseTrigger="{Binding CloseTrigger}" />
     </i:Interaction.Behaviors>
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Window.Resources>
     
     <Grid>
         <Label Content="Arctos GUI" HorizontalAlignment="Left" Margin="23,29,0,0" VerticalAlignment="Top" FontSize="20"/>
@@ -37,5 +40,12 @@
 
             <Button Grid.Row="2" Grid.Column="1" Height="20" Width="120" Content="{Binding Path=ButtonConnect}" HorizontalAlignment="Left" Command="{Binding Path=UpdateCommand}" CommandParameter="GuiRequest" />
         </Grid>
+
+        <Border BorderThickness="1" Visibility="{Binding Path=ShowGameInformation, Converter={StaticResource BoolToVisibilityConverter}}" Grid.RowSpan="3" Background="#CC560000">
+            <Grid>
+                <TextBlock Margin="0" TextWrapping="Wrap" Text="{Binding Path=GameInformation}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24" FontWeight="Bold" Foreground="#7EFFFFFF"/>
+            </Grid>
+        </Border>
     </Grid>
+
 </Window>

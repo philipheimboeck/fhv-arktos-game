@@ -1,6 +1,7 @@
 ﻿using System.Windows;
+using Arctos.Game.ControlUnit.ViewModel;
 
-namespace Arctos.Game
+namespace Arctos.Game.ControlUnit
 {
     /// <summary>
     /// Interaction logic for App.xaml

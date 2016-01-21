@@ -1,8 +1,9 @@
 ﻿using System;
 using System.IO.Ports;
 using System.Windows;
+using ArctosGameServer.Communication;
 
-namespace ArctosGameServer.Communication.Protocol
+namespace Arctos.Game.ControlUnit.Communication.Protocol
 {
     /// <summary>
     /// Transport Layer

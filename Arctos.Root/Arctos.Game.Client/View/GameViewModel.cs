@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Threading;
-using System.Windows.Threading;
 using Arctos.Controller;
 using Arctos.Controller.Events;
 using Arctos.Game.GUIClient;
 using Arctos.Game.Middleware.Logic.Model.Client;
 using Arctos.Game.Middleware.Logic.Model.Model;
 using Arctos.Game.Model;
+using Arctos.View.Utilities;
 
 namespace Arctos.View
 {
@@ -85,6 +82,9 @@ namespace Arctos.View
                 _controller.GameStartEvent += OnGameStartEvent;
                 _controller.GameFinishEvent += OnGameFinishEvent;
                 _controller.PlayerFinishEvent += OnPlayerFinishEvent;
+                _controller.PlayerKickedEvent += ControllerOnPlayerKickedEvent;
+                _controller.PlayerLostEvent += ControllerOnPlayerLostEvent;
+                _controller.ErrorEvent += ControllerOnErrorEvent;
 
                 this.GUIGameInstance = new GuiGameArea(area)
                 {
@@ -97,9 +97,11 @@ namespace Arctos.View
             catch (Exception ex)
             {
                 this.ShowInformationOverlay(ex.Message);
+                ViewHelper.Wait(4);
+                this.CloseTrigger = true;
             }
         }
-    
+
         /// <summary>
         /// Initialize GameView Model
         /// </summary>
@@ -108,6 +110,20 @@ namespace Arctos.View
         }
 
         #region Events
+
+        /// <summary>
+        /// Received Event from ViewController
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="errorEventArgs"></param>
+        private void ControllerOnErrorEvent(object sender, ErrorEventArgs errorEventArgs)
+        {
+            this.ShowInformationOverlay(errorEventArgs.Message);
+
+            ViewHelper.Wait(4);
+
+            this.CloseTrigger = true;
+        }
 
         /// <summary>
         /// PlayerFinish Event
@@ -130,7 +146,7 @@ namespace Arctos.View
                 ? "CONGRATULATION - you won"
                 : "SORRY - you lost this game");
 
-            Wait(4);
+            ViewHelper.Wait(4);
 
             this.CloseTrigger = true;
         }
@@ -142,29 +158,63 @@ namespace Arctos.View
         /// <param name="gameReadyEventArgs"></param>
         private void OnGameReadyEvent(object sender, GameReadyEventArgs gameReadyEventArgs)
         {
-            var receivedAreaUpdate = gameReadyEventArgs.Path;
-            if (receivedAreaUpdate == null)
+            try
             {
-                // game not ready, show as message
-                this.ShowInformationOverlay("Game is not ready. Please Wait.");
-            }
-            else
-            {
-                this.ShowInformationOverlay("READY ....");
-
-                _controller.GameArea.setPath(
-                    receivedAreaUpdate.Waypoints.Select(x => new Tuple<int, int>(x.Item1, x.Item2)).ToList());
-
-                // Show Path step by step
-                foreach (Area areaPath in _controller.GameArea.Path)
+                var receivedAreaUpdate = gameReadyEventArgs.Path;
+                if (receivedAreaUpdate == null)
                 {
-                    var guiArea = this.GUIGameInstance.AreaList.FirstOrDefault(area => area.AreaId.Equals(areaPath.AreaId));
-                    if (guiArea != null)
-                        guiArea.Status = Area.AreaStatus.CorrectlyPassed;
+                    // game not ready, show as message
+                    this.ShowInformationOverlay("Game is not ready. Please Wait.");
+                }
+                else
+                {
+                    this.ShowInformationOverlay("READY ....");
 
-                    Wait(1);
+                    _controller.GameArea.setPath(
+                        receivedAreaUpdate.Waypoints.Select(x => new Tuple<int, int>(x.Item1, x.Item2)).ToList());
+
+                    // Show Path step by step
+                    foreach (Area areaPath in _controller.GameArea.Path)
+                    {
+                        var guiArea =
+                            this.GUIGameInstance.AreaList.FirstOrDefault(area => area.AreaId.Equals(areaPath.AreaId));
+                        if (guiArea != null)
+                            guiArea.Status = Area.AreaStatus.CorrectlyPassed;
+
+                        ViewHelper.Wait(1);
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                this.ShowInformationOverlay(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// PlayerLost Event
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="playerLostEventArgs"></param>
+        private void ControllerOnPlayerLostEvent(object sender, PlayerLostEventArgs playerLostEventArgs)
+        {
+            this.ShowInformationOverlay(playerLostEventArgs.IsLost
+                ? "Please wait.. you lost the connection to your Robot."
+                : "Welcome back your Robot!");
+        }
+
+        /// <summary>
+        /// PlayerKicked Event
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="playerKickedEventArgs"></param>
+        private void ControllerOnPlayerKickedEvent(object sender, PlayerKickedEventArgs playerKickedEventArgs)
+        {
+            // View is invalid now, close it
+            this.ShowInformationOverlay("You got kicked from the Game.. closing now");
+            ViewHelper.Wait(3);
+            _controller.SendEvent(GameEvent.Type.GuiLeft, null);
+            this.CloseTrigger = true;
         }
 
         /// <summary>
@@ -188,11 +238,6 @@ namespace Arctos.View
         /// <param name="playerLeftEventArgs"></param>
         private void OnPlayerLeftEvent(object sender, PlayerLeftEventArgs playerLeftEventArgs)
         {
-            // View is invalid now, close it
-            this.ShowInformationOverlay("Player has left the game.. closing now");
-            Wait(3);
-            _controller.SendEvent(GameEvent.Type.GuiLeft, null);
-            this.CloseTrigger = true;
         }
 
         /// <summary>
@@ -202,26 +247,34 @@ namespace Arctos.View
         /// <param name="areaUpdateEventArgs"></param>
         private void OnAreaUpdateEvent(object sender, AreaUpdateEventArgs areaUpdateEventArgs)
         {
-            var receivedAreaUpdate = areaUpdateEventArgs.Area;
-            if (receivedAreaUpdate == null) return;
-
-            GuiArea foundArea = this.GUIGameInstance.AreaList.FirstOrDefault(x => x.AreaId.Equals(receivedAreaUpdate.AreaId));
-            if (foundArea == null) return;
-
-            if (receivedAreaUpdate.Status == Area.AreaStatus.WronglyPassed)
+            try
             {
-                _controller.WrongPath.Add(new Tuple<GuiArea, Area.AreaStatus>(foundArea, foundArea.Status));
-            }
-            else
-            {
-                foreach (var area in _controller.WrongPath)
+                var receivedAreaUpdate = areaUpdateEventArgs.Area;
+                if (receivedAreaUpdate == null) return;
+
+                GuiArea foundArea =
+                    this.GUIGameInstance.AreaList.FirstOrDefault(x => x.AreaId.Equals(receivedAreaUpdate.AreaId));
+                if (foundArea == null) return;
+
+                if (receivedAreaUpdate.Status == Area.AreaStatus.WronglyPassed)
                 {
-                    area.Item1.Status = area.Item2;
+                    _controller.WrongPath.Add(new Tuple<GuiArea, Area.AreaStatus>(foundArea, foundArea.Status));
                 }
-                _controller.WrongPath.Clear();
-            }
+                else
+                {
+                    foreach (var area in _controller.WrongPath)
+                    {
+                        area.Item1.Status = area.Item2;
+                    }
+                    _controller.WrongPath.Clear();
+                }
 
-            foundArea.Status = receivedAreaUpdate.Status;
+                foundArea.Status = receivedAreaUpdate.Status;
+            }
+            catch (Exception ex)
+            {
+                this.ShowInformationOverlay(ex.Message);
+            }
         }
 
         #endregion
@@ -237,25 +290,10 @@ namespace Arctos.View
             this.GameInformation = message;
             this.ShowGameInformation = true;
 
-            Wait(2);
+            ViewHelper.Wait(2);
 
             this.ShowGameInformation = false;
             this.GameInformation = "";
-        }
-
-        /// <summary>
-        /// GUI Wait for x seconds
-        /// </summary>
-        /// <param name="seconds"></param>
-        private void Wait(double seconds)
-        {
-            var frame = new DispatcherFrame();
-            new Thread((ThreadStart)(() =>
-            {
-                Thread.Sleep(TimeSpan.FromSeconds(seconds));
-                frame.Continue = false;
-            })).Start();
-            Dispatcher.PushFrame(frame);
         }
 
         #endregion

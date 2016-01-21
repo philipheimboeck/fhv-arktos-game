@@ -1,10 +1,10 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Windows;
 using Arctos.Game.GUIClient;
 using Arctos.Game.Middleware.Logic.Model.Client;
 using Arctos.Game.Middleware.Logic.Model.Model;
 using Arctos.Game.Model;
+using Arctos.View.Utilities;
 
 namespace Arctos.View
 {
@@ -59,6 +59,28 @@ namespace Arctos.View
             }
         }
 
+        private bool _showGameInformation;
+        public bool ShowGameInformation
+        {
+            get { return _showGameInformation; }
+            set
+            {
+                _showGameInformation = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _gameInformation;
+        public string GameInformation
+        {
+            get { return _gameInformation; }
+            set
+            {
+                _gameInformation = value;
+                OnPropertyChanged();
+            }
+        }
+
         private bool GameConnected { get; set; }
         private GameTcpClient GameClient { get; set; }
 
@@ -71,7 +93,7 @@ namespace Arctos.View
         /// </summary>
         public ConnectViewModel()
         {
-            GameServer = "172.22.25.74";
+            this.GameServer = "172.22.25.74";
         }
 
         /// <summary>
@@ -84,11 +106,12 @@ namespace Arctos.View
             {
                 switch (parameter.ToString())
                 {
+                    // Request GUI for username
                     case "GuiRequest":
                     {
                         if (string.IsNullOrEmpty(this.PlayerName))
                         {
-                            MessageBox.Show("Please set your Player name");
+                            this.ShowInformationOverlay("Please set your Player name");
                         }
                         else 
                         { 
@@ -100,7 +123,7 @@ namespace Arctos.View
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                this.ShowInformationOverlay("Error: " + ex.Message);
             }
         }
 
@@ -123,36 +146,67 @@ namespace Arctos.View
                 else
                 {
                     this.GameConnected = false;
-                    MessageBox.Show("Could not connect to GameServer");
+                    this.ShowInformationOverlay("Could not connect to GameServer");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                this.ShowInformationOverlay("Error: " + ex.Message);
             }
         }
 
+        /// <summary>
+        /// Received Event from GameServer
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void GameClientOnReceivedDataEvent(object sender, ReceivedEventArgs args)
         {
-            var gameEvent = args.Data as GameEvent;
-            if (gameEvent != null && gameEvent.EventType == GameEvent.Type.GuiJoined) 
-            { 
-                var gameArea = (GameArea)gameEvent.Data;
-
-                if (gameArea != null)
+            try
+            {
+                var gameEvent = args.Data as GameEvent;
+                if (gameEvent != null && gameEvent.EventType == GameEvent.Type.GuiJoined)
                 {
-                    this.GameConnected = true;
+                    var gameArea = (GameArea) gameEvent.Data;
 
-                    this.CurrentGameView = new GameView { DataContext = new GameViewModel(this.GameClient, gameArea) };
-                    this.CurrentGameView.Show();
-                }
-                else
-                {
-                    MessageBox.Show("Did not receive any new Games! Please try again.");
-                }
+                    if (gameArea != null)
+                    {
+                        this.GameConnected = true;
 
-                this.GameClient.ReceivedDataEvent -= GameClientOnReceivedDataEvent;
+                        this.CurrentGameView = new GameView {DataContext = new GameViewModel(this.GameClient, gameArea)};
+                        this.CurrentGameView.Show();
+                    }
+                    else
+                    {
+                        this.ShowInformationOverlay("Did not receive any new Games! Please try again.");
+                    }
+
+                    this.GameClient.ReceivedDataEvent -= GameClientOnReceivedDataEvent;
+                }
+            }
+            catch (Exception ex)
+            {
+                this.ShowInformationOverlay("Error while waiting for GameServer: " + ex.Message);
             }
         }
+
+        #region ViewHelper
+
+        /// <summary>
+        /// Show a message overlay
+        /// </summary>
+        /// <param name="message"></param>
+        private void ShowInformationOverlay(string message)
+        {
+            this.GameInformation = message;
+            this.ShowGameInformation = true;
+
+            ViewHelper.Wait(2);
+
+            this.ShowGameInformation = false;
+            this.GameInformation = "";
+        }
+        
+        #endregion
     }
 }
