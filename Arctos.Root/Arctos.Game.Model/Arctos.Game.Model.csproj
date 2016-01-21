@@ -51,9 +51,11 @@
     <Compile Include="Communication\ServerProtocol\PresentationLayer.cs" />
     <Compile Include="Communication\ServerProtocol\SessionLayer.cs" />
     <Compile Include="Model\Area.cs" />
+    <Compile Include="Model\Game.cs" />
     <Compile Include="Model\GameArea.cs" />
     <Compile Include="Model\GameEvent.cs" />
     <Compile Include="Model\GameEventTuple.cs" />
+    <Compile Include="Model\GameState.cs" />
     <Compile Include="Model\Path.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModel\PropertyChangedBase.cs" />

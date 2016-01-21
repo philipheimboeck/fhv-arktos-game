@@ -7,6 +7,7 @@ using Arctos.Game.Model;
 using ArctosGameServer.Controller.Events;
 using ArctosGameServer.Domain;
 using ArctosGameServer.Service;
+using Game = ArctosGameServer.Domain.Game;
 
 namespace ArctosGameServer.Controller
 {
@@ -51,8 +52,8 @@ namespace ArctosGameServer.Controller
             {
                 // Remove all kicked players
                 var toRemove = _players.Where(pair => pair.Value.Kicked == true)
-                          .Select(pair => pair.Value)
-                          .ToList();
+                    .Select(pair => pair.Value)
+                    .ToList();
 
                 foreach (var p in toRemove)
                 {
@@ -63,47 +64,50 @@ namespace ArctosGameServer.Controller
                 // Process all received events
                 ProcessEvents();
 
-                // Check for Game State
-                if (_game.Started == false)
+                // Check for the game state
+                switch (_game.State)
                 {
-                    // Check if game can be started
-                    if (_game.Ready == false && PlayersReady())
-                    {
-                        GameReady();
-                    }
-                    else if (_game.Ready == true && !PlayersReady())
-                    {
-                        GameNotReady();
-                    }
-                }
-                else if (_game.Finished == false)
-                {
-                    // Game is already running
-
-                    // Check for finished players
-                    foreach (var player in _players.Values)
-                    {
-                        if (player.HasRecentlyFinished())
+                    case GameState.Waiting:
+                        if (PlayersReady())
                         {
-                            FinishPlayer(player);
+                            SetGameReady();
                         }
-                    }
+                        break;
+                    case GameState.Ready:
+                        if (!PlayersReady())
+                        {
+                            SetGameNotReady();
+                        }
+                        break;
+                    case GameState.Started:
+                        // Check for finished players
+                        foreach (var player in _players.Values)
+                        {
+                            if (player.HasRecentlyFinished())
+                            {
+                                FinishPlayer(player);
+                            }
+                        }
 
-                    // Check if all player have finished
-                    if (_players.Values.Count > 0 && _players.Values.Count(x => x.FinishedGame == false) == 0)
-                    {
-                        FinishGame();
-                    }
+                        // Check if all player have finished
+                        if (_players.Values.Count > 0 && _players.Values.Count(x => x.FinishedGame == false) == 0)
+                        {
+                            FinishGame();
+                        }
+                        break;
+                    case GameState.Finished:
+                        break;
+                    
                 }
             }
         }
 
-        private void GameNotReady()
+        private void SetGameNotReady()
         {
             LogLine("Game is not ready to start anymore");
 
             // Game changed from ready to not ready
-            _game.Ready = false;
+            _game.State = GameState.Waiting;
 
             // Notify CUs and GUIs
             _server.Send(new GameEvent(GameEvent.Type.GameReady, null));
@@ -112,12 +116,12 @@ namespace ArctosGameServer.Controller
             OnGameReadyEvent(new GameReadeEventArgs() {Ready = false});
         }
 
-        private void GameReady()
+        private void SetGameReady()
         {
             LogLine("Game is ready to start");
 
             // Game changed to ready
-            _game.Ready = true;
+            _game.State = GameState.Ready;
 
             // Create the path
             var map = _players.FirstOrDefault().Value.Map;
@@ -128,12 +132,7 @@ namespace ArctosGameServer.Controller
             }
 
             // Notify CUs and GUIs
-            var tuples = new List<GameEventTuple<int, int>>();
-            foreach (var t in path)
-            {
-                tuples.Add(new GameEventTuple<int, int>() {Item1 = t.Item1, Item2 = t.Item2});
-            }
-            var sendPath = new Path() {Waypoints = tuples};
+            var sendPath = new Path(path);
             _server.Send(new GameEvent(GameEvent.Type.GameReady, sendPath));
 
             // Send Event
@@ -145,7 +144,7 @@ namespace ArctosGameServer.Controller
             // All players are finished
             LogLine("All players finished the game");
 
-            _game.Finished = true;
+            _game.State = GameState.Finished;
 
             // Get winner
             var winner = _players.Values.OrderBy(x => x.Duration).First();
@@ -345,7 +344,7 @@ namespace ArctosGameServer.Controller
             }
 
             // Send event
-            OnPlayerLostEvent(new PlayerLostEventArgs() { Player = player, Lost = true });
+            OnPlayerLostEvent(new PlayerLostEventArgs() {Player = player, Lost = true});
         }
 
         /// <summary>
@@ -364,7 +363,7 @@ namespace ArctosGameServer.Controller
             }
 
             // Send event
-            OnPlayerLostEvent(new PlayerLostEventArgs() { Player = player, Lost = false });
+            OnPlayerLostEvent(new PlayerLostEventArgs() {Player = player, Lost = false});
         }
 
         /// <summary>
@@ -417,9 +416,16 @@ namespace ArctosGameServer.Controller
             LogLine("Accepted Request");
 
             // Add GUI-Guid to player
-            _players[playerName].GuiId = guid;
+            var player = _players[playerName];
+            player.GuiId = guid;
 
             // Send OK
+            var game = new Arctos.Game.Middleware.Logic.Model.Model.Game()
+            {
+                State = _game.State,
+                GameArea = player.Map,
+                Path = new Path(_game.Path),
+            };
             _server.Send(new GameEvent(GameEvent.Type.GuiJoined, _players[playerName].Map), guid);
 
             // Send Event
@@ -516,7 +522,7 @@ namespace ArctosGameServer.Controller
                 player.UpdatePosition(areaId);
 
                 // Game started?
-                if (player.Location != null && _game.Started)
+                if (_game.State == GameState.Started && player.Location != null)
                 {
                     var position = player.ChangePositionStatus(areaId);
 
@@ -568,8 +574,7 @@ namespace ArctosGameServer.Controller
             }
 
             // Start game
-            _game.Started = true;
-            _game.Ready = false;
+            _game.State = GameState.Started;
 
             // Send event
             OnGameStartEvent(new GameStartEventArgs() {Started = true});
@@ -673,6 +678,5 @@ namespace ArctosGameServer.Controller
         public event PlayerLostEventHandler PlayerLostEvent;
 
         #endregion
-
     }
 }
