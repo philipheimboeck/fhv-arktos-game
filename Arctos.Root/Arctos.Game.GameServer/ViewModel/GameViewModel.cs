@@ -41,7 +41,7 @@ namespace ArctosGameServer.ViewModel
             Application.Current.Dispatcher.Invoke((Action)delegate
             {
                 var playerViewModel = Players.FirstOrDefault(x => x.Player.Equals(e.Player));
-                playerViewModel.Connected = !e.Lost;
+                if (playerViewModel != null) playerViewModel.Connected = !e.Lost;
             });
         }
 

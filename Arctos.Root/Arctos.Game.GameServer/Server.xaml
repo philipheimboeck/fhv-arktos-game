@@ -11,7 +11,7 @@
         <viewModel:BooleanToColorConverter x:Key="BooleanToColorConverter"></viewModel:BooleanToColorConverter>
     </Window.Resources>
     <Grid>
-        <Label Content="Arctos Game Server" HorizontalAlignment="Left" Margin="23,29,0,0" VerticalAlignment="Top" FontSize="20"/>
+        <Label Content="Arctos Server" HorizontalAlignment="Left" Margin="23,29,0,0" VerticalAlignment="Top" FontSize="20"/>
         
         <Grid HorizontalAlignment="Left" Margin="23,71,0,0" VerticalAlignment="Top" Width="580">
             <Grid.ColumnDefinitions>

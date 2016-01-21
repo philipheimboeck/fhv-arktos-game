@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Drawing;
 using System.Globalization;
 using System.Windows.Data;
+using System.Windows.Media;
+using Color = System.Drawing.Color;
 
 namespace ArctosGameServer.ViewModel
 {
@@ -11,9 +12,9 @@ namespace ArctosGameServer.ViewModel
         {
             if((bool)value)
             {
-                return Color.Black;
+                return new SolidColorBrush(Colors.Green);
             }
-            return Color.Gray;
+            return new SolidColorBrush(Colors.Red);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

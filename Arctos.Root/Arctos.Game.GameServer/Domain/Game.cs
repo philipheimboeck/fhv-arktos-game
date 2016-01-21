@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Arctos.Game.Middleware.Logic.Model.Model;
 using Arctos.Game.Model;
 
 namespace ArctosGameServer.Domain
@@ -10,15 +11,14 @@ namespace ArctosGameServer.Domain
         public Game()
         {
             PlayableMaps = new List<GameArea>();
+            State = GameState.Waiting;
         }
 
-        public bool Ready { get; set; }
-
-        public bool Started { get; set; }
-
-        public bool Finished { get; set; }
+        public GameState State { get; set; }
 
         public List<GameArea> PlayableMaps { get; set; }
+
+        public List<Tuple<int, int>> Path { get; set; }
 
         /// <summary>
         /// Creates a random path through the fields
@@ -80,6 +80,9 @@ namespace ArctosGameServer.Domain
                 current = new Tuple<int, int>(posX, posY);
                 path.Add(current);
             }
+
+            // Set path property
+            Path = path;
 
             return path;
         }

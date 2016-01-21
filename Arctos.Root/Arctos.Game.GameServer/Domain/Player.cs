@@ -6,10 +6,7 @@ namespace ArctosGameServer.Domain
 {
     public class Player
     {
-        public Player()
-        {
-            Duration = new TimeSpan(0, 0, 0, 0);
-        }
+        private bool _pause;
 
         public string Name { get; set; }
 
@@ -24,7 +21,6 @@ namespace ArctosGameServer.Domain
         public DateTime StartTime { get; set; }
         public TimeSpan Duration { get; set; }
 
-        private bool _pause;
         public bool Pause
         {
             get { return _pause; }
@@ -42,15 +38,15 @@ namespace ArctosGameServer.Domain
                     // Stop the pause
                     StartTime = DateTime.Now;
                 }
-               
-                
-
             }
         }
 
+        public bool Kicked { get; set; }
+
         public bool HasRecentlyFinished()
         {
-            return Pause == false && FinishedGame == false && LastVisited != null && Map.Path[Map.Path.Count - 1].Equals(LastVisited);
+            return Pause == false && FinishedGame == false && LastVisited != null &&
+                   Map.Path[Map.Path.Count - 1].Equals(LastVisited);
         }
 
         public TimeSpan EndCounter()
@@ -91,7 +87,7 @@ namespace ArctosGameServer.Domain
             // Return the same location when paused
             if (Pause)
             {
-                return Location;
+                return null;
             }
 
             // Check if location was passed correctly
@@ -105,11 +101,27 @@ namespace ArctosGameServer.Domain
             {
                 if (Map.Path.IndexOf(pathArea) == lastVisitedIndex + 1)
                 {
+                    // When correctly passing a field, reset all wrongly passed field
+                    foreach (var area in Map.AreaList)
+                    {
+                        area.Status = Area.AreaStatus.None;
+                    }
+                    foreach (var area in Map.Path)
+                    {
+                        if (area.Equals(Location))
+                        {
+                            break;
+                        }
+
+                        area.Status = Area.AreaStatus.CorrectlyPassed;
+                    }
+
                     // Field is correctly passed
                     // Set last visited
                     LastVisited = pathArea;
                     pathArea.Status = Area.AreaStatus.CorrectlyPassed;
 
+                    // Return the field
                     return pathArea;
                 }
 
@@ -122,6 +134,16 @@ namespace ArctosGameServer.Domain
             // Field not in path and therefore wrongly passed!
             Location.Status = Area.AreaStatus.WronglyPassed;
             return Location;
+        }
+
+        /// <summary>
+        /// Start the counter
+        /// </summary>
+        /// <param name="startTime"></param>
+        public void Start(DateTime startTime)
+        {
+            StartTime = startTime;
+            Duration = new TimeSpan(0, 0, 0, 0);
         }
     }
 }
