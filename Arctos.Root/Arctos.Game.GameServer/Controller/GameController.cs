@@ -45,10 +45,21 @@ namespace ArctosGameServer.Controller
         /// </summary>
         public void Loop()
         {
-            LogLine("Starting server");
+            LogLine("Starting server " + _server.FindIp());
 
             while (!ShutdownRequested)
             {
+                // Remove all kicked players
+                var toRemove = _players.Where(pair => pair.Value.Kicked == true)
+                          .Select(pair => pair.Value)
+                          .ToList();
+
+                foreach (var p in toRemove)
+                {
+                    RemovePlayer(p);
+                    RemoveGUI(p);
+                }
+
                 // Process all received events
                 ProcessEvents();
 
@@ -183,16 +194,15 @@ namespace ArctosGameServer.Controller
             // Notify GUI and Player that they will be kicked
             if (!player.ControlUnitId.Equals(Guid.Empty))
             {
-                _server.Send(new GameEvent(GameEvent.Type.PlayerKicked, null));
+                _server.Send(new GameEvent(GameEvent.Type.PlayerKicked, null), player.ControlUnitId);
             }
             if (!player.GuiId.Equals(Guid.Empty))
             {
-                _server.Send(new GameEvent(GameEvent.Type.PlayerKicked, null));
+                _server.Send(new GameEvent(GameEvent.Type.PlayerKicked, null), player.GuiId);
             }
 
             // Remove them from the game
-            RemovePlayer(player);
-            RemoveGUI(player);
+            player.Kicked = true;
         }
 
         /// <summary>
@@ -257,6 +267,13 @@ namespace ArctosGameServer.Controller
             if (player != null)
             {
                 LogLine("Player " + player.Name + " left");
+
+                // Notify GUI if existing
+                if (!player.GuiId.Equals(Guid.Empty))
+                {
+                    _server.Send(new GameEvent(GameEvent.Type.PlayerLeft, null), player.GuiId);
+                }
+
                 RemovePlayer(player);
             }
             else
@@ -275,6 +292,13 @@ namespace ArctosGameServer.Controller
             if (player != null)
             {
                 LogLine("GUI for player " + player.Name + " left");
+
+                // Notify CU
+                if (!player.ControlUnitId.Equals(Guid.Empty))
+                {
+                    _server.Send(new GameEvent(GameEvent.Type.GuiLeft, null), player.ControlUnitId);
+                }
+
                 RemoveGUI(player);
             }
             else
@@ -293,12 +317,6 @@ namespace ArctosGameServer.Controller
                 _game.PlayableMaps.Add(player.Map);
             }
 
-            // Notify GUI if existing
-            if (!player.GuiId.Equals(Guid.Empty))
-            {
-                _server.Send(new GameEvent(GameEvent.Type.PlayerLeft, null), player.GuiId);
-            }
-
             // Send event
             OnPlayerLeftEvent(new PlayerLeftEventArgs() {Player = player});
         }
@@ -306,12 +324,6 @@ namespace ArctosGameServer.Controller
         private void RemoveGUI(Player player)
         {
             player.GuiId = Guid.Empty;
-
-            // Notify CU
-            if (!player.ControlUnitId.Equals(Guid.Empty))
-            {
-                _server.Send(new GameEvent(GameEvent.Type.GuiLeft, null), player.ControlUnitId);
-            }
 
             // Send event
             OnGuiChangedEvent(new GuiChangedEventArgs(player));
@@ -323,6 +335,7 @@ namespace ArctosGameServer.Controller
         /// <param name="player"></param>
         private void PausePlayer(Player player)
         {
+            LogLine("Pausing " + player.Name);
             player.Pause = true;
 
             // Notify GUI if existing
@@ -341,6 +354,7 @@ namespace ArctosGameServer.Controller
         /// <param name="player"></param>
         private void ResumePlayer(Player player)
         {
+            LogLine("Resuming " + player.Name);
             player.Pause = false;
 
             // Notify GUI if existing
@@ -371,6 +385,13 @@ namespace ArctosGameServer.Controller
             else if ((player = _players.Values.FirstOrDefault(x => x.GuiId.Equals(id))) != null)
             {
                 LogLine("Connetion lost of GUI for player " + player.Name);
+
+                // Notify CU
+                if (!player.ControlUnitId.Equals(Guid.Empty))
+                {
+                    _server.Send(new GameEvent(GameEvent.Type.GuiLeft, null), player.ControlUnitId);
+                }
+
                 RemoveGUI(player);
             }
             else
@@ -432,6 +453,13 @@ namespace ArctosGameServer.Controller
                 // Resume the player
                 LogLine("Player can now resume");
                 ResumePlayer(_players[playerName]);
+
+                // Send OK to CU
+                _server.Send(new GameEvent(GameEvent.Type.PlayerJoined, new GameEventTuple<bool, string>()
+                {
+                    Item1 = true,
+                    Item2 = "Player rejoined"
+                }), guid);
                 return;
             }
 
@@ -468,7 +496,7 @@ namespace ArctosGameServer.Controller
             _server.Send(new GameEvent(GameEvent.Type.PlayerJoined, new GameEventTuple<bool, string>()
             {
                 Item1 = true,
-                Item2 = "Player added"
+                Item2 = "Player joined"
             }), guid);
 
             // Send Event
@@ -536,7 +564,7 @@ namespace ArctosGameServer.Controller
             var startTime = DateTime.Now;
             foreach (var player in _players.Values)
             {
-                player.StartTime = startTime;
+                player.Start(startTime);
             }
 
             // Start game

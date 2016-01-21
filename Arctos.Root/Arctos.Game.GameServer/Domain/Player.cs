@@ -6,10 +6,7 @@ namespace ArctosGameServer.Domain
 {
     public class Player
     {
-        public Player()
-        {
-            Duration = new TimeSpan(0, 0, 0, 0);
-        }
+        private bool _pause;
 
         public string Name { get; set; }
 
@@ -24,7 +21,6 @@ namespace ArctosGameServer.Domain
         public DateTime StartTime { get; set; }
         public TimeSpan Duration { get; set; }
 
-        private bool _pause;
         public bool Pause
         {
             get { return _pause; }
@@ -42,15 +38,15 @@ namespace ArctosGameServer.Domain
                     // Stop the pause
                     StartTime = DateTime.Now;
                 }
-               
-                
-
             }
         }
 
+        public bool Kicked { get; set; }
+
         public bool HasRecentlyFinished()
         {
-            return Pause == false && FinishedGame == false && LastVisited != null && Map.Path[Map.Path.Count - 1].Equals(LastVisited);
+            return Pause == false && FinishedGame == false && LastVisited != null &&
+                   Map.Path[Map.Path.Count - 1].Equals(LastVisited);
         }
 
         public TimeSpan EndCounter()
@@ -122,6 +118,16 @@ namespace ArctosGameServer.Domain
             // Field not in path and therefore wrongly passed!
             Location.Status = Area.AreaStatus.WronglyPassed;
             return Location;
+        }
+
+        /// <summary>
+        /// Start the counter
+        /// </summary>
+        /// <param name="startTime"></param>
+        public void Start(DateTime startTime)
+        {
+            StartTime = startTime;
+            Duration = new TimeSpan(0, 0, 0, 0);
         }
     }
 }

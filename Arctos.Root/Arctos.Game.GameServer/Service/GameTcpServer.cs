@@ -156,6 +156,19 @@ namespace ArctosGameServer.Service
             NotifyObservers(new Tuple<Guid, GameEvent>(id, new GameEvent(GameEvent.Type.ConnectionLost, "Connection Closed")));
         }
 
+        public IPAddress FindIp()
+        {
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var address in host.AddressList)
+            {
+                if (address.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    return address;
+                }
+            }
+            return null;
+        }
+
 
         private class Client
         {
@@ -173,7 +186,16 @@ namespace ArctosGameServer.Service
 
             public void Send(GameEvent gameEvent)
             {
-                _protocol.send(new PDU<object>() {data = gameEvent});
+                try
+                {
+                    _protocol.send(new PDU<object>() {data = gameEvent});
+                }
+                catch (Exception ex)
+                {
+                    // Todo Error handling
+                    Close();
+                }
+                
             }
 
             public bool Connected { get { return _client.Connected;  } }
@@ -181,6 +203,14 @@ namespace ArctosGameServer.Service
             public void Close()
             {
                 _client.Close();
+            }
+        }
+
+        public void Disconnect(Guid id)
+        {
+            if (_clients.ContainsKey(id))
+            {
+                _clients[id].Close();
             }
         }
     }
