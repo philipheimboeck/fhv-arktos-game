@@ -68,6 +68,9 @@
     <Compile Include="Controller\Events\GameStartEvent.cs" />
     <Compile Include="Controller\Events\GameReadyEvent.cs" />
     <Compile Include="Controller\Events\GameFinishEvent.cs" />
+    <Compile Include="Controller\Events\ErrorEvent.cs" />
+    <Compile Include="Controller\Events\PlayerLostEvent.cs" />
+    <Compile Include="Controller\Events\PlayerKickedEvent.cs" />
     <Compile Include="Controller\Events\PlayerFinishEventArgs.cs" />
     <Compile Include="Controller\Events\PlayerLeftEvent.cs" />
     <Compile Include="Controller\Events\AreaUpdateEvent.cs" />
@@ -79,6 +82,7 @@
     <Compile Include="Properties\Annotations1.cs" />
     <Compile Include="Service\GameClientService.cs" />
     <Compile Include="View\GameViewModel.cs" />
+    <Compile Include="View\Utilities\ViewHelper.cs" />
     <Page Include="ConnectView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

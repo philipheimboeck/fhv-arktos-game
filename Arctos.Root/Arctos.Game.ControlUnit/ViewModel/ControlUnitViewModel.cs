@@ -2,14 +2,14 @@
 using System.ComponentModel;
 using System.Timers;
 using Arctos.Game.ControlUnit.Controller;
+using Arctos.Game.ControlUnit.Controller.Events;
 using Arctos.Game.ControlUnit.Input;
 using Arctos.Game.Middleware.Logic.Model.Client;
 using Arctos.Game.Middleware.Logic.Model.Model;
 using Arctos.Game.Model;
-using ArctosGameServer.Controller.Events;
 using RandomNameGenerator;
 
-namespace Arctos.Game
+namespace Arctos.Game.ControlUnit.ViewModel
 {
     /// <summary>
     /// ControlUnit ViewModel
@@ -142,7 +142,7 @@ namespace Arctos.Game
             }
         }
 
-        private string _gameIP = "172.22.25.74";
+        private string _gameIP = "172.22.25.119";
         public string GameIP
         {
             get { return _gameIP; }
@@ -215,10 +215,11 @@ namespace Arctos.Game
         /// </summary>
         private void ConnectToGame()
         {
-            try
+           
+            BackgroundWorker bgw = new BackgroundWorker();
+            bgw.DoWork += delegate
             {
-                BackgroundWorker bgw = new BackgroundWorker();
-                bgw.DoWork += delegate
+                try
                 {
                     if (GameStatus == false)
                     {
@@ -231,22 +232,33 @@ namespace Arctos.Game
                             this.SendEvent(GameEvent.Type.PlayerRequest, this.PlayerName);
                             LogWrite(LogLevel.Info, "Ask for Game with Playername = " + this.PlayerName);
                             ReceiveEventsLoopWorker.RunWorkerAsync();
+                            ButtonGameStatus = GAME_DISCONNECT;
                         }
                     }
                     else
                     {
-                        ButtonGameStatus = GAME_DISCONNECT;
-                        GameStatus = false;
-                        GameClient = null;
+                        this.ClosedGameserverConnection();
                         ReceiveEventsLoopWorker.CancelAsync();
                     }
-                };
-                bgw.RunWorkerAsync();
-            }
-            catch (Exception ex)
-            {
-                LogWrite(LogLevel.Error, ex.Message);
-            }
+                }
+                catch (Exception ex)
+                {
+                    this.ClosedGameserverConnection();
+                    LogWrite(LogLevel.Error, ex.Message);
+                }
+            };
+            bgw.RunWorkerAsync();
+        }
+
+        /// <summary>
+        /// Reset Gamestatus and cleint after connection failure
+        /// </summary>
+        private void ClosedGameserverConnection()
+        {
+            ButtonGameStatus = GAME_CONNECT;
+            GameStatusText = DISCONNECTED;
+            GameStatus = false;
+            GameClient = null;
         }
 
         /// <summary>
@@ -259,9 +271,19 @@ namespace Arctos.Game
             {
                 this.ButtonRobotStatus = ROBOT_WAIT;
                 this.RobotController.ConnectSerial(this.RobotCOMPort);
+            }
+            catch (Exception ex)
+            {
+                this.RobotStatus = false;
+                this.ButtonRobotStatus = DISCONNECTED;
+                RobotStatusText = ex.Message;
+                LogWrite(LogLevel.Error, ex.Message);
+            }
 
-                BackgroundWorker bgw = new BackgroundWorker();
-                bgw.DoWork += delegate
+            BackgroundWorker bgw = new BackgroundWorker();
+            bgw.DoWork += delegate
+            {
+                try
                 {
                     this.RobotStatus = false;
                     this.ControlUnitLoopWorker.CancelAsync();
@@ -279,14 +301,16 @@ namespace Arctos.Game
                         this.ControlUnitLoopWorker.CancelAsync();
 
                     this.ControlUnitLoopWorker.RunWorkerAsync();
-                };
-                bgw.RunWorkerAsync();
-            }
-            catch (Exception ex)
-            {
-                RobotStatusText = ex.Message;
-                LogWrite(LogLevel.Error, ex.Message);
-            }
+                }
+                catch (Exception ex)
+                {
+                    this.RobotStatus = false;
+                    this.ButtonRobotStatus = DISCONNECTED;
+                    RobotStatusText = ex.Message;
+                    LogWrite(LogLevel.Error, ex.Message);
+                }
+            };
+            bgw.RunWorkerAsync();
         }
 
         /// <summary>
@@ -342,6 +366,16 @@ namespace Arctos.Game
                     }
                         break;
 
+                    // Game Ready
+                    case GameEvent.Type.PlayerKicked:
+                        {
+                            RobotController.Drive(0, 0);
+                            IsDriveAllowed = false;
+                            this.ClosedGameserverConnection();
+                            LogWrite(LogLevel.Events, "Kicked out from Game by GameServer");
+                        }
+                        break;
+
                     // Game Start
                     case GameEvent.Type.GameStart:
                     {
@@ -375,23 +409,22 @@ namespace Arctos.Game
         /// <param name="doWorkEventArgs"></param>
         private void ReceiveEventsWaiterOnWork(object sender, DoWorkEventArgs doWorkEventArgs)
         {
-            // TODO: Refactor this!!
-            // there should be a better idea than actively waiting
             try
             {
                 while (true)
                 {
-                    GameClient.Receive();
-
                     if (ReceiveEventsLoopWorker.CancellationPending)
                     {
                         doWorkEventArgs.Cancel = true;
                         return;
                     }
+
+                    GameClient.Receive();
                 }
             }
             catch (Exception ex)
             {
+                this.ClosedGameserverConnection();
                 LogWrite(LogLevel.Error, ex.Message);
             }
         }
@@ -524,12 +557,15 @@ namespace Arctos.Game
             var heartbeatDifference = Math.Abs((DateTime.Now - this.LastReceivedHeartbeat).TotalSeconds);
             if (heartbeatDifference > 3)
             {
-                this.RobotStatus = false;
-                this.RobotStatusText = "Did not receive heartbeat within " + heartbeatDifference + " seconds.";
-                LogWrite(LogLevel.Warning, this.RobotStatusText);
+                if (this.RobotStatus)
+                {
+                    this.RobotStatus = false;
+                    LogWrite(LogLevel.Warning, this.RobotStatusText);
 
-                // Todo: send only once
-                this.SendPlayerLeft();
+                    this.SendPlayerLeft();
+                }
+
+                this.RobotStatusText = "Did not receive heartbeat within " + heartbeatDifference + " seconds.";
             }
             else
             {
@@ -573,12 +609,11 @@ namespace Arctos.Game
 
         public void OnCompleted()
         {
-            throw new NotImplementedException();
         }
 
         public void OnError(Exception error)
         {
-            throw new NotImplementedException();
+            LogWrite(LogLevel.Error, "GamepadController Error: " + error.Message);
         }
 
         public void OnNext(GamepadController.GamepadControllerEvent value)

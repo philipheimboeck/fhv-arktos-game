@@ -1,5 +1,5 @@
-﻿using ArctosGameServer.Communication;
-using ArctosGameServer.Communication.Protocol;
+﻿using Arctos.Game.ControlUnit.Communication.Protocol;
+using ArctosGameServer.Communication;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Arctos.Game.Middleware.Test

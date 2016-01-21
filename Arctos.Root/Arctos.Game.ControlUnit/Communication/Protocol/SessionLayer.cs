@@ -1,4 +1,6 @@
-﻿namespace ArctosGameServer.Communication.Protocol
+﻿using ArctosGameServer.Communication;
+
+namespace Arctos.Game.ControlUnit.Communication.Protocol
 {
     /// <summary>
     /// Session Layer

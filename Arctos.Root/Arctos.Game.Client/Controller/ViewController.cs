@@ -32,6 +32,9 @@ namespace Arctos.Controller
         public event GameStartEventHandler GameStartEvent;
         public event GameFinishEventHandler GameFinishEvent;
         public event PlayerFinishEventHandler PlayerFinishEvent;
+        public event PlayerKickedEventHandler PlayerKickedEvent;
+        public event PlayerLostEventHandler PlayerLostEvent;
+        public event ErrorEventHandler ErrorEvent;
 
         #endregion
 
@@ -86,6 +89,21 @@ namespace Arctos.Controller
                     }
                     break;
 
+                // Player left, close the View
+                case GameEvent.Type.PlayerLost:
+                    {
+                        OnPlayerLostEvent(new PlayerLostEventArgs((bool)receivedEvent.Data));
+                    }
+                    break;
+
+
+                // Player left, close the View
+                case GameEvent.Type.PlayerKicked:
+                    {
+                        OnPlayerKickedEvent(new PlayerKickedEventArgs());
+                    }
+                    break;
+
                 // Game Ready, show the path
                 case GameEvent.Type.GameReady:
                     {
@@ -135,7 +153,7 @@ namespace Arctos.Controller
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    this.OnErrorEvent(new ErrorEventArgs(ex.Message));
                 }
             }
         }
@@ -154,6 +172,21 @@ namespace Arctos.Controller
         }
 
         #region EventHandlers
+
+        protected virtual void OnErrorEvent(ErrorEventArgs e)
+        {
+            if (ErrorEvent != null) ErrorEvent.Invoke(this, e);
+        }
+
+        protected virtual void OnPlayerLostEvent(PlayerLostEventArgs e)
+        {
+            if (PlayerLostEvent != null) PlayerLostEvent.Invoke(this, e);
+        }
+
+        protected virtual void OnPlayerKickedEvent(PlayerKickedEventArgs e)
+        {
+            if (PlayerKickedEvent != null) PlayerKickedEvent.Invoke(this, e);
+        }
 
         protected virtual void OnGameFinishEvent(GameFinishEventArgs e)
         {

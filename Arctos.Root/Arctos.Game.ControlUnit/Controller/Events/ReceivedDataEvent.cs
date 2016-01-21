@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ArctosGameServer.Controller.Events
+namespace Arctos.Game.ControlUnit.Controller.Events
 {
     public delegate void ReadDataEventHandler(object sender, ReceivedDataEventArgs e);
     public class ReceivedDataEventArgs : EventArgs

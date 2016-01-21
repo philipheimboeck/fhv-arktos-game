@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace Arctos.Game
+namespace Arctos.Game.ControlUnit
 {
     /// <summary>
     /// Interaction logic for ControlUnitView.xaml

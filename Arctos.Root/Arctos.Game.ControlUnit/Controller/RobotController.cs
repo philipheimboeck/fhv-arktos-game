@@ -1,7 +1,7 @@
 ﻿using System;
+using Arctos.Game.ControlUnit.Communication.Protocol;
+using Arctos.Game.ControlUnit.Controller.Events;
 using ArctosGameServer.Communication;
-using ArctosGameServer.Communication.Protocol;
-using ArctosGameServer.Controller.Events;
 
 namespace Arctos.Game.ControlUnit.Controller
 {
