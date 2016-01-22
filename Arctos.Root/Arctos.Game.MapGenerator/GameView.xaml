@@ -7,12 +7,9 @@
         xmlns:view="clr-namespace:Arctos.Game.MapGenerator.View"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         mc:Ignorable="d"
-        Title="Arctos View" Height="500" Width="500"
-        WindowStyle="None"
-        WindowStartupLocation="CenterScreen" WindowState="Maximized"
+        Title="Arctos Game View" Width="832" Height="632"
+        WindowStartupLocation="CenterScreen" WindowState="Normal"
         d:DataContext="{d:DesignInstance view:GameViewModel, IsDesignTimeCreatable=True}">
-    <!-- add windowstyle=none to hide close toolbar -->
-    <!-- WindowStyle="None"-->
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />

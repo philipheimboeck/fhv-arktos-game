@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModel="clr-namespace:Arctos.Game.MapGenerator.View"
         mc:Ignorable="d"
-        Title="Arctos ControlUnit" Height="352.4" Width="1069.6" d:DataContext="{d:DesignInstance viewModel:RobotViewModel, IsDesignTimeCreatable=True}">
+        Title="Arctos MapGen" Height="352.4" Width="1069.6" d:DataContext="{d:DesignInstance viewModel:RobotViewModel, IsDesignTimeCreatable=True}">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="440"></ColumnDefinition>
@@ -14,7 +14,7 @@
 
         <TextBox Name="LogBox" Text="{Binding Log}" VerticalScrollBarVisibility="Visible" IsReadOnly="True" Grid.Column="1" Background="White" Foreground="Black" TextWrapping="Wrap" AcceptsReturn="True" Margin="20,71,19.2,29.4"/>
 
-        <Label Content="Arctos Robot" HorizontalAlignment="Left" Margin="23,29,0,0" VerticalAlignment="Top" FontSize="20"/>
+        <Label Content="Arctos MapGen" HorizontalAlignment="Left" Margin="23,29,0,0" VerticalAlignment="Top" FontSize="20"/>
 
         <Grid HorizontalAlignment="Left" Height="100" Margin="23,71,0,0" VerticalAlignment="Top" Width="400">
             <Grid.ColumnDefinitions>

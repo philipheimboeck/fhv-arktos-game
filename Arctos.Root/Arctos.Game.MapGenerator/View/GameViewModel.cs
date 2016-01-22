@@ -267,11 +267,10 @@ namespace Arctos.Game.MapGenerator.View
             {
                 // export GameConfiguration
                 SaveFileDialog saveFileDialog = new SaveFileDialog();
+                saveFileDialog.InitialDirectory = Environment.CurrentDirectory;
                 saveFileDialog.FileName = "game_map";
-                saveFileDialog.DefaultExt = ".xml";
-                saveFileDialog.Filter = "XML files (.xml)|*.xml";
-                saveFileDialog.FilterIndex = 2;
-                saveFileDialog.RestoreDirectory = true;
+                saveFileDialog.DefaultExt = ".map";
+                saveFileDialog.Filter = "Map Files (.map)|*.map";
 
                 if (saveFileDialog.ShowDialog() == true)
                 {
