@@ -348,17 +348,13 @@ namespace Arctos.View
         {
             this.ShowInformationOverlay("READY ....");
 
-            //Controller.GameArea.setPath(receivedAreaUpdate.Waypoints.Select(x => new Tuple<int, int>(x.Item1, x.Item2)).ToList());
+            Controller.GameArea.setPath(receivedAreaUpdate.Waypoints.Select(x => new Tuple<int, int>(x.Item1, x.Item2)).ToList());
             this.GUIGameInstance.SetPath(receivedAreaUpdate.Waypoints.Select(x => new Tuple<int, int>(x.Item1, x.Item2)).ToList());
 
             // Show Path step by step
-            foreach (Area areaPath in Controller.GameArea.Path)
+            foreach (GuiArea areaPath in this.GUIGameInstance.Path)
             {
-                var guiArea =
-                    this.GUIGameInstance.AreaList.FirstOrDefault(area => area.AreaId.Equals(areaPath.AreaId));
-                if (guiArea != null)
-                    guiArea.Status = Area.AreaStatus.CorrectlyPassed;
-
+                areaPath.Status = Area.AreaStatus.CorrectlyPassed;
                 ViewHelper.Wait(1);
             }
 

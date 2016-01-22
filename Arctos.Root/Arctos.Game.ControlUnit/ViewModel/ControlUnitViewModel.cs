@@ -389,6 +389,13 @@ namespace Arctos.Game.ControlUnit.ViewModel
                     }
                         break;
 
+                    // Game Reset
+                    case GameEvent.Type.GameReset:
+                        {
+                            LogWrite(LogLevel.Events, "Received GameReset");
+                        }
+                        break;
+
                     // Game Ready
                     case GameEvent.Type.PlayerKicked:
                         {
@@ -621,7 +628,7 @@ namespace Arctos.Game.ControlUnit.ViewModel
                 if (this.RobotStatus) return;
 
                 LogWrite(LogLevel.Info, this.RobotStatusText);
-                this.SendPlayerRejoined();
+                if(this.GameStatus) this.SendPlayerRejoined();
                 this.RobotStatus = true;
             }
         }
