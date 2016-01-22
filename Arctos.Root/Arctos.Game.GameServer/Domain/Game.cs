@@ -128,6 +128,10 @@ namespace ArctosGameServer.Domain
             PlayableMaps = new List<GameArea>();
             foreach (var gameArea in _configuration.GameAreas)
             {
+                // Reset the state
+                gameArea.AreaList.ForEach(x => x.Status = Area.AreaStatus.None);
+
+                // Add the game area
                 PlayableMaps.Add(gameArea);
             }
 
