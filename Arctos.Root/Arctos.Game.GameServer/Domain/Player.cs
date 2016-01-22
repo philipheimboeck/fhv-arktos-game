@@ -145,5 +145,13 @@ namespace ArctosGameServer.Domain
             StartTime = startTime;
             Duration = new TimeSpan(0, 0, 0, 0);
         }
+
+        public void Reset()
+        {
+            Duration = new TimeSpan(0, 0, 0, 0);
+            FinishedGame = false;
+            LastVisited = null;
+            Map = null;
+        }
     }
 }

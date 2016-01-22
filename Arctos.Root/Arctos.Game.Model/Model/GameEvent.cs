@@ -22,7 +22,8 @@ namespace Arctos.Game.Middleware.Logic.Model.Model
             GameReady,
             GameStart,
             GameFinish,
-            ConnectionLost
+            GameReset,
+            ConnectionLost,
         }
 
         public GameEvent()

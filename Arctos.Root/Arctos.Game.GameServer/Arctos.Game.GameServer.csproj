@@ -70,7 +70,6 @@
     <Compile Include="Controller\Events\PlayerLostEvent.cs" />
     <Compile Include="Controller\Events\PlayerLeftEvent.cs" />
     <Compile Include="Controller\GameController.cs" />
-    <Compile Include="Controller\MapGenerator.cs" />
     <Compile Include="Domain\Game.cs" />
     <Compile Include="Domain\Player.cs" />
     <Compile Include="Controller\Events\PlayerJoinedEvent.cs" />
@@ -129,6 +128,9 @@
   <ItemGroup>
     <Resource Include="Resources\monitor_connected.png" />
     <Resource Include="Resources\monitor_disconnected.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\1453489630_f-cross_256.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

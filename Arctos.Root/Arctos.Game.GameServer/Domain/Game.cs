@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Arctos.Game.Middleware.Logic.Model.Model;
 using Arctos.Game.Model;
@@ -8,17 +9,27 @@ namespace ArctosGameServer.Domain
 {
     internal class Game
     {
-        public Game()
+        private readonly GameConfiguration _configuration;
+
+        public Game(GameConfiguration configuration)
         {
-            PlayableMaps = new List<GameArea>();
-            State = GameState.Waiting;
+            _configuration = configuration;
+
+            Reset();
         }
+
+        public int GameWidth
+        {
+            get { return _configuration.Columns; }
+        }
+
+        public int GameHeight { get { return _configuration.Rows; } }
 
         public GameState State { get; set; }
 
-        public List<GameArea> PlayableMaps { get; set; }
+        private List<GameArea> PlayableMaps { get; set; }
 
-        public List<Tuple<int, int>> Path { get; set; }
+        public List<Tuple<int, int>> Path { get; private set; }
 
         /// <summary>
         /// Creates a random path through the fields
@@ -26,19 +37,19 @@ namespace ArctosGameServer.Domain
         /// <param name="width"></param>
         /// <param name="height"></param>
         /// <returns></returns>
-        public List<Tuple<int, int>> CreatePath(int width, int height)
+        private void CreatePath()
         {
             var path = new List<Tuple<int, int>>();
             var r = new Random();
 
             // Add start field
-            var current = new Tuple<int, int>(0, r.Next(0, height - 1));
+            var current = new Tuple<int, int>(0, r.Next(0, GameHeight - 1));
             path.Add(current);
 
             var direction = 0; // 0 -> Right, 1 -> Top, 2 -> Bottom
 
             // Create new fields until the right side is reached
-            while (current.Item1 < height - 1)
+            while (current.Item1 < GameHeight - 1)
             {
                 // Check for possible directions
                 bool[] possibleDirections = { true, true, true };
@@ -47,7 +58,7 @@ namespace ArctosGameServer.Domain
                 possibleDirections[1] = current.Item2 > 0 && direction != 2;
 
                 // Bottom is not possible when there is no bottom field or when the player went top last time
-                possibleDirections[2] = current.Item2 < height - 1 && direction != 1;
+                possibleDirections[2] = current.Item2 < GameHeight - 1 && direction != 1;
 
                 if (possibleDirections.Count(x => x == true) == 0)
                 {
@@ -83,10 +94,12 @@ namespace ArctosGameServer.Domain
 
             // Set path property
             Path = path;
-
-            return path;
         }
 
+        /// <summary>
+        /// Returns the next map
+        /// </summary>
+        /// <returns></returns>
         public GameArea GetAvailableMap()
         {
             if (PlayableMaps.Count > 0)
@@ -96,6 +109,29 @@ namespace ArctosGameServer.Domain
                 return map;
             }
             return null;
+        }
+
+        public void AddMap(GameArea map)
+        {
+            PlayableMaps.Add(map);
+        }
+
+        /// <summary>
+        /// Resets the game state to its initial state
+        /// </summary>
+        public void Reset()
+        {
+            State = GameState.Waiting;
+
+            // Add all maps
+            PlayableMaps = new List<GameArea>();
+            foreach (var gameArea in _configuration.GameAreas)
+            {
+                PlayableMaps.Add(gameArea);
+            }
+
+            // Create a new path
+            CreatePath();
         }
     }
 }
