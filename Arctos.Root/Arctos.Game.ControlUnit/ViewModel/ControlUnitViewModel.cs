@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using System.Timers;
 using Arctos.Game.ControlUnit.Controller;
 using Arctos.Game.ControlUnit.Controller.Events;
@@ -338,6 +339,9 @@ namespace Arctos.Game.ControlUnit.ViewModel
                         ConnectToGame();
                     }
                         break;
+                    case "Discover":
+                        Discover();
+                        break;
                 }
             }
             catch (Exception ex)
@@ -429,6 +433,26 @@ namespace Arctos.Game.ControlUnit.ViewModel
             {
                 this.ClosedGameserverConnection();
                 LogWrite(LogLevel.Error, ex.Message);
+            }
+        }
+
+        private void Discover()
+        {
+            var task = new Task(DiscoverTask);
+            task.Start();
+        }
+
+        private void DiscoverTask()
+        {
+            var client = new DiscoveryServiceClient();
+            var ip = client.Discover();
+            if (ip != null)
+            {
+                GameIP = ip;
+            }
+            else
+            {
+                LogWrite(LogLevel.Info, "Could not find Service");
             }
         }
 

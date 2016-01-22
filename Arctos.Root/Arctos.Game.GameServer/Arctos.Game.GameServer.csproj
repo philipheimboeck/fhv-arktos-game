@@ -77,6 +77,7 @@
     <Compile Include="Server.xaml.cs">
       <DependentUpon>Server.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Service\DiscoveryService.cs" />
     <Compile Include="Service\ClientRequestHandler.cs" />
     <Compile Include="Service\GameTcpServer.cs" />
     <Compile Include="App.xaml.cs">

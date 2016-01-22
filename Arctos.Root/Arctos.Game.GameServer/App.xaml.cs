@@ -45,6 +45,10 @@ namespace ArctosGameServer
             // Start the TCP Service
             _server.StartService();
 
+            // Create and start the DiscoveryService
+            var discovery = new DiscoveryService();
+            discovery.Start();
+
             // Start the game
             BackgroundWorker worker = new BackgroundWorker();
             worker.DoWork += (sender, args) => _game.Loop();

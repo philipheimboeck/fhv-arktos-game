@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Windows;
 using Arctos.Game.GUIClient;
 using Arctos.Game.Middleware.Logic.Model.Client;
@@ -119,7 +120,10 @@ namespace Arctos.View
                             this.ConnectToGame(this.GameServer);
                         }
                     }
-                    break;
+                        break;
+                    case "Discover":
+                        Discover();
+                        break;
                 }
             }
             catch (Exception ex)
@@ -188,6 +192,26 @@ namespace Arctos.View
             catch (Exception ex)
             {
                 this.ShowInformationOverlay("Error while waiting for GameServer: " + ex.Message);
+            }
+        }
+
+        private void Discover()
+        {
+            var task = new Task(DiscoverTask);
+            task.Start();
+        }
+
+        private void DiscoverTask()
+        {
+            var client = new DiscoveryServiceClient();
+            var ip = client.Discover();
+            if (ip != null)
+            {
+                GameServer = ip;
+            }
+            else
+            {
+                ShowInformationOverlay("Could not find Service");
             }
         }
 

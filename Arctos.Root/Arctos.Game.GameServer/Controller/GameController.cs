@@ -46,7 +46,7 @@ namespace ArctosGameServer.Controller
         /// </summary>
         public void Loop()
         {
-            LogLine("Starting server " + _server.FindIp());
+            LogLine("Starting server " + GameTcpServer.FindIp());
 
             while (!ShutdownRequested)
             {

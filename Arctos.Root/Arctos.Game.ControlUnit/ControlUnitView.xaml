@@ -97,7 +97,7 @@
         <Grid HorizontalAlignment="Left" Height="117" Margin="23,176,0,0" VerticalAlignment="Top" Width="400">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="120" />
-                <ColumnDefinition Width="150" />
+                <ColumnDefinition Width="160" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
@@ -115,7 +115,19 @@
             <Button Content="{Binding Path=ButtonRobotStatus}" Grid.Column="2" Grid.Row="1" Width="118" Height="20" HorizontalAlignment="Left" Command="{Binding Path=UpdateCommand}" CommandParameter="WaitForRobot"/>
 
             <Label Content="Game Server:" Grid.Column="0" Grid.Row="2"/>
-            <TextBox Grid.Column="1" Grid.Row="2" Height="23" TextWrapping="Wrap" Text="{Binding Path=GameIP}" Width="120" HorizontalAlignment="Left" />
+            <Grid Grid.Column="1" Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="120" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Column="0" Grid.Row="0" Height="23" TextWrapping="Wrap" Text="{Binding Path=GameIP}" Width="120" HorizontalAlignment="Left" />
+                <Button Grid.Column="1" Grid.Row="0" Width="25" Height="20" VerticalAlignment="Center" Command="{Binding Path=UpdateCommand}" CommandParameter="Discover">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="Resources/1453470754_Refresh.png" Width="20" Height="15"></Image>
+                    </StackPanel>
+                </Button>
+            </Grid>
+            
             <Button Grid.Row="2" Grid.Column="2" Content="{Binding Path=ButtonGameStatus}" HorizontalAlignment="Left" Height="20" VerticalAlignment="Center" Width="118" Command="{Binding Path=UpdateCommand}" CommandParameter="ConnectGame"/>
         </Grid>
 

@@ -156,7 +156,7 @@ namespace ArctosGameServer.Service
             NotifyObservers(new Tuple<Guid, GameEvent>(id, new GameEvent(GameEvent.Type.ConnectionLost, "Connection Closed")));
         }
 
-        public IPAddress FindIp()
+        public static IPAddress FindIp()
         {
             var host = Dns.GetHostEntry(Dns.GetHostName());
             foreach (var address in host.AddressList)
