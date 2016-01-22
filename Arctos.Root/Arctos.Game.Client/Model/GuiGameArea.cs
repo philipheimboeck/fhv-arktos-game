@@ -28,15 +28,24 @@ namespace Arctos.Game.GUIClient
             this.AreaList = new ObservableCollection<GuiArea>();
             this.Path = new List<GuiArea>();
 
-            foreach (var area in gameArea.AreaList)
+            if (gameArea != null) 
             {
-                GuiArea guiArea = new GuiArea(area);
-                AreaList.Add(guiArea);
-            }
+                if (gameArea.AreaList != null)
+                {
+                    foreach (var area in gameArea.AreaList)
+                    {
+                        GuiArea guiArea = new GuiArea(area);
+                        AreaList.Add(guiArea);
+                    }
+                }
 
-            foreach (var pathArea in gameArea.Path)
-            {
-                Path.Add(new GuiArea(pathArea));
+                if (gameArea.Path != null)
+                {
+                    foreach (var pathArea in gameArea.Path)
+                    {
+                        Path.Add(AreaList.FirstOrDefault(x => x.AreaId == pathArea.AreaId));
+                    }
+                }
             }
         }
 
@@ -44,6 +53,16 @@ namespace Arctos.Game.GUIClient
         /// Path to walk
         /// </summary>
         public List<GuiArea> Path { get; set; }
+
+        /// <summary>
+        /// Set Path
+        /// </summary>
+        /// <param name="path"></param>
+        public void SetPath(List<Tuple<int, int>> path)
+        {
+            List<GuiArea> newPath = path.Select(tuple => AreaList.FirstOrDefault(x => x.Row == tuple.Item2 && x.Column == tuple.Item1)).ToList();
+            Path = newPath;
+        }
 
         /// <summary>
         /// All available areas on this game field

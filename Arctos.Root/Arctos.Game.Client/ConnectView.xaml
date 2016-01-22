@@ -7,9 +7,10 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:client="clr-namespace:Arctos.Game.Client"
         mc:Ignorable="d"
-        Title="Arctos Viewer" Height="258.71" Width="370"
+        Title="Arctos Viewer" Height="268.71" Width="378"
         WindowStartupLocation="CenterScreen"
         Icon="Resources/appbar.monitor.play.ico"
+        Closing="ConnectView_OnClosing"
         d:DataContext="{d:DesignInstance view:ConnectViewModel, IsDesignTimeCreatable=True}">
 
     <i:Interaction.Behaviors>
@@ -48,6 +49,7 @@
             </Button>
 
             <Button Grid.Row="2" Grid.Column="1" Width="120" Content="{Binding Path=ButtonConnect}" HorizontalAlignment="Left" Command="{Binding Path=UpdateCommand}" CommandParameter="GuiRequest" Margin="0,5.6" />
+            <Button Grid.Row="2" Grid.Column="1" Width="120" Content="Debug" HorizontalAlignment="Left" Command="{Binding UpdateCommand}" CommandParameter="DebugGui" Margin="0,31,0,-20" />
         </Grid>
 
         <Border BorderThickness="1" Visibility="{Binding Path=ShowGameInformation, Converter={StaticResource BoolToVisibilityConverter}}" Grid.RowSpan="3" Background="#CC560000">

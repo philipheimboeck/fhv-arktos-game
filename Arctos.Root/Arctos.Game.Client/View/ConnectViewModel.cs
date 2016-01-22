@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows;
 using Arctos.Game.GUIClient;
@@ -20,7 +22,7 @@ namespace Arctos.View
             set
             {
                 _closeTrigger = value;
-                this.CurrentGameView = null;
+                ResetOnClose();
                 OnPropertyChanged();
             }
         }
@@ -121,6 +123,71 @@ namespace Arctos.View
                         }
                     }
                         break;
+
+                    case "DebugGui":
+                    {
+                        #region debug example
+                            Game.Middleware.Logic.Model.Model.Game game = new Game.Middleware.Logic.Model.Model.Game();
+                            game.GameArea = new GameArea
+                            {
+                                AreaList = new List<Area>
+                                {
+                                    new Area
+                                    {
+                                        Row = 0,
+                                        Column = 0
+                                    },
+                                    new Area
+                                    {
+                                        Row = 0,
+                                        Column = 1
+                                    },
+                                    new Area
+                                    {
+                                        Row = 0,
+                                        Column =2
+                                    },
+                                    new Area
+                                    {
+                                        Row = 1,
+                                        Column = 0
+                                    },
+                                    new Area
+                                    {
+                                        Row = 1,
+                                        Column = 1
+                                    },
+                                    new Area
+                                    {
+                                        Row = 1,
+                                        Column =2
+                                    },
+                                    new Area
+                                    {
+                                        Row = 2,
+                                        Column =0
+                                    },
+                                    new Area
+                                    {
+                                        Row = 2,
+                                        Column =1
+                                    },
+                                
+                                    new Area
+                                    {
+                                        Row = 2,
+                                        Column =2
+                                    }
+                                }
+                            };
+                        #endregion
+
+                            this.CurrentGameView = new GameView { DataContext = new GameViewModel(game, this.PlayerName) };
+                        this.CurrentGameView.Show();
+                    }
+                        break;
+
+                    // Discover GameServers in this network
                     case "Discover":
                         Discover();
                         break;
@@ -178,7 +245,7 @@ namespace Arctos.View
                     {
                         this.GameConnected = true;
 
-                        this.CurrentGameView = new GameView {DataContext = new GameViewModel(this.GameClient, gameArea)};
+                        this.CurrentGameView = new GameView {DataContext = new GameViewModel(this.GameClient, gameArea, this.PlayerName)};
                         this.CurrentGameView.Show();
                     }
                     else
@@ -195,12 +262,30 @@ namespace Arctos.View
             }
         }
 
+        /// <summary>
+        /// Reset Connection on ViewClose
+        /// </summary>
+        private void ResetOnClose()
+        {
+            this.CurrentGameView = null;
+            if(this.GameClient != null) this.GameClient.Close();
+        }
+
+
+        #region Discover Gameserver
+
+        /// <summary>
+        /// Discover GameServer
+        /// </summary>
         private void Discover()
         {
             var task = new Task(DiscoverTask);
             task.Start();
         }
 
+        /// <summary>
+        /// Discover GameServer Task
+        /// </summary>
         private void DiscoverTask()
         {
             var client = new DiscoveryServiceClient();
@@ -214,6 +299,8 @@ namespace Arctos.View
                 ShowInformationOverlay("Could not find Service");
             }
         }
+
+        #endregion
 
         #region ViewHelper
 

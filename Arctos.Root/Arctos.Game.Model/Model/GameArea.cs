@@ -14,6 +14,7 @@ namespace Arctos.Game.Model
         public GameArea()
         {
             this.AreaList = new List<Area>();
+            this.Path = new List<Area>();
         }
 
         /// <summary>

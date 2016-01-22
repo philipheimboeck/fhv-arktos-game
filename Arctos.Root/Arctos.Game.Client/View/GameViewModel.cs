@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Windows.Threading;
 using Arctos.Controller;
 using Arctos.Controller.Events;
 using Arctos.Game.GUIClient;
@@ -18,7 +21,7 @@ namespace Arctos.View
     {
         #region Properties
 
-        private ViewController _controller;
+        private ViewController Controller { get; set; }
 
         private bool closeTrigger;
         public bool CloseTrigger
@@ -64,29 +67,92 @@ namespace Arctos.View
             }
         }
 
+        private string _playerName;
+        public string PlayerName
+        {
+            get { return _playerName; }
+            set
+            {
+                _playerName = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _playerTime = "00:00";
+        public string PlayerTime
+        {
+            get { return _playerTime; }
+            set
+            {
+                _playerTime = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private Stopwatch StopWatchTimer;
+        private DispatcherTimer GameTimer;
+
         private BackgroundWorker ReinitGameStateWorker { get; set; }
 
         #endregion
+
+        /// <summary>
+        /// Parameterless Constructor for WPF
+        /// </summary>
+        public GameViewModel() { }
+
+        /// <summary>
+        /// Debug Constructor
+        /// </summary>
+        /// <param name="game"></param>
+        public GameViewModel(Game.Middleware.Logic.Model.Model.Game game, string playerName)
+        {
+            try
+            {
+                StartStopwatch(true);
+
+                this.PlayerName = playerName;
+
+                this.GUIGameInstance = new GuiGameArea(game.GameArea)
+                {
+                    AreaWidth = 800,
+                    AreaHeight = 600
+                };
+
+
+            }
+            catch (Exception ex)
+            {
+                this.ShowInformationOverlay(ex.Message);
+                ViewHelper.Wait(4);
+                this.CloseTrigger = true;
+            }
+        }
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="client"></param>
         /// <param name="game"></param>
-        public GameViewModel(GameTcpClient client, Game.Middleware.Logic.Model.Model.Game game)
+        /// <param name="playerName"></param>
+        public GameViewModel(GameTcpClient client, Game.Middleware.Logic.Model.Model.Game game, string playerName)
         {
             try
             {
-                _controller = new ViewController(client, game.GameArea);
-                _controller.AreaUpdateEvent += OnAreaUpdateEvent;
-                _controller.PlayerLeftEvent += OnPlayerLeftEvent;
-                _controller.GameReadyEvent += OnGameReadyEvent;
-                _controller.GameStartEvent += OnGameStartEvent;
-                _controller.GameFinishEvent += OnGameFinishEvent;
-                _controller.PlayerFinishEvent += OnPlayerFinishEvent;
-                _controller.PlayerKickedEvent += ControllerOnPlayerKickedEvent;
-                _controller.PlayerLostEvent += ControllerOnPlayerLostEvent;
-                _controller.ErrorEvent += ControllerOnErrorEvent;
+                this.PlayerName = playerName;
+
+                Controller = new ViewController(client, game.GameArea);
+                Controller.AreaUpdateEvent += OnAreaUpdateEvent;
+                Controller.PlayerLeftEvent += OnPlayerLeftEvent;
+                Controller.GameReadyEvent += OnGameReadyEvent;
+                Controller.GameStartEvent += OnGameStartEvent;
+                Controller.GameResetEvent += ControllerOnGameResetEvent;
+                Controller.GameFinishEvent += OnGameFinishEvent;
+                Controller.PlayerFinishEvent += OnPlayerFinishEvent;
+                Controller.PlayerKickedEvent += ControllerOnPlayerKickedEvent;
+                Controller.PlayerLostEvent += ControllerOnPlayerLostEvent;
+                Controller.ErrorEvent += ControllerOnErrorEvent;
+                Controller.PlayerJoinedEvent += ControllerOnPlayerJoinedEvent;
                 
                 this.GUIGameInstance = new GuiGameArea(game.GameArea)
                 {
@@ -132,7 +198,80 @@ namespace Arctos.View
             ReinitGameStateWorker.CancelAsync();
         }
 
+        /// <summary>
+        /// Start and show the Stopwatch
+        /// </summary>
+        private void StartStopwatch(bool withReset)
+        {
+            if (this.GameTimer == null || withReset) 
+            { 
+                this.GameTimer = new DispatcherTimer();
+                this.GameTimer.Tick += delegate
+                {
+                    TimeSpan t = TimeSpan.FromMilliseconds(this.StopWatchTimer.ElapsedMilliseconds);
+                    string answer = string.Format("{0:D2}m : {1:D2}s",
+                        t.Minutes,
+                        t.Seconds);
+                    PlayerTime = answer;
+                };
+                this.GameTimer.Interval = new TimeSpan(0, 0, 0, 0, 1);
+            }
+
+            if (this.StopWatchTimer == null || withReset) 
+                this.StopWatchTimer = new Stopwatch();
+
+            this.StopWatchTimer.Start();
+            this.GameTimer.Start();
+        }
+
+        /// <summary>
+        /// Pause Stopwatch
+        /// </summary>
+        private void PauseStopwatch()
+        {
+            if (this.StopWatchTimer != null) this.StopWatchTimer.Stop();
+            if(this.GameTimer != null) this.GameTimer.Stop();
+        }
+
+        /// <summary>
+        /// Pause Stopwatch
+        /// </summary>
+        private void ResetStopwatch()
+        {
+            if (this.StopWatchTimer != null) this.StopWatchTimer.Stop();
+            if(this.GameTimer != null) this.GameTimer.Stop();
+            this.PlayerTime = "00m : 00s";
+        }
+
         #region Events
+
+        /// <summary>
+        /// Game Reset Event
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="gameResetEventArgs"></param>
+        private void ControllerOnGameResetEvent(object sender, GameResetEventArgs gameResetEventArgs)
+        {
+            this.HideInformationOverlay();
+            this.ResetStopwatch();
+            this.ResetGame();
+            this.ShowInformationOverlay("Game is Over! Wait for new Games..");
+        }
+
+
+        /// <summary>
+        /// Reset to Empty Game
+        /// </summary>
+        private void ResetGame()
+        {
+            if (this.GUIGameInstance == null) return;
+
+            this.GUIGameInstance.Path = new List<GuiArea>();
+            foreach (GuiArea area in this.GUIGameInstance.AreaList)
+            {
+                area.Status = Area.AreaStatus.None;
+            }
+        }
 
         /// <summary>
         /// Received Event from ViewController
@@ -141,7 +280,7 @@ namespace Arctos.View
         /// <param name="errorEventArgs"></param>
         private void ControllerOnErrorEvent(object sender, ErrorEventArgs errorEventArgs)
         {
-            this._controller.GameClient = null;
+            this.Controller.GameClient = null;
 
             this.ShowInformationOverlay(errorEventArgs.Message);
 
@@ -155,8 +294,9 @@ namespace Arctos.View
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="playerFinishEventArgs"></param>
-        private void OnPlayerFinishEvent(object sender, PlayerFinishEventArgs playerFinishEventArgs)
+        private void OnPlayerFinishEvent(object sender, PlayerFinishEvent playerFinishEventArgs)
         {
+            this.PauseStopwatch();
             this.ShowInformationOverlay("You finished this Game in " + playerFinishEventArgs.Duration / 1000 + " seconds.");
         }
         
@@ -169,11 +309,9 @@ namespace Arctos.View
         {
             this.ShowInformationOverlay(gameFinishEventArgs.Won
                 ? "CONGRATULATION - you won"
-                : "SORRY - you lost this game");
-
-            ViewHelper.Wait(4);
-
-            this.CloseTrigger = true;
+                : "SORRY - you lost this game", true);
+            
+            //this.CloseTrigger = true;
         }
 
         /// <summary>
@@ -210,10 +348,11 @@ namespace Arctos.View
         {
             this.ShowInformationOverlay("READY ....");
 
-            _controller.GameArea.setPath(receivedAreaUpdate.Waypoints.Select(x => new Tuple<int, int>(x.Item1, x.Item2)).ToList());
+            //Controller.GameArea.setPath(receivedAreaUpdate.Waypoints.Select(x => new Tuple<int, int>(x.Item1, x.Item2)).ToList());
+            this.GUIGameInstance.SetPath(receivedAreaUpdate.Waypoints.Select(x => new Tuple<int, int>(x.Item1, x.Item2)).ToList());
 
             // Show Path step by step
-            foreach (Area areaPath in _controller.GameArea.Path)
+            foreach (Area areaPath in Controller.GameArea.Path)
             {
                 var guiArea =
                     this.GUIGameInstance.AreaList.FirstOrDefault(area => area.AreaId.Equals(areaPath.AreaId));
@@ -222,6 +361,19 @@ namespace Arctos.View
 
                 ViewHelper.Wait(1);
             }
+
+            this.StartStopwatch(true);
+        }
+
+        /// <summary>
+        /// Player joined after connection failure
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="playerJoinedEventArgs"></param>
+        private void ControllerOnPlayerJoinedEvent(object sender, PlayerJoinedEventArgs playerJoinedEventArgs)
+        {
+            this.ShowInformationOverlay("Welcome Back!");
+            this.StartStopwatch(false);
         }
 
         /// <summary>
@@ -231,9 +383,19 @@ namespace Arctos.View
         /// <param name="playerLostEventArgs"></param>
         private void ControllerOnPlayerLostEvent(object sender, PlayerLostEventArgs playerLostEventArgs)
         {
-            this.ShowInformationOverlay(playerLostEventArgs.IsLost
-                ? "Please wait.. you lost the connection to your Robot."
-                : "Welcome back your Robot!");
+            this.ShowInformationOverlay("Please wait... lost the connection to your Control Unit.", true);
+            this.PauseStopwatch();
+        }
+
+        /// <summary>
+        /// PlayerLeft Event
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="playerLeftEventArgs"></param>
+        private void OnPlayerLeftEvent(object sender, PlayerLeftEventArgs playerLeftEventArgs)
+        {
+            this.ShowInformationOverlay("Please wait... lost the connection to your Robot.", true);
+            this.PauseStopwatch();
         }
 
         /// <summary>
@@ -244,8 +406,9 @@ namespace Arctos.View
         private void ControllerOnPlayerKickedEvent(object sender, PlayerKickedEventArgs playerKickedEventArgs)
         {
             // View is invalid now, close it
+            this.PauseStopwatch();
             this.ShowInformationOverlay("You got kicked from the Game.. closing now");
-            _controller.SendEvent(GameEvent.Type.GuiLeft, null);
+            Controller.SendEvent(GameEvent.Type.GuiLeft, null);
             this.CloseTrigger = true;
         }
 
@@ -261,15 +424,8 @@ namespace Arctos.View
                 i.Status = Area.AreaStatus.None;
                 return i;
             }).ToList();
-        }
 
-        /// <summary>
-        /// PlayerLeft Event
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="playerLeftEventArgs"></param>
-        private void OnPlayerLeftEvent(object sender, PlayerLeftEventArgs playerLeftEventArgs)
-        {
+            this.StartStopwatch(true);
         }
 
         /// <summary>
@@ -320,6 +476,32 @@ namespace Arctos.View
 
         #region View Helper
 
+        /// <summary>
+        /// Show a message overlay
+        /// </summary>
+        /// <param name="message"></param>
+        private void ShowInformationOverlay(string message, bool keepMessageVisible)
+        {
+            if (keepMessageVisible)
+            {
+                this.GameInformation = message;
+                this.ShowGameInformation = true;
+            }
+            else
+            {
+                this.ShowInformationOverlay(message);
+            }
+        }
+
+        /// <summary>
+        /// Hides the message overlay
+        /// </summary>
+        private void HideInformationOverlay()
+        {
+            this.ShowGameInformation = false;
+            this.GameInformation = "";
+        }
+        
         /// <summary>
         /// Show a message overlay
         /// </summary>

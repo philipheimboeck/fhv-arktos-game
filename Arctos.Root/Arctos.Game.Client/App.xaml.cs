@@ -13,10 +13,5 @@ namespace Arctos.Game.GUIClient
             var connectWindow = new ConnectView {DataContext = new ConnectViewModel()};
             connectWindow.Show();
         }
-
-        private void App_OnExit(object sender, ExitEventArgs e)
-        {
-           // throw new System.NotImplementedException();
-        }
     }
 }

@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System.ComponentModel;
+using System.Windows;
+using Arctos.Game.GUIClient;
 
 namespace Arctos
 {
@@ -10,6 +12,11 @@ namespace Arctos
         public ConnectView()
         {
             InitializeComponent();
+        }
+
+        private void ConnectView_OnClosing(object sender, CancelEventArgs e)
+        {
+            App.Current.Shutdown();
         }
     }
 }

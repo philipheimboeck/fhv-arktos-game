@@ -68,13 +68,15 @@
     <Compile Include="ConnectView.xaml.cs">
       <DependentUpon>ConnectView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controller\Events\GameResetEvent.cs" />
     <Compile Include="Controller\Events\GameStartEvent.cs" />
     <Compile Include="Controller\Events\GameReadyEvent.cs" />
     <Compile Include="Controller\Events\GameFinishEvent.cs" />
     <Compile Include="Controller\Events\ErrorEvent.cs" />
+    <Compile Include="Controller\Events\PlayerJoinedEvent.cs" />
     <Compile Include="Controller\Events\PlayerLostEvent.cs" />
     <Compile Include="Controller\Events\PlayerKickedEvent.cs" />
-    <Compile Include="Controller\Events\PlayerFinishEventArgs.cs" />
+    <Compile Include="Controller\Events\PlayerFinishEvent.cs" />
     <Compile Include="Controller\Events\PlayerLeftEvent.cs" />
     <Compile Include="Controller\Events\AreaUpdateEvent.cs" />
     <Compile Include="Controller\ViewController.cs" />

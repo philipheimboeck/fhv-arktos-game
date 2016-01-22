@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Windows;
 using Arctos.Controller.Events;
 using Arctos.Game.GUIClient;
 using Arctos.Game.Middleware.Logic.Model.Client;
@@ -22,7 +20,7 @@ namespace Arctos.Controller
         /// <summary>
         /// Area and Status
         /// </summary>
-        public List<Tuple<GuiArea, Area.AreaStatus>> WrongPath { get; set; }
+        private List<Tuple<GuiArea, Area.AreaStatus>> WrongPath { get; set; }
 
         private readonly BackgroundWorker eventBackgroundWorker = new BackgroundWorker();
 
@@ -35,6 +33,8 @@ namespace Arctos.Controller
         public event PlayerKickedEventHandler PlayerKickedEvent;
         public event PlayerLostEventHandler PlayerLostEvent;
         public event ErrorEventHandler ErrorEvent;
+        public event PlayerJoinedEventHandler PlayerJoinedEvent;
+        public event GameResetEventHandler GameResetEvent;
 
         #endregion
 
@@ -96,6 +96,12 @@ namespace Arctos.Controller
                     }
                     break;
 
+                // Player joined after connection failure
+                case GameEvent.Type.PlayerJoined:
+                    {
+                        OnPlayerJoinedEvent(new PlayerJoinedEventArgs());
+                    }
+                    break;
 
                 // Player left, close the View
                 case GameEvent.Type.PlayerKicked:
@@ -125,10 +131,17 @@ namespace Arctos.Controller
                     }
                     break;
 
+                // Game Reset
+                case GameEvent.Type.GameReset:
+                    {
+                        OnGameResetEvent(new GameResetEventArgs());
+                    }
+                    break;
+
                 // Set all Areas back
                 case GameEvent.Type.PlayerFinish:
                     {
-                        OnPlayerFinishEvent(new PlayerFinishEventArgs((double)receivedEvent.Data));
+                        OnPlayerFinishEvent(new PlayerFinishEvent((double)receivedEvent.Data));
                     }
                     break;
             }
@@ -173,6 +186,11 @@ namespace Arctos.Controller
 
         #region EventHandlers
 
+        protected virtual void OnPlayerJoinedEvent(PlayerJoinedEventArgs e)
+        {
+            if(PlayerJoinedEvent != null) PlayerJoinedEvent.Invoke(this, e);
+        }
+
         protected virtual void OnErrorEvent(ErrorEventArgs e)
         {
             if (ErrorEvent != null) ErrorEvent.Invoke(this, e);
@@ -213,7 +231,12 @@ namespace Arctos.Controller
             if (GameStartEvent != null) GameStartEvent.Invoke(this, e);
         }
 
-        protected virtual void OnPlayerFinishEvent(PlayerFinishEventArgs e)
+        protected virtual void OnGameResetEvent(GameResetEventArgs e)
+        {
+            if (GameResetEvent != null) GameResetEvent.Invoke(this, e);
+        }
+
+        protected virtual void OnPlayerFinishEvent(PlayerFinishEvent e)
         {
             if (PlayerFinishEvent != null) PlayerFinishEvent.Invoke(this, e);
         }

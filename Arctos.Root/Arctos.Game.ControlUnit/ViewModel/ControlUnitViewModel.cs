@@ -34,8 +34,9 @@ namespace Arctos.Game.ControlUnit.ViewModel
         private const string DISCONNECTED = "Disconnected";
         private const string CONNECTED = "Connected";
 
-        private readonly BackgroundWorker ControlUnitLoopWorker = new BackgroundWorker();
-        private readonly BackgroundWorker ReceiveEventsLoopWorker = new BackgroundWorker();
+        private readonly BackgroundWorker ControlUnitLoopWorker;
+        private readonly BackgroundWorker ReceiveEventsLoopWorker;
+        private readonly BackgroundWorker ConnectRobotWorker;
 
         private readonly GamepadController GamepadController;
         private readonly RobotController RobotController;
@@ -194,16 +195,18 @@ namespace Arctos.Game.ControlUnit.ViewModel
                 RobotController = new RobotController(comPort);
                 RobotController.HeartbeatEvent += RobotControllerOnHeartbeatEvent;
                 RobotController.RfidEvent += RobotControllerOnRfidEvent;
+                
+                ControlUnitLoopWorker = new BackgroundWorker { WorkerSupportsCancellation = true, WorkerReportsProgress = true};
+                ReceiveEventsLoopWorker = new BackgroundWorker { WorkerSupportsCancellation = true, WorkerReportsProgress = true };
+                
+                this.ConnectRobotWorker = new BackgroundWorker { WorkerSupportsCancellation = true, WorkerReportsProgress = true };
+                this.ConnectRobotWorker.DoWork += delegate { ConnectedRobotTask(comPort); };
 
                 // Init ControlUnit Loop worker
                 ControlUnitLoopWorker.DoWork += RunControlUnitLoop;
-                ControlUnitLoopWorker.WorkerReportsProgress = true;
-                ControlUnitLoopWorker.WorkerSupportsCancellation = true;
 
                 // Init Receive Events Loop worker
                 ReceiveEventsLoopWorker.DoWork += ReceiveEventsWaiterOnWork;
-                ControlUnitLoopWorker.WorkerReportsProgress = true;
-                ControlUnitLoopWorker.WorkerSupportsCancellation = true;
             }
             catch (Exception ex)
             {
@@ -218,28 +221,31 @@ namespace Arctos.Game.ControlUnit.ViewModel
         {
             if (this.GameStatus) return;
 
-            BackgroundWorker bgw = new BackgroundWorker();
-            bgw.DoWork += delegate
+            BackgroundWorker ConnectGameWorker = new BackgroundWorker { WorkerSupportsCancellation = true };
+            ConnectGameWorker.DoWork += delegate
             {
                 try
                 {
                     if (GameStatus == false)
                     {
                         LogWrite(LogLevel.Info, "Connect to Server on " + this.GameIP);
+                        if (GameClient != null)
+                        {
+                            GameClient.Close();
+                        }
+
                         GameClient = new GameTcpClient(this.GameIP);
                         GameClient.ReceivedDataEvent += GameClientOnReceivedDataEvent;
-
+                       
                         if (GameClient.Connected)
                         {
                             this.SendEvent(GameEvent.Type.PlayerRequest, this.PlayerName);
                             LogWrite(LogLevel.Info, "Ask for Game with Playername = " + this.PlayerName);
                             ReceiveEventsLoopWorker.RunWorkerAsync();
-                            //ButtonGameStatus = GAME_DISCONNECT;
                         }
                     }
                     else
                     {
-                        //this.ClosedGameserverConnection();
                         ReceiveEventsLoopWorker.CancelAsync();
                     }
                 }
@@ -249,7 +255,8 @@ namespace Arctos.Game.ControlUnit.ViewModel
                     LogWrite(LogLevel.Error, ex.Message);
                 }
             };
-            bgw.RunWorkerAsync();
+
+            ConnectGameWorker.RunWorkerAsync();
         }
 
         /// <summary>
@@ -262,7 +269,10 @@ namespace Arctos.Game.ControlUnit.ViewModel
             GameStatus = false;
             GameClient = null;
 
-            this.ControlUnitLoopWorker.CancelAsync();
+            this.ReceiveEventsLoopWorker.CancelAsync();
+
+            //if (ReceiveEventsLoopWorker.IsBusy)
+            //this.ControlUnitLoopWorker.CancelAsync();
         }
 
         /// <summary>
@@ -284,37 +294,43 @@ namespace Arctos.Game.ControlUnit.ViewModel
                 LogWrite(LogLevel.Error, ex.Message);
             }
 
-            BackgroundWorker bgw = new BackgroundWorker();
-            bgw.DoWork += delegate
+            if (!this.ConnectRobotWorker.IsBusy)
+                this.ConnectRobotWorker.RunWorkerAsync();
+        }
+
+        /// <summary>
+        /// Connected to Robot
+        /// </summary>
+        /// <param name="comPort"></param>
+        private void ConnectedRobotTask(string comPort)
+        {
+            try
             {
-                try
+                this.RobotStatus = false;
+                this.ControlUnitLoopWorker.CancelAsync();
+                do
                 {
-                    this.RobotStatus = false;
+                    RobotController.ReadBluetoothData();
+                    // Wait until robot has connected
+                } while (this.IsWaitingForRobot);
+
+                RobotStatusText = "Connected to Port " + comPort;
+                LogWrite(LogLevel.Info, RobotStatusText);
+
+                IsDriveAllowed = true;
+                if (this.ControlUnitLoopWorker.IsBusy)
                     this.ControlUnitLoopWorker.CancelAsync();
-                    do
-                    {
-                        RobotController.ReadBluetoothData();
-                        // Wait until robot has connected
-                    } while (this.IsWaitingForRobot);
 
-                    RobotStatusText = "Connected to Port " + comPort;
-                    LogWrite(LogLevel.Info, RobotStatusText);
-
-                    IsDriveAllowed = true;
-                    if (this.ControlUnitLoopWorker.IsBusy)
-                        this.ControlUnitLoopWorker.CancelAsync();
-
+                if (!this.ControlUnitLoopWorker.IsBusy)
                     this.ControlUnitLoopWorker.RunWorkerAsync();
-                }
-                catch (Exception ex)
-                {
-                    this.RobotStatus = false;
-                    this.ButtonRobotStatus = DISCONNECTED;
-                    RobotStatusText = ex.Message;
-                    LogWrite(LogLevel.Error, ex.Message);
-                }
-            };
-            bgw.RunWorkerAsync();
+            }
+            catch (Exception ex)
+            {
+                this.RobotStatus = false;
+                this.ButtonRobotStatus = DISCONNECTED;
+                RobotStatusText = ex.Message;
+                LogWrite(LogLevel.Error, ex.Message);
+            }
         }
 
         /// <summary>
@@ -463,6 +479,8 @@ namespace Arctos.Game.ControlUnit.ViewModel
         /// </summary>
         private void SendPlayerLeft()
         {
+            this.GameStatus = false;
+            this.GameStatusText = DISCONNECTED;
             this.LogWrite(LogLevel.Info, "Lost connection to Robot, say goodbye to GameServer");
             this.SendEvent(GameEvent.Type.PlayerLeft, null);
         }
@@ -472,7 +490,8 @@ namespace Arctos.Game.ControlUnit.ViewModel
         /// </summary>
         private void SendPlayerRejoined()
         {
-            //this.SendEvent(GameEvent.Type.PlayerRejoined, null);
+            this.LogWrite(LogLevel.Info, "Asked to rejoin game after lost connection to Robot");
+            this.SendEvent(GameEvent.Type.PlayerRequest, this.PlayerName);
         }
 
         /// <summary>
@@ -486,6 +505,7 @@ namespace Arctos.Game.ControlUnit.ViewModel
             {
                 if (GameClient != null && GameClient.Connected)
                 {
+                    LogWrite(LogLevel.Info, "EventType: " + type +", Data: " + data);
                     GameClient.Send(new GameEvent(type, data));
                 }
             }
@@ -582,7 +602,7 @@ namespace Arctos.Game.ControlUnit.ViewModel
         private void CheckHeartbeat(object sender, EventArgs elapsed)
         {
             var heartbeatDifference = Math.Abs((DateTime.Now - this.LastReceivedHeartbeat).TotalSeconds);
-            if (heartbeatDifference > 3)
+            if (heartbeatDifference > 10)
             {
                 if (this.RobotStatus)
                 {

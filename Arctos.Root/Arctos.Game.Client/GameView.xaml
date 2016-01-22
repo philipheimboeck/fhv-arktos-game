@@ -7,7 +7,7 @@
         xmlns:view="clr-namespace:Arctos.View"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         mc:Ignorable="d"
-        Title="Arctos View" Height="500" Width="500"
+        Title="Arctos View" Height="800" Width="600"
         WindowStyle="None"
         WindowStartupLocation="CenterScreen" WindowState="Maximized"
         d:DataContext="{d:DesignInstance view:GameViewModel, IsDesignTimeCreatable=True}">
@@ -22,6 +22,11 @@
     </i:Interaction.Behaviors>
 
     <Grid VerticalAlignment="Stretch">
+
+        <Grid Panel.ZIndex="101" Margin="20,20,312,645">
+            <Label Content="{Binding PlayerTime, UpdateSourceTrigger=PropertyChanged, FallbackValue=Time:}" Height="45" Foreground="#FF1A00C1" FontFamily="Buxton Sketch" FontSize="35" VerticalAlignment="Top"/>
+            <Label Content="{Binding PlayerName, UpdateSourceTrigger=PropertyChanged, FallbackValue=PLAYER}" Foreground="#FF1A00C1" FontFamily="Buxton Sketch" FontSize="40" Height="67" VerticalAlignment="Top" Margin="0,35,0,0"  FontWeight="Bold"/>
+        </Grid>
 
         <gameGui:GridAwareItemsControl  ItemsSource="{Binding Path=GUIGameInstance.AreaList, UpdateSourceTrigger=PropertyChanged}">
             <ItemsControl.ItemsPanel>
@@ -47,7 +52,7 @@
         </gameGui:GridAwareItemsControl>
 
 
-        <Border BorderThickness="1" Visibility="{Binding Path=ShowGameInformation, Converter={StaticResource BoolToVisibilityConverter}}" Grid.RowSpan="3" Background="#7F530000">
+        <Border BorderThickness="1" Visibility="{Binding Path=ShowGameInformation, Converter={StaticResource BoolToVisibilityConverter}}" Grid.RowSpan="3" Background="#7F999999">
             <Grid>
                 <TextBlock Margin="0" TextWrapping="Wrap" Text="{Binding Path=GameInformation}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24" FontWeight="Bold" Foreground="#7EFFFFFF"/>
             </Grid>
