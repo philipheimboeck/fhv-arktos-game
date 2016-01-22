@@ -8,9 +8,9 @@ namespace Arctos.Game.MapGenerator
     /// </summary>
     public partial class GameView : Window
     {
-        public GameView(RobotViewModel robotViewModel)
+        public GameView(RobotViewModel robotViewModel, int columns, int rows)
         {
-            this.DataContext = new Arctos.View.GameViewModel(robotViewModel, 3, 3);
+            this.DataContext = new GameViewModel(robotViewModel, columns, rows);
             InitializeComponent();
         }
     }

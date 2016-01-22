@@ -2,7 +2,7 @@
 using System.Windows.Media;
 using Arctos.Game.Model;
 
-namespace Arctos.Game.MapGenerator
+namespace Arctos.Game.MapGenerator.Model
 {
     /// <summary>
     /// The GuiArea indicates where the robot has to drive

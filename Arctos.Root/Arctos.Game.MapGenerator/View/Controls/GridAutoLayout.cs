@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 
-namespace Arctos.Game.MapGenerator
+namespace Arctos.Game.MapGenerator.View.Controls
 {
     public class GridAutoLayout
     {

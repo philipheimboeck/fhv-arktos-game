@@ -4,7 +4,7 @@ using System.Linq;
 using System.Xml.Serialization;
 using Arctos.Game.Model;
 
-namespace Arctos.Game.MapGenerator
+namespace Arctos.Game.MapGenerator.Model
 {
     [Serializable]
     public class GuiGameArea : PropertyChangedBase

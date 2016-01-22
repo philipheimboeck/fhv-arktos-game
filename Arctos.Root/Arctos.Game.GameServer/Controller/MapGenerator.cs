@@ -83,7 +83,6 @@ namespace ArctosGameServer.Controller
 
             var map = new GameArea()
             {
-                Name = "Map 1",
                 AreaList = areas,
                 StartField = new Area()
                 {

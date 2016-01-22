@@ -53,11 +53,6 @@ namespace Arctos.Game.Model
             }
         }
 
-        /// <summary>
-        /// Game Map Name
-        /// </summary>
-        public string Name { get; set; }
-
         public Area StartField { get; set; }
 
         public void setPath(List<Tuple<int, int>> path)

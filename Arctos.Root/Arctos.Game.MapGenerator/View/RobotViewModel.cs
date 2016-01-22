@@ -81,6 +81,64 @@ namespace Arctos.Game.MapGenerator.View
             }
         }
 
+        private bool _gamepadStatus;
+        public bool GamepadStatus
+        {
+            get
+            {
+                return _gamepadStatus;
+            }
+
+            set
+            {
+                _gamepadStatus = value;
+                OnPropertyChanged();
+            }
+        }
+
+
+        private GameView _gameView;
+        private GameView GameView
+        {
+            get
+            {
+                return _gameView;
+            }
+
+            set
+            {
+                _gameView = value;
+            }
+        }
+        
+        private int _gameViewColumns;
+        public int GameViewColumns
+        {
+            get
+            {
+                return _gameViewColumns;
+            }
+
+            set
+            {
+                _gameViewColumns = value;
+            }
+        }
+
+        private int _gameViewRows;
+        public int GameViewRows
+        {
+            get
+            {
+                return _gameViewRows;
+            }
+
+            set
+            {
+                _gameViewRows = value;
+            }
+        }
+        
         public event RFIDUpdateEventHandler RFIDUpdateEvent;
         #endregion
 
@@ -100,7 +158,12 @@ namespace Arctos.Game.MapGenerator.View
                 // Init Gamepad Controller
                 GamepadController = new GamepadController();
                 GamepadController.Subscribe(this);
-                
+
+                if (GamepadController.IsConnected())
+                {
+                    GamepadStatus = true;
+                }
+
                 // Init Robot controller
                 RobotController = new RobotController(comPort);
                 RobotController.HeartbeatEvent += RobotControllerOnHeartbeatEvent;
@@ -110,9 +173,6 @@ namespace Arctos.Game.MapGenerator.View
                 ControlUnitLoopWorker.DoWork += RunControlUnitLoop;
                 ControlUnitLoopWorker.WorkerReportsProgress = true;
                 ControlUnitLoopWorker.WorkerSupportsCancellation = true;
-
-                GameView gameView = new GameView(this);
-                gameView.Show();
             }
             catch (Exception ex)
             {
@@ -171,6 +231,8 @@ namespace Arctos.Game.MapGenerator.View
             bgw.RunWorkerAsync();
         }
 
+        #region Commands
+
         /// <summary>
         /// Execute Commands from ViewModel
         /// </summary>
@@ -187,7 +249,19 @@ namespace Arctos.Game.MapGenerator.View
                         this.WaitForRobot(RobotCOMPort);
                     }
                         break;
-
+                    case "GenerateView":
+                        {
+                            if (GameViewColumns > 0 && GameViewRows > 0)
+                            {
+                                if (GameView != null)
+                                {
+                                    GameView.Hide();
+                                }
+                                GameView = new GameView(this, GameViewColumns, GameViewRows);
+                                GameView.Show();
+                            }
+                        }
+                        break;
                     default:
                         break;
                 }
@@ -197,7 +271,9 @@ namespace Arctos.Game.MapGenerator.View
                 LogWrite(LogLevel.Error, ex.Message);
             }
         }
-        
+
+        #endregion
+
         #region Robot Events
 
         /// <summary>
@@ -235,7 +311,7 @@ namespace Arctos.Game.MapGenerator.View
         }
 
         /// <summary>
-        /// Send Area Update on RFID read
+        /// Send RFID Update on RFID read
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="receivedDataEventArgs"></param>
@@ -346,6 +422,16 @@ namespace Arctos.Game.MapGenerator.View
             {
                 // Driving values changed, therefore mark as dirty
                 _movementDirty = true;
+            }
+
+            if (value.Type.Equals(GamepadController.GamepadControllerEvent.EventType.ControllerConnected))
+            {
+                GamepadStatus = true;
+            }
+
+            if (value.Type.Equals(GamepadController.GamepadControllerEvent.EventType.ControllerDisconnected))
+            {
+                GamepadStatus = false;
             }
         }
 
