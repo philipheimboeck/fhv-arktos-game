@@ -151,6 +151,7 @@ namespace ArctosGameServer.Domain
             Duration = new TimeSpan(0, 0, 0, 0);
             FinishedGame = false;
             LastVisited = null;
+            Location = null;
             Map = null;
         }
     }

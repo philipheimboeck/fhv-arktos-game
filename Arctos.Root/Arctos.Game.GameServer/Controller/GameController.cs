@@ -58,7 +58,7 @@ namespace ArctosGameServer.Controller
                 foreach (var p in toRemove)
                 {
                     RemovePlayer(p);
-                    RemoveGUI(p);
+                    RemoveGui(p);
                 }
 
                 // Process all received events
@@ -98,6 +98,13 @@ namespace ArctosGameServer.Controller
                     case GameState.Finished:
                         break;
                     
+                }
+
+                // If Game Reset was requested do it
+                if (_game.RequestReset)
+                {
+                    _game.RequestReset = false;
+                    Reset();
                 }
             }
         }
@@ -308,7 +315,7 @@ namespace ArctosGameServer.Controller
                     _server.Send(new GameEvent(GameEvent.Type.GuiLeft, null), player.ControlUnitId);
                 }
 
-                RemoveGUI(player);
+                RemoveGui(player);
             }
             else
             {
@@ -330,6 +337,19 @@ namespace ArctosGameServer.Controller
                 _game.AddMap(player.Map);
             }
 
+            if (!player.ControlUnitId.Equals(Guid.Empty))
+            {
+                try
+                {
+                    _server.Disconnect(player.ControlUnitId);
+                }
+                catch (Exception e)
+                {
+                    LogLine("Error when disconnecting CU: " + e.Message);
+                }
+            }
+           
+
             // Send event
             OnPlayerLeftEvent(new PlayerLeftEventArgs() {Player = player});
         }
@@ -338,8 +358,20 @@ namespace ArctosGameServer.Controller
         /// Removes the GUI
         /// </summary>
         /// <param name="player"></param>
-        private void RemoveGUI(Player player)
+        private void RemoveGui(Player player)
         {
+            if (!player.GuiId.Equals(Guid.Empty))
+            {
+                try
+                {
+                    _server.Disconnect(player.GuiId);
+                }
+                catch (Exception e)
+                {
+                    LogLine("Error when disconnecting GUI " + e.Message);
+                }
+            }
+
             player.GuiId = Guid.Empty;
 
             // Send event
@@ -404,7 +436,7 @@ namespace ArctosGameServer.Controller
                     _server.Send(new GameEvent(GameEvent.Type.GuiLeft, null), player.ControlUnitId);
                 }
 
-                RemoveGUI(player);
+                RemoveGui(player);
             }
             else
             {
@@ -624,18 +656,25 @@ namespace ArctosGameServer.Controller
             OnGameStartEvent(new GameStartEventArgs() {Started = true});
         }
 
-        public void ResetGame()
+        public void RequestReset()
         {
-            // Reset all maps
+            LogLine("Resetting the game");
+
+            _game.RequestReset = true;
+        }
+
+        private void Reset()
+        {
+            // Reset the game
+            _game.Reset();
 
             // Reset all players
             foreach (var player in _players.Values)
             {
                 player.Reset();
-            }
 
-            // Reset the game
-            _game.Reset();
+                player.Map = _game.GetAvailableMap();
+            }
 
             // Set the game state
             _game.State = GameState.Waiting;
@@ -651,8 +690,7 @@ namespace ArctosGameServer.Controller
         public bool PlayersReady()
         {
             return _players.Count > 0 &&
-                   _players.Values.Count(x => x.Location != null && x.Location.Equals(x.Map.StartField)) ==
-                   _players.Count;
+                   _players.Values.Count(x => x.Location != null && x.Map != null && x.Location.Equals(x.Map.StartField)) == _players.Count;
         }
 
         /// <summary>

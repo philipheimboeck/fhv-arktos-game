@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModel="clr-namespace:ArctosGameServer.ViewModel"
         mc:Ignorable="d"
-        Title="Server" Height="460" Width="850" d:DataContext="{d:DesignInstance viewModel:GameViewModel}" ResizeMode="NoResize">
+        Title="Server" Height="460" Width="850" d:DataContext="{d:DesignInstance viewModel:GameViewModel}" ResizeMode="NoResize"
+        Icon="Resources/iceberg.png">
 
     <Window.Resources>
         <viewModel:BooleanToColorConverter x:Key="BooleanToColorConverter"></viewModel:BooleanToColorConverter>
@@ -25,7 +26,8 @@
                     <ColumnDefinition Width="335" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="300" />
+                    <RowDefinition Height="250" />
+                    <RowDefinition Height="50"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
@@ -51,9 +53,12 @@
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
-
-                <Button Grid.Row="1" Grid.Column="1" VerticalAlignment="Top" Content="Reset Game" Width="118" Height="20" HorizontalAlignment="Left" Command="{Binding Path=UpdateCommand}" CommandParameter="ResetGame"/>
-                <Button Grid.Row="1" Grid.Column="1" VerticalAlignment="Top" Content="Start Game" Width="118" Height="20" HorizontalAlignment="Right" Command="{Binding Path=UpdateCommand}" CommandParameter="StartGame" IsEnabled="{Binding GameStartable}"/>
+                
+                <Label Content="Game:" Grid.Row="1" Grid.Column="0"></Label>
+                <Label Content="{Binding GameState}" Grid.Row="1" Grid.Column="1"></Label>
+                
+                <Button Grid.Row="2" Grid.Column="1" VerticalAlignment="Top" Content="Reset Game" Width="118" Height="20" HorizontalAlignment="Left" Command="{Binding Path=UpdateCommand}" CommandParameter="RequestReset"/>
+                <Button Grid.Row="2" Grid.Column="1" VerticalAlignment="Top" Content="Start Game" Width="118" Height="20" HorizontalAlignment="Right" Command="{Binding Path=UpdateCommand}" CommandParameter="StartGame" IsEnabled="{Binding GameStartable}"/>
             </Grid>
             <TextBox Name="LogBox" Text="{Binding Log}" VerticalScrollBarVisibility="Visible" IsReadOnly="True" Grid.Row="0" Grid.Column="1" Height="300" TextWrapping="Wrap" AcceptsReturn="True" VerticalAlignment="Top"></TextBox>
 
