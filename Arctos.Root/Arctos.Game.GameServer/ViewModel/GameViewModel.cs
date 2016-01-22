@@ -2,11 +2,9 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
-using System.Windows.Input;
 using Arctos.Game.Model;
 using ArctosGameServer.Controller;
 using ArctosGameServer.Controller.Events;
-using ArctosGameServer.ViewModel.Command;
 
 namespace ArctosGameServer.ViewModel
 {
@@ -18,11 +16,11 @@ namespace ArctosGameServer.ViewModel
 
         private string _log;
 
-       
 
         public GameViewModel(GameController game)
         {
             _game = game;
+            GameState = "Waiting";
 
             Players = new ObservableCollection<PlayerViewModel>();
 
@@ -36,9 +34,42 @@ namespace ArctosGameServer.ViewModel
             _game.PlayerLostEvent += PlayerLostEvent;
         }
 
+        public ObservableCollection<PlayerViewModel> Players { get; set; }
+
+        public string Log
+        {
+            get { return _log; }
+            set
+            {
+                _log = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _gameState;
+        public string GameState
+        {
+            get { return _gameState; }
+            set
+            {
+                _gameState = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool GameStartable
+        {
+            get { return _gameStartable; }
+            set
+            {
+                _gameStartable = value;
+                OnPropertyChanged();
+            }
+        }
+
         private void PlayerLostEvent(object sender, PlayerLostEventArgs e)
         {
-            Application.Current.Dispatcher.Invoke((Action)delegate
+            Application.Current.Dispatcher.Invoke((Action) delegate
             {
                 var playerViewModel = Players.FirstOrDefault(x => x.Player.Equals(e.Player));
                 if (playerViewModel != null) playerViewModel.Connected = !e.Lost;
@@ -57,36 +88,23 @@ namespace ArctosGameServer.ViewModel
             });
         }
 
-        public ObservableCollection<PlayerViewModel> Players { get; set; }
-
-        public string Log
-        {
-            get { return _log; }
-            set
-            {
-                _log = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public bool GameStartable
-        {
-            get { return _gameStartable; }
-            set
-            {
-                _gameStartable = value;
-                OnPropertyChanged();
-            }
-        }
-
         private void GameStartEvent(object sender, Controller.Events.GameStartEventArgs e)
         {
             GameStartable = false;
+            GameState = "Started";
         }
 
         private void GameReadyEvent(object sender, Controller.Events.GameReadeEventArgs e)
         {
             GameStartable = e.Ready;
+            if (e.Ready)
+            {
+                GameState = "Ready";
+            }
+            else
+            {
+                GameState = "Waiting";
+            }
         }
 
         private void GuiChangedEvent(object sender, Controller.Events.GuiChangedEventArgs e)
@@ -102,7 +120,8 @@ namespace ArctosGameServer.ViewModel
 
         private void PlayerJoinedEvent(object sender, Controller.Events.PlayerJoinedEventArgs e)
         {
-            Application.Current.Dispatcher.Invoke((Action) delegate { Players.Add(new PlayerViewModel(e.Player, _game)); });
+            Application.Current.Dispatcher.Invoke(
+                (Action) delegate { Players.Add(new PlayerViewModel(e.Player, _game)); });
         }
 
         public override void Execute(object parameter)
@@ -112,12 +131,20 @@ namespace ArctosGameServer.ViewModel
                 switch (parameter.ToString())
                 {
                     case "StartGame":
-                    {
                         if (GameStartable)
                         {
                             _game.StartGame();
                         }
-                    }
+                        break;
+                    case "RequestReset":
+                        var result = MessageBox.Show("Do you really want to reset the game?", "Reset Game", MessageBoxButton.OKCancel,
+                            MessageBoxImage.Question);
+                        if (result == MessageBoxResult.OK)
+                        {
+                            _game.RequestReset();
+                            GameState = "Waiting";
+                            GameStartable = false;
+                        }
                         break;
                 }
             }

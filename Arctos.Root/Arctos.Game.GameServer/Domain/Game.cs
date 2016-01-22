@@ -30,6 +30,7 @@ namespace ArctosGameServer.Domain
         private List<GameArea> PlayableMaps { get; set; }
 
         public List<Tuple<int, int>> Path { get; private set; }
+        public bool RequestReset { get; set; }
 
         /// <summary>
         /// Creates a random path through the fields
@@ -49,7 +50,7 @@ namespace ArctosGameServer.Domain
             var direction = 0; // 0 -> Right, 1 -> Top, 2 -> Bottom
 
             // Create new fields until the right side is reached
-            while (current.Item1 < GameHeight - 1)
+            while (current.Item1 < GameWidth - 1)
             {
                 // Check for possible directions
                 bool[] possibleDirections = { true, true, true };
