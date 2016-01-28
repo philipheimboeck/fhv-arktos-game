@@ -111,7 +111,7 @@ namespace Arctos.Game.MapGenerator.View
             }
         }
         
-        private int _gameViewColumns;
+        private int _gameViewColumns = 3;
         public int GameViewColumns
         {
             get
@@ -125,7 +125,7 @@ namespace Arctos.Game.MapGenerator.View
             }
         }
 
-        private int _gameViewRows;
+        private int _gameViewRows = 3;
         public int GameViewRows
         {
             get

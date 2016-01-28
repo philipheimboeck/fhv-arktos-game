@@ -58,7 +58,7 @@ namespace Arctos.Game.MapGenerator.Model
                         color = Colors.Red;
                         break;
                     case Area.AreaStatus.CorrectlyPassed:
-                        color = Colors.DarkGreen;
+                        color = Colors.Blue;
                         break;
                     case Area.AreaStatus.None:
                     default:

@@ -6,6 +6,7 @@ using Arctos.Game.MapGenerator.View.Events;
 using System.Xml.Serialization;
 using Microsoft.Win32;
 using Arctos.Game.MapGenerator.Model;
+using System.Linq;
 
 namespace Arctos.Game.MapGenerator.View
 {
@@ -310,6 +311,13 @@ namespace Arctos.Game.MapGenerator.View
             GuiArea guiArea = GetActiveArea();
             if (guiArea != null)
             {
+                // rfid tag already passed
+                if (CurrentGameArea.AreaList.Any(x => x.AreaId == rfidUpdateEventArgs.RFID) || CurrentGameArea.StartField.AreaId == rfidUpdateEventArgs.RFID)
+                {
+                    ShowInformationOverlay("RFID already scanned. Cannot be used twice");
+                    return;
+                }
+
                 // one gui field is passed
                 guiArea.Status = Area.AreaStatus.CorrectlyPassed;
 
